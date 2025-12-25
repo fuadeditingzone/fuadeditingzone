@@ -13,14 +13,14 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose }
     const { ref: dragRef, style: dragStyle, isDragging } = useDraggable(handleRef);
     const videoRef = useRef<HTMLVideoElement>(null);
 
-    const [isPlaying, setIsPlaying] = useState(true);
+    const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
 
     const isYouTube = !!video.videoId;
 
     const togglePlay = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (isYouTube) return; // YouTube iframe handles its own controls or requires complex API interaction
+        if (isYouTube) return;
         const videoEl = videoRef.current;
         if (!videoEl) return;
         if (videoEl.paused) {
@@ -58,7 +58,7 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose }
             <div className="relative w-full h-full group">
                 {isYouTube ? (
                     <iframe
-                        src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0&modestbranding=1`}
+                        src={`https://www.youtube.com/embed/${video.videoId}?autoplay=0&mute=${isMuted ? 1 : 0}&rel=0&modestbranding=1`}
                         title="YouTube PiP"
                         className="w-full h-full pointer-events-auto"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -68,7 +68,6 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose }
                     <video 
                         ref={videoRef}
                         src={video.url} 
-                        autoPlay 
                         loop 
                         muted={isMuted}
                         playsInline
@@ -94,7 +93,6 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose }
                     )}
                 </div>
                 
-                {/* Always visible close button */}
                 <button onClick={onClose} className="absolute top-2 right-2 text-white p-1.5 rounded-full bg-black/60 hover:bg-red-600 transition-colors z-10">
                     <CloseIcon className="w-4 h-4" />
                 </button>

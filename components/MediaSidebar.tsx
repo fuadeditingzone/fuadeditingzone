@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { CloseIcon, YouTubeIcon } from './Icons';
@@ -20,7 +19,6 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({ isOpen, onClose, for
         }
     }, [videos, currentVideoId]);
 
-    // Use API data if available, otherwise fallback to config
     const channelName = stats.channelTitle || siteConfig.branding.name;
     const channelImage = stats.channelProfilePic || siteConfig.branding.profilePicUrl;
 
@@ -28,7 +26,6 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({ isOpen, onClose, for
         <div 
             className={`fixed inset-y-0 right-0 z-[80] w-full max-w-md bg-[#0f0f0f] border-l border-white/10 shadow-2xl transform transition-transform duration-500 ease-in-out flex flex-col select-none ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
         >
-            {/* Header (Mini Browser Bar) */}
             <div className="flex items-center justify-between p-4 border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
@@ -45,14 +42,12 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({ isOpen, onClose, for
                 </button>
             </div>
 
-            {/* Browser Content */}
             <div className="flex-1 flex flex-col min-h-0 relative bg-[#0f0f0f]">
                 
-                {/* Player Container */}
                 <div className="flex-shrink-0 bg-black aspect-video relative border-b border-white/5 shadow-lg z-10">
                     {currentVideoId && !forcePaused ? (
                         <iframe 
-                            src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=${isOpen ? 1 : 0}&rel=0&modestbranding=1&enablejsapi=1`}
+                            src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=0&rel=0&modestbranding=1&enablejsapi=1`}
                             title="YouTube Video Player"
                             className="w-full h-full"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; identity-credentials-get"
@@ -72,9 +67,7 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({ isOpen, onClose, for
                     )}
                 </div>
                 
-                {/* Playlist / Feed */}
                 <div className="flex-1 overflow-y-auto p-0 scrollbar-thin">
-                    {/* Channel Info & Stats Header */}
                     <div className="sticky top-0 bg-[#0f0f0f]/95 backdrop-blur z-10 border-b border-white/5">
                          <div className="p-4 flex items-center justify-between gap-3 border-b border-white/5">
                             <div className="flex items-center gap-3 min-w-0">
@@ -138,7 +131,6 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({ isOpen, onClose, for
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0 py-0.5 flex flex-col justify-center">
-                                        {/* Allowed title to wrap fully */}
                                         <h4 className={`text-sm font-medium leading-snug mb-1 break-words ${currentVideoId === video.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
                                             {video.title}
                                         </h4>

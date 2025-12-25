@@ -22,7 +22,6 @@ import { ServiceSelectionModal } from './components/ServiceSelectionModal';
 
 export default function App() {
   // --- UI State ---
-  const [showWelcomePortal, setShowWelcomePortal] = useState(false);
   const [isSpecialServicesOpen, setIsSpecialServicesOpen] = useState(false);
   const [isYouTubeApiReady, setIsYouTubeApiReady] = useState(false);
   const [modalState, setModalState] = useState<{ items: ModalItem[]; currentIndex: number } | null>(null);
@@ -34,23 +33,17 @@ export default function App() {
   const [isServicesPopupOpen, setIsServicesPopupOpen] = useState(false);
   const [selectionTarget, setSelectionTarget] = useState<'whatsapp' | 'email' | null>(null);
   
-  // --- Global Media Coordination ---
-  const [isHeroVideoPlaying, setIsHeroVideoPlaying] = useState(false);
-  const [heroTrigger, setHeroTrigger] = useState(0);
-  const [isPortfolioMediaActive, setIsPortfolioMediaActive] = useState(false);
-  
   // --- Video Playback State ---
+  const [isPortfolioMediaActive, setIsPortfolioMediaActive] = useState(false);
   const [playingVfxVideo, setPlayingVfxVideo] = useState<VideoWork | null>(null);
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
 
-  // Initial Logic on Mount (Bypassing Welcome Portal)
+  // Initial Logic on Mount
   useEffect(() => {
     const hasSeenSpecial = localStorage.getItem('hasSeenSpecialServices') === 'true';
     if (!hasSeenSpecial) {
         setIsSpecialServicesOpen(true);
     }
-    // Set trigger to 1 to allow Home component to start media logic
-    setHeroTrigger(1);
   }, []);
 
   // Combined Portfolio for Gallery
@@ -70,13 +63,9 @@ export default function App() {
   };
 
   const handleGlobalClick = (e: React.MouseEvent) => {
-    // Only trigger if clicking generic areas, not buttons/links/modals/iframes
     const target = e.target as HTMLElement;
     const isInteractive = target.closest('button, a, iframe, .interactive-3d-card, [role="dialog"]');
-    
-    if (!showWelcomePortal && !isInteractive) {
-        setHeroTrigger(t => t + 1);
-    }
+    if (isInteractive) return;
   };
 
   useEffect(() => {
@@ -84,25 +73,9 @@ export default function App() {
       if (isMediaSidebarOpen) {
           setPlayingVfxVideo(null);
           setPipVideo(null);
-          setIsHeroVideoPlaying(false);
           setIsPortfolioMediaActive(false);
       }
   }, [isMediaSidebarOpen]);
-
-  // Handle Mutual Exclusion between Hero and Portfolio
-  useEffect(() => {
-    if (isPortfolioMediaActive || playingVfxVideo) {
-        setIsHeroVideoPlaying(false);
-    }
-  }, [isPortfolioMediaActive, playingVfxVideo]);
-
-  // If hero starts playing, stop portfolio media
-  useEffect(() => {
-      if (isHeroVideoPlaying) {
-          setIsPortfolioMediaActive(false);
-          setPlayingVfxVideo(null);
-      }
-  }, [isHeroVideoPlaying]);
 
   useEffect(() => {
       // This function will be called by the YouTube API script once it's loaded.
@@ -125,7 +98,6 @@ export default function App() {
   const handleOpenModal = (items: (GraphicWork | VideoWork)[], startIndex: number) => {
       if (Array.isArray(items) && items.length > 0) {
           setModalState({ items, currentIndex: startIndex });
-          setIsHeroVideoPlaying(false);
           setIsPortfolioMediaActive(false);
       }
   };
@@ -133,9 +105,6 @@ export default function App() {
   const handleScrollTo = (section: 'home' | 'portfolio' | 'contact' | 'video-editing' | 'about') => {
     const element = document.getElementById(section);
     element?.scrollIntoView({ behavior: 'smooth' });
-    if (section !== 'home') {
-        setIsHeroVideoPlaying(false);
-    }
   };
   
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -195,7 +164,6 @@ export default function App() {
           <MediaSidebar 
             isOpen={isMediaSidebarOpen} 
             onClose={() => setIsMediaSidebarOpen(false)} 
-            forcePaused={isHeroVideoPlaying}
           />
           {!isMediaSidebarOpen && !anyModalOpen && (
               <button
@@ -211,11 +179,6 @@ export default function App() {
               <Home 
                 onOpenServices={() => setIsServicesPopupOpen(true)} 
                 onOrderNow={() => handleScrollTo('contact')}
-                isHeroVideoActive={isHeroVideoPlaying}
-                setIsHeroVideoActive={setIsHeroVideoPlaying}
-                isWelcomeDismissed={true}
-                triggerPlay={heroTrigger}
-                isPortfolioMediaActive={isPortfolioMediaActive}
               />
               <Portfolio 
                   openModal={handleOpenModal}
@@ -226,10 +189,8 @@ export default function App() {
                   setPlayingVfxVideo={setPlayingVfxVideo}
                   pipVideo={pipVideo}
                   setPipVideo={setPipVideo}
-                  forcePaused={isHeroVideoPlaying}
                   onPortfolioPlay={() => {
                       setIsPortfolioMediaActive(true);
-                      setIsHeroVideoPlaying(false);
                   } }
               />
               <Contact onStartOrder={setSelectionTarget} />

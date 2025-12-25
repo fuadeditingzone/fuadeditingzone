@@ -17,7 +17,7 @@ const allMedia = [
     ...vfxEdits.map(item => ({ type: 'video' as const, url: item.url, id: `v-${item.id}` }))
 ];
 
-const GRID_SIZE = 36; // 6x6 grid for more density
+const GRID_SIZE = 36; // 6x6 grid
 
 const getShuffledMedia = () => {
     const shuffled = shuffleArray(allMedia);
@@ -28,41 +28,54 @@ const getShuffledMedia = () => {
     return loopedMedia.slice(0, GRID_SIZE);
 };
 
-// --- Grid Component ---
-const GridLayer: React.FC<{ items: typeof allMedia; isVisible: boolean }> = React.memo(({ items, isVisible }) => {
-    const gridRef = useRef<HTMLDivElement>(null);
+// --- Single Cell Component for Hover-to-Play ---
+const GridCell: React.FC<{ item: typeof allMedia[0] }> = ({ item }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (gridRef.current) {
-                const videos = gridRef.current.querySelectorAll('video');
-                videos.forEach(video => {
-                    if (video.paused) {
-                        video.play().catch(() => {});
-                    }
-                });
-            }
-        }, 2000);
+    const handleMouseEnter = () => {
+        if (videoRef.current) {
+            videoRef.current.play().catch(() => {});
+        }
+    };
 
-        return () => clearInterval(interval);
-    }, []);
+    const handleMouseLeave = () => {
+        if (videoRef.current) {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0;
+        }
+    };
 
     return (
-        <div ref={gridRef} className={`absolute inset-0 grid grid-cols-4 md:grid-cols-6 grid-rows-9 md:grid-rows-6 gap-1 md:gap-2 transition-opacity duration-[2500ms] ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-            {items.map((item, index) => (
-                <div key={`${item.id}-${index}`} className="relative w-full h-full rounded-sm md:rounded-lg overflow-hidden bg-black shadow-lg border border-white/5 group">
-                    {/* Main content */}
-                    {item.type === 'image' && (
-                        <img src={item.url} alt="" className="absolute inset-0 w-full h-full object-cover grayscale-[0.3] brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700" loading="lazy" />
-                    )}
-                    {item.type === 'video' && item.url && (
-                        <video src={item.url} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover brightness-75 group-hover:brightness-100 transition-all duration-700" />
-                    )}
+        <div 
+            className="relative w-full h-full rounded-sm md:rounded-lg overflow-hidden bg-black shadow-lg border border-white/5 group"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+        >
+            {item.type === 'image' && (
+                <img src={item.url} alt="" className="absolute inset-0 w-full h-full object-cover grayscale-[0.3] brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700" loading="lazy" />
+            )}
+            {item.type === 'video' && item.url && (
+                <video 
+                    ref={videoRef}
+                    src={item.url} 
+                    loop 
+                    muted 
+                    playsInline 
+                    className="absolute inset-0 w-full h-full object-cover brightness-75 group-hover:brightness-100 transition-all duration-700" 
+                />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-red-900/5 mix-blend-color"></div>
+        </div>
+    );
+};
 
-                    {/* Subtle Overlay to make it feel "part of the background" */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                    <div className="absolute inset-0 bg-red-900/5 mix-blend-color"></div>
-                </div>
+// --- Grid Component ---
+const GridLayer: React.FC<{ items: typeof allMedia; isVisible: boolean }> = React.memo(({ items, isVisible }) => {
+    return (
+        <div className={`absolute inset-0 grid grid-cols-4 md:grid-cols-6 grid-rows-9 md:grid-rows-6 gap-1 md:gap-2 transition-opacity duration-[2500ms] ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+            {items.map((item, index) => (
+                <GridCell key={`${item.id}-${index}`} item={item} />
             ))}
         </div>
     );
@@ -76,13 +89,11 @@ export const MediaGridBackground: React.FC = () => {
     const [isGridOneVisible, setIsGridOneVisible] = useState(true);
     const { x, y } = useParallax();
 
-    // Initialize grids on mount
     useEffect(() => {
         setGridOneItems(getShuffledMedia());
         setGridTwoItems(getShuffledMedia());
     }, []);
 
-    // Interval to shuffle and cross-fade
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (isGridOneVisible) {
@@ -91,7 +102,7 @@ export const MediaGridBackground: React.FC = () => {
                 setGridOneItems(getShuffledMedia());
             }
             setIsGridOneVisible(prev => !prev);
-        }, 25000); // Cross-fade every 25 seconds
+        }, 25000);
 
         return () => clearInterval(intervalId);
     }, [isGridOneVisible]);
@@ -109,8 +120,6 @@ export const MediaGridBackground: React.FC = () => {
         >
             <GridLayer items={gridOneItems} isVisible={isGridOneVisible} />
             <GridLayer items={gridTwoItems} isVisible={!isGridOneVisible} />
-            
-            {/* Global vignettes for depth */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)]"></div>
             <div className="absolute inset-0 bg-black/30"></div>
         </div>

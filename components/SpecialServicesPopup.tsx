@@ -9,7 +9,7 @@ interface SpecialServicesPopupProps {
 
 interface ServiceExample {
   name: string;
-  icon: React.ReactElement; // Kept for data structure, but won't be rendered
+  icon: React.ReactElement;
   image?: string;
   video?: string;
 }
@@ -37,7 +37,6 @@ export const SpecialServicesPopup: React.FC<SpecialServicesPopupProps> = ({ onCl
                 style={{ maxHeight: '85vh' }}
                 onClick={e => e.stopPropagation()}
             >
-                {/* Scrollable Content Area */}
                 <div className="overflow-y-auto p-6 custom-scrollbar">
                     <div className="text-center mb-6">
                         <h2 className="text-2xl font-bold text-white uppercase tracking-tighter">Special Skills</h2>
@@ -46,20 +45,28 @@ export const SpecialServicesPopup: React.FC<SpecialServicesPopupProps> = ({ onCl
                         </p>
                     </div>
 
-                    {/* Grid Layout */}
                     <div className="grid grid-cols-2 gap-3">
                       {serviceExamples.map(service => (
-                        <div key={service.name} className="relative group h-24 overflow-hidden bg-black border border-white/10 hover:border-red-500/50 transition-all duration-300">
-                           {/* Media background */}
+                        <div 
+                            key={service.name} 
+                            className="relative group h-24 overflow-hidden bg-black border border-white/10 hover:border-red-500/50 transition-all duration-300 cursor-pointer"
+                            onMouseEnter={(e) => {
+                                const video = e.currentTarget.querySelector('video');
+                                if (video) video.play().catch(() => {});
+                            }}
+                            onMouseLeave={(e) => {
+                                const video = e.currentTarget.querySelector('video');
+                                if (video) { video.pause(); video.currentTime = 0; }
+                            }}
+                        >
                            <div className="absolute inset-0">
                                {service.video ? (
-                                <video src={service.video} autoPlay loop muted playsInline className="w-full h-full object-cover object-top" />
+                                <video src={service.video} loop muted playsInline className="w-full h-full object-cover object-top" />
                               ) : (
                                 <LazyImage src={service.image!} alt={service.name} className="w-full h-full object-cover object-top" />
                               )}
                            </div>
                            
-                           {/* Title overlay */}
                            <div className="absolute bottom-0 left-0 right-0 p-3 text-center bg-gradient-to-t from-black/90 via-black/60 to-transparent">
                                 <h3 className="text-white font-bold text-[10px] uppercase tracking-widest">{service.name}</h3>
                            </div>
@@ -68,7 +75,6 @@ export const SpecialServicesPopup: React.FC<SpecialServicesPopupProps> = ({ onCl
                     </div>
                 </div>
 
-                {/* Footer with Rectangular Angular Button */}
                 <div className="p-6 bg-[#0a0a0a] border-t border-white/5 flex flex-col items-center justify-center">
                      <button 
                         onClick={onClose}

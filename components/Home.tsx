@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React from 'react';
 import { siteConfig } from '../config';
 import { ThreeDotsIcon, CheckCircleIcon } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
@@ -41,34 +41,18 @@ const StretchyCounter: React.FC<{ value: number }> = ({ value }) => {
 interface HomeProps {
   onOpenServices: () => void;
   onOrderNow: () => void;
-  isHeroVideoActive: boolean;
-  setIsHeroVideoActive: (active: boolean) => void;
-  isWelcomeDismissed: boolean;
-  triggerPlay: number;
-  isPortfolioMediaActive?: boolean;
 }
 
 export const Home: React.FC<HomeProps> = ({ 
     onOpenServices, 
-    onOrderNow, 
-    isHeroVideoActive, 
-    setIsHeroVideoActive,
-    isWelcomeDismissed,
-    triggerPlay,
-    isPortfolioMediaActive = false
+    onOrderNow
 }) => {
     const { stats, loading } = useYouTubeChannelStats();
     const { x, y } = useParallax();
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const [cycleIndex, setCycleIndex] = useState(0);
-    const [isVideoReady, setIsVideoReady] = useState(false);
-    const [hasTriggeredByClick, setHasTriggeredByClick] = useState(false);
     
     const animatedSubs = useAnimatedCounter(stats.subscribers, 1500);
     const animatedViews = useAnimatedCounter(stats.views, 1500);
     
-    const vfxEdits = siteConfig.content.portfolio.vfxEdits;
-
     const proSkills = ['VFX Mastery', 'YouTube Thumbnail', 'Photo Manipulation', 'Banner Designs', 'Social Media Post', 'AMV EDIT', 'Graphic Design'];
 
     const sortedHeroSkills = [...siteConfig.content.introCard.skills].sort((a, b) => {
@@ -78,64 +62,6 @@ export const Home: React.FC<HomeProps> = ({
         if (!aIsPro && bIsPro) return 1;
         return 0;
     }).slice(0, 5);
-
-    const introVideoUrl = "https://dl.dropboxusercontent.com/scl/fi/wi6fm6hqwpdcixg1qsly4/ssstik.io_-fuadeditingzone_1766534523184.mp4?rlkey=ujxaf5wwgwna0k3ycydwjueg6&raw=1";
-    const pfpVideoPlaylist = [introVideoUrl, ...vfxEdits.map(v => v.url)].filter(Boolean) as string[];
-
-    const playVideo = useCallback(() => {
-        if (videoRef.current && !isPortfolioMediaActive && isWelcomeDismissed) {
-            setIsHeroVideoActive(true);
-            videoRef.current.play().catch(e => {
-                console.warn("Autoplay was prevented, waiting for user interaction.", e);
-            });
-        }
-    }, [isPortfolioMediaActive, isWelcomeDismissed, setIsHeroVideoActive]);
-
-    // Initial play and trigger updates
-    useEffect(() => {
-        if (isWelcomeDismissed && !isPortfolioMediaActive) {
-            // "Clicking outside PFP playing video will work only once after opening web"
-            // The first triggerPlay (usually 1 when portal is clicked) sets the lock.
-            if (!hasTriggeredByClick && triggerPlay > 0) {
-                playVideo();
-                setHasTriggeredByClick(true);
-            }
-        }
-    }, [isWelcomeDismissed, playVideo, isPortfolioMediaActive, triggerPlay, hasTriggeredByClick]);
-
-    // Strict 1-minute cycle
-    useEffect(() => {
-        if (!isWelcomeDismissed) return;
-        const interval = setInterval(() => {
-            if (!isPortfolioMediaActive) {
-                setCycleIndex(prev => (prev + 1) % pfpVideoPlaylist.length);
-            }
-        }, 60000); 
-        return () => clearInterval(interval);
-    }, [isWelcomeDismissed, pfpVideoPlaylist.length, isPortfolioMediaActive]);
-
-    // Handle play state synchronization
-    useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        if (isHeroVideoActive && !isPortfolioMediaActive) {
-            video.play().catch(() => {});
-        } else {
-            video.pause();
-        }
-    }, [isHeroVideoActive, isPortfolioMediaActive]);
-
-    const handleVideoEnded = () => {
-        setIsHeroVideoActive(false); 
-        setIsVideoReady(false);
-    };
-
-    const handleMediaClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        // Manual clicks on PFP always work
-        playVideo();
-    };
 
     const headlineStyle = {
         transform: `perspective(1000px) rotateX(${y * -10}deg) rotateY(${x * 10}deg)`,
@@ -151,30 +77,15 @@ export const Home: React.FC<HomeProps> = ({
                 
                 <div className="relative mb-5 md:mb-8 group">
                     <div 
-                        onClick={handleMediaClick}
-                        className="relative w-32 h-32 md:w-52 md:h-52 rounded-[1.8rem] md:rounded-[2.5rem] overflow-hidden border-2 border-white/20 shadow-[0_0_50px_rgba(220,38,38,0.3)] transition-all duration-500 group-hover:scale-[1.05] group-hover:shadow-[0_0_70px_rgba(220,38,38,0.5)] cursor-pointer bg-black"
+                        className="relative w-32 h-32 md:w-52 md:h-52 rounded-[1.8rem] md:rounded-[2.5rem] overflow-hidden border-2 border-white/20 shadow-[0_0_50px_rgba(220,38,38,0.3)] transition-all duration-500 group-hover:scale-[1.05] group-hover:shadow-[0_0_70px_rgba(220,38,38,0.5)] bg-black"
                     >
-                        {/* Video Layer */}
-                        <video
-                            ref={videoRef}
-                            src={pfpVideoPlaylist[cycleIndex]}
-                            muted={false}
-                            playsInline
-                            onPlaying={() => setIsVideoReady(true)}
-                            onEnded={handleVideoEnded}
-                            // Using autoPlay here as a hint to the browser, though controlled by ref
-                            autoPlay={isWelcomeDismissed && !isPortfolioMediaActive}
-                            className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-700 scale-[1.25] z-10 ${isVideoReady && isHeroVideoActive ? 'opacity-100' : 'opacity-0'}`}
-                        />
-                        
-                        {/* Static Image Layer - Shown when video is loading or inactive */}
+                        {/* Static Image Layer Only */}
                         <img 
                             src={siteConfig.branding.profilePicUrl} 
                             alt={siteConfig.branding.author} 
-                            className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-700 z-0 ${(!isVideoReady || !isHeroVideoActive) ? 'opacity-100' : 'opacity-0'}`} 
+                            className="absolute inset-0 w-full h-full object-cover object-top z-0" 
                         />
 
-                        {/* Overlay gradient */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-20"></div>
                     </div>
                     
