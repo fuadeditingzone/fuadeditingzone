@@ -39,6 +39,7 @@ export default function App() {
   const [playingVfxVideo, setPlayingVfxVideo] = useState<VideoWork | null>(null);
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
   const [isPortfolioMediaActive, setIsPortfolioMediaActive] = useState(false);
+  const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
   // Initial Logic on Mount
   useEffect(() => {
@@ -74,6 +75,7 @@ export default function App() {
       // Synchronize PiP if sidebar changes active video while PiP is active
       if (pipVideo?.id === 'yt-pip' && pipVideo.videoId !== activeYouTubeId) {
           setPipVideo({ id: 'yt-pip', videoId: activeYouTubeId });
+          setVideoCurrentTime(0); // Reset time when video identity changes
       }
   }, [activeYouTubeId, pipVideo]);
 
@@ -199,6 +201,8 @@ export default function App() {
                   onPortfolioPlay={() => {
                       setIsPortfolioMediaActive(true);
                   } }
+                  currentTime={videoCurrentTime}
+                  setCurrentTime={setVideoCurrentTime}
               />
               <Contact onStartOrder={setSelectionTarget} />
               <AboutAndFooter />
@@ -254,7 +258,10 @@ export default function App() {
                       setPlayingVfxVideo(null);
                       setIsYtPlaying(false);
                       setIsPortfolioMediaActive(false);
+                      setVideoCurrentTime(0);
                   }}
+                  currentTime={videoCurrentTime}
+                  setCurrentTime={setVideoCurrentTime}
               />
           )}
 

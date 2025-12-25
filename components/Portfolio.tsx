@@ -31,6 +31,8 @@ interface PortfolioProps {
     setIsYtPlaying: (playing: boolean) => void;
     forcePaused?: boolean;
     onPortfolioPlay?: () => void;
+    currentTime: number;
+    setCurrentTime: (time: number) => void;
 }
 
 const { graphicWorks, animeEdits, vfxEdits } = siteConfig.content.portfolio;
@@ -42,7 +44,9 @@ const VfxVideoPlayer: React.FC<{
     onPlayRequest: (video: VideoWork | null) => void;
     setPipVideo: (video: VideoWork | null) => void;
     forcePaused?: boolean;
-}> = ({ video, currentlyPlaying, pipVideo, onPlayRequest, setPipVideo, forcePaused }) => {
+    currentTime: number;
+    setCurrentTime: (time: number) => void;
+}> = ({ video, currentlyPlaying, pipVideo, onPlayRequest, setPipVideo, forcePaused, currentTime, setCurrentTime }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [containerRef, isVisible] = useIntersectionObserver({ threshold: 0.5 });
     const [isMuted, setIsMuted] = useState(true);
@@ -57,18 +61,35 @@ const VfxVideoPlayer: React.FC<{
         if (!videoEl) return;
         
         if (isPlaying && !isThisVideoInPip) {
+            // Restore time if we just came back from PiP
+            if (currentTime > 0 && Math.abs(videoEl.currentTime - currentTime) > 1) {
+                videoEl.currentTime = currentTime;
+            }
             videoEl.play().catch(() => {});
             setHasActuallyPlayed(true);
         } else {
             videoEl.pause();
-            if (videoEl.currentTime !== 0) videoEl.currentTime = 0;
-            if (!currentlyPlaying) setHasActuallyPlayed(false); // Reset on full stop
+            // Don't reset time if we are just PiPing it
+            if (!isThisVideoInPip && videoEl.currentTime !== 0) {
+                videoEl.currentTime = 0;
+            }
+            if (!currentlyPlaying) setHasActuallyPlayed(false); 
         }
     }, [isPlaying, isThisVideoInPip, currentlyPlaying]);
+
+    // Periodically sync time back to global state while playing
+    useEffect(() => {
+        if (!isPlaying || isThisVideoInPip) return;
+        const interval = setInterval(() => {
+            if (videoRef.current) setCurrentTime(videoRef.current.currentTime);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [isPlaying, isThisVideoInPip]);
 
     // Picture-in-Picture Logic for local/dropbox videos
     useEffect(() => {
         if (isPlaying && hasActuallyPlayed && !isVisible && !isThisVideoInPip) {
+            if (videoRef.current) setCurrentTime(videoRef.current.currentTime);
             setPipVideo(video);
         }
         if (isThisVideoInPip && isVisible) {
@@ -126,7 +147,9 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     isYtPlaying,
     setIsYtPlaying,
     forcePaused,
-    onPortfolioPlay
+    onPortfolioPlay,
+    currentTime,
+    setCurrentTime
 }) => {
     const [ytContainerRef, isYtVisible] = useIntersectionObserver({ threshold: 0.1 });
     const { videos: youtubeVideos } = useYouTubeChannelStats();
@@ -151,7 +174,8 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 autoplay: isYtPlaying ? 1 : 0,
                 modestbranding: 1,
                 rel: 0,
-                showinfo: 0
+                showinfo: 0,
+                start: Math.floor(currentTime) // Use saved time on init if exists
             },
             events: {
                 onStateChange: (event: any) => {
@@ -173,13 +197,23 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         };
     }, [isYouTubeApiReady, activeYouTubeId, activeVfxSubTab]);
 
+    // Periodically sync YouTube time back to global state
+    useEffect(() => {
+        if (!isYtPlaying || pipVideo?.id === 'yt-pip') return;
+        const interval = setInterval(() => {
+            if (playerRef.current && playerRef.current.getCurrentTime) {
+                setCurrentTime(playerRef.current.getCurrentTime());
+            }
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [isYtPlaying, pipVideo]);
+
     // Sync external play/pause state with YouTube player instance
     useEffect(() => {
         if (playerRef.current && playerRef.current.getPlayerState) {
             const state = playerRef.current.getPlayerState();
             const isPipActive = pipVideo?.id === 'yt-pip';
 
-            // IMPORTANT: If PiP is active, the main section MUST pause to avoid dual audio
             if (isPipActive) {
                 if (state === window.YT.PlayerState.PLAYING) {
                     playerRef.current.pauseVideo();
@@ -187,7 +221,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 return;
             }
 
-            // Standard synchronization when main section is active
             if (isYtPlaying && state !== window.YT.PlayerState.PLAYING) {
                 playerRef.current.playVideo();
             } else if (!isYtPlaying && state === window.YT.PlayerState.PLAYING) {
@@ -200,13 +233,17 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     useEffect(() => {
         if (!isYtVisible && isYtPlaying && activeYouTubeId && !forcePaused) {
             if (!pipVideo || pipVideo.id !== 'yt-pip' || pipVideo.videoId !== activeYouTubeId) {
+                if (playerRef.current && playerRef.current.getCurrentTime) {
+                    setCurrentTime(playerRef.current.getCurrentTime());
+                }
                 setPipVideo({ id: 'yt-pip', videoId: activeYouTubeId });
             }
         } 
         else if (isYtVisible && pipVideo?.id === 'yt-pip') {
             setPipVideo(null);
-            // Re-trigger playback if it was playing in PiP
-            if (isYtPlaying && playerRef.current && playerRef.current.playVideo) {
+            // Restore playback position
+            if (isYtPlaying && playerRef.current && playerRef.current.seekTo) {
+                playerRef.current.seekTo(currentTime);
                 playerRef.current.playVideo();
             }
         }
@@ -301,14 +338,12 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                         >
                                             <InteractiveCard className="relative group rounded-xl sm:rounded-2xl overflow-hidden bg-black cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/10 aspect-[4/3]">
                                                 <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
-                                                  {/* Blurred Background */}
                                                   <img 
                                                       src={work.imageUrl} 
                                                       alt="" 
                                                       className="absolute inset-0 w-full h-full object-cover filter blur-lg brightness-50 scale-110"
                                                       aria-hidden="true"
                                                   />
-                                                  {/* Main Image */}
                                                   <LazyImage
                                                       src={work.imageUrl}
                                                       alt={work.category}
@@ -371,7 +406,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                 </div>
                             )}
                             
-                            {/* Seamless Sync UI - Visible when user is playing video but scrolled away */}
                             {pipVideo?.id === 'yt-pip' && (
                                 <div className="absolute inset-0 z-20 bg-black/40 backdrop-blur-[12px] flex flex-col items-center justify-center text-center p-6 transition-all duration-500">
                                     <div className="flex items-end gap-1.5 h-16 mb-8">
@@ -430,7 +464,8 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                     key={video.id}
                                     onClick={() => {
                                         setActiveYouTubeId(video.videoId!);
-                                        setIsYtPlaying(true); // Autoplay on thumbnail selection
+                                        setIsYtPlaying(true); 
+                                        setCurrentTime(0); // Reset time when manual select
                                         if (onPortfolioPlay) onPortfolioPlay();
                                     }}
                                     className={`relative aspect-video rounded-xl overflow-hidden transition-all duration-300 border border-transparent select-none ${activeYouTubeId === video.videoId ? 'opacity-100 scale-105 z-10 shadow-xl border-white/20 ring-2 ring-red-600' : 'opacity-60 hover:opacity-100'}`}
@@ -463,12 +498,14 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                             onPlayRequest={handleVfxPlayRequest}
                             setPipVideo={setPipVideo}
                             forcePaused={forcePaused}
+                            currentTime={currentTime}
+                            setCurrentTime={setCurrentTime}
                         />
                     ))}
                 </div>
             )}
         </div>
-    ), [activeVfxSubTab, playingVfxVideo, pipVideo, activeYouTubeId, isYtPlaying, currentVideoStats, animeEdits, vfxEdits, setActiveVfxSubTab, setPipVideo, setActiveYouTubeId, setIsYtPlaying, forcePaused, onPortfolioPlay, ytContainerRef, isYouTubeApiReady]);
+    ), [activeVfxSubTab, playingVfxVideo, pipVideo, activeYouTubeId, isYtPlaying, currentVideoStats, animeEdits, vfxEdits, setActiveVfxSubTab, setPipVideo, setActiveYouTubeId, setIsYtPlaying, forcePaused, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime]);
     
     return (
         <section id="portfolio" className="select-none" style={parallaxStyle}>
