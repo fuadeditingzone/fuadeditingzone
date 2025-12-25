@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { CloseIcon, YouTubeIcon } from './Icons';
 import { siteConfig } from '../config';
@@ -6,18 +6,13 @@ import { siteConfig } from '../config';
 interface MediaSidebarProps {
     isOpen: boolean;
     onClose: () => void;
+    activeYouTubeId: string;
+    onSelectYouTubeId: (id: string) => void;
     forcePaused?: boolean;
 }
 
-export const MediaSidebar: React.FC<MediaSidebarProps> = ({ isOpen, onClose, forcePaused }) => {
+export const MediaSidebar: React.FC<MediaSidebarProps> = ({ isOpen, onClose, activeYouTubeId, onSelectYouTubeId, forcePaused }) => {
     const { videos, loading, stats, formatNumber } = useYouTubeChannelStats();
-    const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (videos.length > 0 && !currentVideoId) {
-            setCurrentVideoId(videos[0].id);
-        }
-    }, [videos, currentVideoId]);
 
     const channelName = stats.channelTitle || siteConfig.branding.name;
     const channelImage = stats.channelProfilePic || siteConfig.branding.profilePicUrl;
@@ -45,9 +40,9 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({ isOpen, onClose, for
             <div className="flex-1 flex flex-col min-h-0 relative bg-[#0f0f0f]">
                 
                 <div className="flex-shrink-0 bg-black aspect-video relative border-b border-white/5 shadow-lg z-10">
-                    {currentVideoId && !forcePaused ? (
+                    {activeYouTubeId && !forcePaused ? (
                         <iframe 
-                            src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=0&rel=0&modestbranding=1&enablejsapi=1`}
+                            src={`https://www.youtube.com/embed/${activeYouTubeId}?autoplay=0&rel=0&modestbranding=1&enablejsapi=1`}
                             title="YouTube Video Player"
                             className="w-full h-full"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; identity-credentials-get"
@@ -119,19 +114,19 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({ isOpen, onClose, for
                             videos.map((video) => (
                                 <button
                                     key={video.id}
-                                    onClick={() => setCurrentVideoId(video.id)}
-                                    className={`w-full flex gap-3 p-2 rounded-lg transition-all text-left group border border-transparent ${currentVideoId === video.id ? 'bg-white/10 border-white/5' : 'hover:bg-white/5'}`}
+                                    onClick={() => onSelectYouTubeId(video.id)}
+                                    className={`w-full flex gap-3 p-2 rounded-lg transition-all text-left group border border-transparent ${activeYouTubeId === video.id ? 'bg-white/10 border-white/5' : 'hover:bg-white/5'}`}
                                 >
                                     <div className="relative w-32 aspect-video rounded-md overflow-hidden flex-shrink-0 bg-gray-800">
                                         <img src={video.thumbnail} alt="" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                                        {currentVideoId === video.id && (
+                                        {activeYouTubeId === video.id && (
                                             <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                                                 <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]"></div>
                                             </div>
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0 py-0.5 flex flex-col justify-center">
-                                        <h4 className={`text-sm font-medium leading-snug mb-1 break-words ${currentVideoId === video.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                                        <h4 className={`text-sm font-medium leading-snug mb-1 break-words ${activeYouTubeId === video.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
                                             {video.title}
                                         </h4>
                                         <div className="flex items-center gap-2 text-xs text-gray-500">

@@ -33,10 +33,11 @@ export default function App() {
   const [isServicesPopupOpen, setIsServicesPopupOpen] = useState(false);
   const [selectionTarget, setSelectionTarget] = useState<'whatsapp' | 'email' | null>(null);
   
-  // --- Video Playback State ---
-  const [isPortfolioMediaActive, setIsPortfolioMediaActive] = useState(false);
+  // --- Global Video State ---
+  const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.content.portfolio.animeEdits[0]?.videoId || '');
   const [playingVfxVideo, setPlayingVfxVideo] = useState<VideoWork | null>(null);
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
+  const [isPortfolioMediaActive, setIsPortfolioMediaActive] = useState(false);
 
   // Initial Logic on Mount
   useEffect(() => {
@@ -69,16 +70,13 @@ export default function App() {
   };
 
   useEffect(() => {
-      // Pause all background/portfolio media if sidebar is opened
-      if (isMediaSidebarOpen) {
-          setPlayingVfxVideo(null);
-          setPipVideo(null);
-          setIsPortfolioMediaActive(false);
+      // Synchronize PiP if sidebar changes active video while PiP is active
+      if (pipVideo?.id === 'yt-pip' && pipVideo.videoId !== activeYouTubeId) {
+          setPipVideo({ id: 'yt-pip', videoId: activeYouTubeId });
       }
-  }, [isMediaSidebarOpen]);
+  }, [activeYouTubeId, pipVideo]);
 
   useEffect(() => {
-      // This function will be called by the YouTube API script once it's loaded.
       window.onYouTubeIframeAPIReady = () => setIsYouTubeApiReady(true);
   
       if (window.YT && window.YT.Player) {
@@ -164,6 +162,8 @@ export default function App() {
           <MediaSidebar 
             isOpen={isMediaSidebarOpen} 
             onClose={() => setIsMediaSidebarOpen(false)} 
+            activeYouTubeId={activeYouTubeId}
+            onSelectYouTubeId={setActiveYouTubeId}
           />
           {!isMediaSidebarOpen && !anyModalOpen && (
               <button
@@ -189,6 +189,8 @@ export default function App() {
                   setPlayingVfxVideo={setPlayingVfxVideo}
                   pipVideo={pipVideo}
                   setPipVideo={setPipVideo}
+                  activeYouTubeId={activeYouTubeId}
+                  setActiveYouTubeId={setActiveYouTubeId}
                   onPortfolioPlay={() => {
                       setIsPortfolioMediaActive(true);
                   } }
@@ -243,8 +245,6 @@ export default function App() {
                   video={pipVideo}
                   onClose={() => {
                       setPipVideo(null);
-                      setPlayingVfxVideo(null);
-                      setIsPortfolioMediaActive(false);
                   }}
               />
           )}

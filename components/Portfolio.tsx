@@ -25,6 +25,8 @@ interface PortfolioProps {
     setPlayingVfxVideo: (video: VideoWork | null) => void;
     pipVideo: VideoWork | null;
     setPipVideo: (video: VideoWork | null) => void;
+    activeYouTubeId: string;
+    setActiveYouTubeId: (id: string) => void;
     forcePaused?: boolean;
     onPortfolioPlay?: () => void;
 }
@@ -114,10 +116,11 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     setPlayingVfxVideo,
     pipVideo,
     setPipVideo,
+    activeYouTubeId,
+    setActiveYouTubeId,
     forcePaused,
     onPortfolioPlay
 }) => {
-    const [currentYouTubeId, setCurrentYouTubeId] = useState<string>(animeEdits[0]?.videoId || 'oAEDU-nycsE');
     const [ytContainerRef, isYtVisible] = useIntersectionObserver({ threshold: 0.1 });
     const { videos: youtubeVideos } = useYouTubeChannelStats();
     const [currentVideoStats, setCurrentVideoStats] = useState<{ title: string; views: string; likes: string } | null>(null);
@@ -125,18 +128,18 @@ export const Portfolio: React.FC<PortfolioProps> = ({
 
     // YouTube PiP Logic
     useEffect(() => {
-        // If YouTube is the active tab and we scroll away
-        if (activeVfxSubTab === 'anime' && !isYtVisible && currentYouTubeId && !forcePaused) {
+        // If YouTube is the active tab and we scroll away from section
+        if (!isYtVisible && activeYouTubeId && !forcePaused) {
             // Only set if not already in PiP for something else
-            if (!pipVideo || pipVideo.id !== 'yt-pip') {
-                setPipVideo({ id: 'yt-pip', videoId: currentYouTubeId });
+            if (!pipVideo || pipVideo.id !== 'yt-pip' || pipVideo.videoId !== activeYouTubeId) {
+                setPipVideo({ id: 'yt-pip', videoId: activeYouTubeId });
             }
         } 
         // If YouTube section comes back into view, close the PiP
         else if (isYtVisible && pipVideo?.id === 'yt-pip') {
             setPipVideo(null);
         }
-    }, [isYtVisible, activeVfxSubTab, currentYouTubeId, pipVideo, setPipVideo, forcePaused]);
+    }, [isYtVisible, activeYouTubeId, pipVideo, setPipVideo, forcePaused]);
 
     const parallaxStyle = {
       transform: `translateY(${y * -5}px)`,
@@ -180,12 +183,12 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     useEffect(() => { setPlayingVfxVideo(null); }, [activeVfxSubTab, setPlayingVfxVideo]);
 
     useEffect(() => {
-        if (activeVfxSubTab !== 'anime' || !currentYouTubeId) return;
+        if (!activeYouTubeId) return;
         setCurrentVideoStats(null);
         const fetchVideoStats = async () => {
             try {
                 const apiKey = siteConfig.api.youtubeApiKey;
-                const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${currentYouTubeId}&key=${apiKey}`);
+                const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${activeYouTubeId}&key=${apiKey}`);
                 const data = await response.json();
                 if (data.items && data.items.length > 0) {
                     const item = data.items[0];
@@ -203,7 +206,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
             }
         };
         fetchVideoStats();
-    }, [currentYouTubeId, activeVfxSubTab]);
+    }, [activeYouTubeId]);
 
     const GraphicDesignContent = useMemo(() => {
         const categories: GraphicWork['category'][] = ['Photo Manipulation', 'YouTube Thumbnails', 'Banner Designs'];
@@ -289,7 +292,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                          <div className="aspect-video w-full">
                             {(!forcePaused && pipVideo?.id !== 'yt-pip') ? (
                                 <iframe
-                                    src={`https://www.youtube.com/embed/${currentYouTubeId}?autoplay=1&rel=0&showinfo=0&modestbranding=1`}
+                                    src={`https://www.youtube.com/embed/${activeYouTubeId}?autoplay=1&rel=0&showinfo=0&modestbranding=1`}
                                     frameBorder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
@@ -332,10 +335,10 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                 <button
                                     key={video.id}
                                     onClick={() => {
-                                        setCurrentYouTubeId(video.videoId!);
+                                        setActiveYouTubeId(video.videoId!);
                                         if (onPortfolioPlay) onPortfolioPlay();
                                     }}
-                                    className={`relative aspect-video rounded-xl overflow-hidden transition-all duration-300 border border-transparent select-none ${currentYouTubeId === video.videoId ? 'opacity-100 scale-105 z-10 shadow-xl border-white/20' : 'opacity-60 hover:opacity-100'}`}
+                                    className={`relative aspect-video rounded-xl overflow-hidden transition-all duration-300 border border-transparent select-none ${activeYouTubeId === video.videoId ? 'opacity-100 scale-105 z-10 shadow-xl border-white/20' : 'opacity-60 hover:opacity-100'}`}
                                 >
                                     <img src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt="" className="w-full h-full object-cover" />
                                 </button>
@@ -359,7 +362,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 </div>
             )}
         </div>
-    ), [activeVfxSubTab, playingVfxVideo, pipVideo, currentYouTubeId, currentVideoStats, animeEdits, vfxEdits, setActiveVfxSubTab, setPipVideo, openModal, dynamicGraphicWorks, forcePaused, onPortfolioPlay, ytContainerRef]);
+    ), [activeVfxSubTab, playingVfxVideo, pipVideo, activeYouTubeId, currentVideoStats, animeEdits, vfxEdits, setActiveVfxSubTab, setPipVideo, setActiveYouTubeId, forcePaused, onPortfolioPlay, ytContainerRef]);
     
     return (
         <section id="portfolio" className="select-none" style={parallaxStyle}>

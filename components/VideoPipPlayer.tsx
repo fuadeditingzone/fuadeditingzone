@@ -13,7 +13,7 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose }
     const { ref: dragRef, style: dragStyle, isDragging } = useDraggable(handleRef);
     const videoRef = useRef<HTMLVideoElement>(null);
 
-    const [isPlaying, setIsPlaying] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(true);
     const [isMuted, setIsMuted] = useState(false);
 
     const isYouTube = !!video.videoId;
@@ -49,6 +49,11 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose }
         }
     }, [isYouTube]);
 
+    // Force autoplay when switching videos in PiP mode
+    useEffect(() => {
+        setIsPlaying(true);
+    }, [video.videoId, video.url]);
+
     return (
         <div 
             ref={dragRef}
@@ -58,7 +63,8 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose }
             <div className="relative w-full h-full group">
                 {isYouTube ? (
                     <iframe
-                        src={`https://www.youtube.com/embed/${video.videoId}?autoplay=0&mute=${isMuted ? 1 : 0}&rel=0&modestbranding=1`}
+                        key={video.videoId}
+                        src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0&modestbranding=1&enablejsapi=1`}
                         title="YouTube PiP"
                         className="w-full h-full pointer-events-auto"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -66,8 +72,10 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose }
                     ></iframe>
                 ) : (
                     <video 
+                        key={video.url}
                         ref={videoRef}
                         src={video.url} 
+                        autoPlay
                         loop 
                         muted={isMuted}
                         playsInline
