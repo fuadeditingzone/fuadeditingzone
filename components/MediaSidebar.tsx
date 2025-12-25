@@ -69,6 +69,18 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({
         };
     }, [isOpen, activeYouTubeId]);
 
+    // Sync external play/pause state with YouTube player instance
+    useEffect(() => {
+        if (playerRef.current && playerRef.current.getPlayerState) {
+            const state = playerRef.current.getPlayerState();
+            if (isYtPlaying && state !== window.YT.PlayerState.PLAYING) {
+                playerRef.current.playVideo();
+            } else if (!isYtPlaying && state === window.YT.PlayerState.PLAYING) {
+                playerRef.current.pauseVideo();
+            }
+        }
+    }, [isYtPlaying]);
+
     return (
         <div 
             className={`fixed inset-y-0 right-0 z-[80] w-full max-w-md bg-[#0f0f0f] border-l border-white/10 shadow-2xl transform transition-transform duration-500 ease-in-out flex flex-col select-none ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
@@ -83,7 +95,7 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({
                 
                 <button 
                     onClick={onClose}
-                    className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors border border-white/10"
+                    className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors border border-white/10"
                 >
                     <CloseIcon className="w-5 h-5" />
                 </button>

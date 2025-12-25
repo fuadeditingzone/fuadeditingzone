@@ -143,7 +143,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [modalState, singleImageViewerState, handleModalNext, handleModalPrev, handleSingleImageNext, handleSingleImagePrev]);
+  }, [modalState, singleImageViewerState, handleModalNext, handleModalPrev, handleSingleImageNext, handleModalPrev]);
 
   return (
     <ParallaxProvider>
@@ -249,7 +249,11 @@ export default function App() {
               <VideoPipPlayer
                   video={pipVideo}
                   onClose={() => {
+                      // Manual dismissal stops the video entirely to prevent re-opening
                       setPipVideo(null);
+                      setPlayingVfxVideo(null);
+                      setIsYtPlaying(false);
+                      setIsPortfolioMediaActive(false);
                   }}
               />
           )}

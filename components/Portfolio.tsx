@@ -62,8 +62,9 @@ const VfxVideoPlayer: React.FC<{
         } else {
             videoEl.pause();
             if (videoEl.currentTime !== 0) videoEl.currentTime = 0;
+            if (!currentlyPlaying) setHasActuallyPlayed(false); // Reset on full stop
         }
-    }, [isPlaying, isThisVideoInPip]);
+    }, [isPlaying, isThisVideoInPip, currentlyPlaying]);
 
     // Picture-in-Picture Logic for local/dropbox videos
     useEffect(() => {
@@ -148,7 +149,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         playerRef.current = new window.YT.Player('youtube-portfolio-player', {
             videoId: activeYouTubeId,
             playerVars: {
-                autoplay: isYtPlaying ? 1 : 0, // Keep state if switching tabs but already playing
+                autoplay: isYtPlaying ? 1 : 0,
                 modestbranding: 1,
                 rel: 0,
                 showinfo: 0
@@ -173,16 +174,25 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         };
     }, [isYouTubeApiReady, activeYouTubeId, activeVfxSubTab]);
 
-    // YouTube PiP Logic
+    // Sync external play/pause state with YouTube player instance
     useEffect(() => {
-        // If YouTube is actively playing and we scroll away from section
+        if (playerRef.current && playerRef.current.getPlayerState) {
+            const state = playerRef.current.getPlayerState();
+            if (isYtPlaying && state !== window.YT.PlayerState.PLAYING) {
+                playerRef.current.playVideo();
+            } else if (!isYtPlaying && state === window.YT.PlayerState.PLAYING) {
+                playerRef.current.pauseVideo();
+            }
+        }
+    }, [isYtPlaying]);
+
+    // YouTube PiP Logic: When playing and out of view, show PiP
+    useEffect(() => {
         if (!isYtVisible && isYtPlaying && activeYouTubeId && !forcePaused) {
-            // Only set if not already in PiP for something else
             if (!pipVideo || pipVideo.id !== 'yt-pip' || pipVideo.videoId !== activeYouTubeId) {
                 setPipVideo({ id: 'yt-pip', videoId: activeYouTubeId });
             }
         } 
-        // If YouTube section comes back into view, close the PiP
         else if (isYtVisible && pipVideo?.id === 'yt-pip') {
             setPipVideo(null);
         }
@@ -335,23 +345,43 @@ export const Portfolio: React.FC<PortfolioProps> = ({
 
             {activeVfxSubTab === 'anime' ? (
                 <div className="space-y-6" ref={ytContainerRef}>
-                    <InteractiveCard className={`w-full max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10 transition-opacity duration-500 ${pipVideo?.id === 'yt-pip' ? 'opacity-30 pointer-events-none' : ''}`}>
-                         <div className="aspect-video w-full">
-                            {(!forcePaused && pipVideo?.id !== 'yt-pip') ? (
+                    <InteractiveCard className={`w-full max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10 transition-opacity duration-500`}>
+                         <div className="aspect-video w-full relative">
+                            {(!forcePaused) ? (
                                 <div id="youtube-portfolio-player" className="w-full h-full"></div>
                             ) : (
                                 <div className="w-full h-full bg-black flex items-center justify-center">
                                     <div className="text-gray-500 text-xs uppercase tracking-widest animate-pulse">
-                                        {forcePaused ? 'Paused for Intro Media' : 'PiP Mode Active'}
+                                        Paused for Intro Media
                                     </div>
+                                </div>
+                            )}
+                            
+                            {/* PiP Overlay: Shows active feedback when user is in PiP mode */}
+                            {pipVideo?.id === 'yt-pip' && (
+                                <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 transition-all duration-500">
+                                    <div className="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mb-4 ring-2 ring-red-600 animate-pulse">
+                                        <PlayIcon className="w-8 h-8 text-red-600 ml-1" />
+                                    </div>
+                                    <h4 className="text-white font-bold text-lg mb-2 uppercase tracking-widest">Streaming to Popup</h4>
+                                    <p className="text-gray-400 text-xs font-light max-w-xs">The video is currently active in the floating player. Scroll back up to restore full view.</p>
+                                    <button 
+                                        onClick={() => setPipVideo(null)}
+                                        className="mt-6 text-red-600 text-[10px] font-black uppercase tracking-widest border-b border-red-600/30 hover:border-red-600 transition-all"
+                                    >
+                                        Restore Here
+                                    </button>
                                 </div>
                             )}
                          </div>
                          
                          <div className="bg-[#0f0f0f] p-4 md:p-6 border-t border-white/5 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center min-h-[80px] select-none">
-                            <h3 className="text-white font-semibold text-lg md:text-xl break-words">
-                                {currentVideoStats ? currentVideoStats.title : 'Loading video stats...'}
-                            </h3>
+                            <div className="flex items-center gap-3">
+                                {isYtPlaying && <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse shadow-[0_0_10px_rgba(220,38,38,1)]"></div>}
+                                <h3 className="text-white font-semibold text-lg md:text-xl break-words">
+                                    {currentVideoStats ? currentVideoStats.title : 'Loading video stats...'}
+                                </h3>
+                            </div>
                             
                             {currentVideoStats && (
                                 <div className="flex items-center gap-6 flex-shrink-0 animate-fade-in mt-2 md:mt-0">
@@ -380,9 +410,20 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                         setIsYtPlaying(true); // Autoplay on thumbnail selection
                                         if (onPortfolioPlay) onPortfolioPlay();
                                     }}
-                                    className={`relative aspect-video rounded-xl overflow-hidden transition-all duration-300 border border-transparent select-none ${activeYouTubeId === video.videoId ? 'opacity-100 scale-105 z-10 shadow-xl border-white/20' : 'opacity-60 hover:opacity-100'}`}
+                                    className={`relative aspect-video rounded-xl overflow-hidden transition-all duration-300 border border-transparent select-none ${activeYouTubeId === video.videoId ? 'opacity-100 scale-105 z-10 shadow-xl border-white/20 ring-2 ring-red-600' : 'opacity-60 hover:opacity-100'}`}
                                 >
                                     <img src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt="" className="w-full h-full object-cover" />
+                                    {activeYouTubeId === video.videoId && isYtPlaying && (
+                                        <div className="absolute inset-0 bg-red-600/10 flex items-center justify-center">
+                                            <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                                                <div className="flex gap-1 items-center">
+                                                    <div className="w-0.5 h-3 bg-white animate-[bounce_1s_infinite]"></div>
+                                                    <div className="w-0.5 h-4 bg-white animate-[bounce_1.2s_infinite]"></div>
+                                                    <div className="w-0.5 h-2 bg-white animate-[bounce_0.8s_infinite]"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </button>
                             ) : null
                         ))}
