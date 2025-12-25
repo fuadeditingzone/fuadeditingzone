@@ -177,13 +177,24 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     useEffect(() => {
         if (playerRef.current && playerRef.current.getPlayerState) {
             const state = playerRef.current.getPlayerState();
+            const isPipActive = pipVideo?.id === 'yt-pip';
+
+            // IMPORTANT: If PiP is active, the main section MUST pause to avoid dual audio
+            if (isPipActive) {
+                if (state === window.YT.PlayerState.PLAYING) {
+                    playerRef.current.pauseVideo();
+                }
+                return;
+            }
+
+            // Standard synchronization when main section is active
             if (isYtPlaying && state !== window.YT.PlayerState.PLAYING) {
                 playerRef.current.playVideo();
             } else if (!isYtPlaying && state === window.YT.PlayerState.PLAYING) {
                 playerRef.current.pauseVideo();
             }
         }
-    }, [isYtPlaying]);
+    }, [isYtPlaying, pipVideo]);
 
     // YouTube PiP Logic: When playing and out of view, show PiP
     useEffect(() => {
@@ -194,6 +205,10 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         } 
         else if (isYtVisible && pipVideo?.id === 'yt-pip') {
             setPipVideo(null);
+            // Re-trigger playback if it was playing in PiP
+            if (isYtPlaying && playerRef.current && playerRef.current.playVideo) {
+                playerRef.current.playVideo();
+            }
         }
     }, [isYtVisible, activeYouTubeId, isYtPlaying, pipVideo, setPipVideo, forcePaused]);
 
@@ -356,7 +371,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                 </div>
                             )}
                             
-                            {/* NEW: Seamless Sync UI - Integrated visualizer instead of popup-style overlay */}
+                            {/* Seamless Sync UI - Visible when user is playing video but scrolled away */}
                             {pipVideo?.id === 'yt-pip' && (
                                 <div className="absolute inset-0 z-20 bg-black/40 backdrop-blur-[12px] flex flex-col items-center justify-center text-center p-6 transition-all duration-500">
                                     <div className="flex items-end gap-1.5 h-16 mb-8">
