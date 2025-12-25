@@ -17,7 +17,7 @@ const allMedia = [
     ...vfxEdits.map(item => ({ type: 'video' as const, url: item.url, id: `v-${item.id}` }))
 ];
 
-const GRID_SIZE = 25; // 5x5 grid
+const GRID_SIZE = 36; // 6x6 grid for more density
 
 const getShuffledMedia = () => {
     const shuffled = shuffleArray(allMedia);
@@ -32,39 +32,36 @@ const getShuffledMedia = () => {
 const GridLayer: React.FC<{ items: typeof allMedia; isVisible: boolean }> = React.memo(({ items, isVisible }) => {
     const gridRef = useRef<HTMLDivElement>(null);
 
-    // This effect ensures the grid videos continue to play even if the browser
-    // tries to pause them for performance reasons.
     useEffect(() => {
         const interval = setInterval(() => {
             if (gridRef.current) {
                 const videos = gridRef.current.querySelectorAll('video');
                 videos.forEach(video => {
                     if (video.paused) {
-                        video.play().catch(() => {
-                            // Ignore errors that might occur if the play request is interrupted.
-                        });
+                        video.play().catch(() => {});
                     }
                 });
             }
-        }, 2000); // Check every 2 seconds
+        }, 2000);
 
         return () => clearInterval(interval);
     }, []);
 
     return (
-        <div ref={gridRef} className={`absolute inset-0 grid grid-cols-5 grid-rows-5 gap-2 transition-opacity duration-[2000ms] ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+        <div ref={gridRef} className={`absolute inset-0 grid grid-cols-4 md:grid-cols-6 grid-rows-9 md:grid-rows-6 gap-1 md:gap-2 transition-opacity duration-[2500ms] ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
             {items.map((item, index) => (
-                <div key={`${item.id}-${index}`} className="relative w-full h-full rounded-md overflow-hidden bg-black shadow-lg">
-                    {/* Main content, covering the cell without blur */}
+                <div key={`${item.id}-${index}`} className="relative w-full h-full rounded-sm md:rounded-lg overflow-hidden bg-black shadow-lg border border-white/5 group">
+                    {/* Main content */}
                     {item.type === 'image' && (
-                        <img src={item.url} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                        <img src={item.url} alt="" className="absolute inset-0 w-full h-full object-cover grayscale-[0.3] brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700" loading="lazy" />
                     )}
                     {item.type === 'video' && item.url && (
-                        <video src={item.url} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover" />
+                        <video src={item.url} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover brightness-75 group-hover:brightness-100 transition-all duration-700" />
                     )}
 
-                    {/* Overlays */}
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(80,0,0,0.6)_0%,rgba(0,0,0,0.6)_80%)]"></div>
+                    {/* Subtle Overlay to make it feel "part of the background" */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                    <div className="absolute inset-0 bg-red-900/5 mix-blend-color"></div>
                 </div>
             ))}
         </div>
@@ -94,24 +91,28 @@ export const MediaGridBackground: React.FC = () => {
                 setGridOneItems(getShuffledMedia());
             }
             setIsGridOneVisible(prev => !prev);
-        }, 30000);
+        }, 25000); // Cross-fade every 25 seconds
 
         return () => clearInterval(intervalId);
     }, [isGridOneVisible]);
 
     const containerStyle = {
-        transform: `perspective(1200px) rotateX(${y * 3}deg) rotateY(${x * 3}deg) scale(1.2)`,
-        transition: 'transform 0.2s ease-out',
+        transform: `perspective(1500px) rotateX(${y * 4}deg) rotateY(${x * 4}deg) scale(1.15)`,
+        transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         willChange: 'transform' as const,
     };
 
     return (
         <div 
-            className="fixed inset-[-20%] -z-10 pointer-events-none opacity-40"
+            className="fixed inset-[-10%] -z-10 pointer-events-none opacity-60 md:opacity-75"
             style={containerStyle}
         >
             <GridLayer items={gridOneItems} isVisible={isGridOneVisible} />
             <GridLayer items={gridTwoItems} isVisible={!isGridOneVisible} />
+            
+            {/* Global vignettes for depth */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)]"></div>
+            <div className="absolute inset-0 bg-black/30"></div>
         </div>
     );
 };
