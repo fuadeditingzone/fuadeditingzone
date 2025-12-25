@@ -54,7 +54,6 @@ const VfxVideoPlayer: React.FC<{
     const [hasActuallyPlayed, setHasActuallyPlayed] = useState(false);
 
     const isPlaying = currentlyPlaying?.id === video.id && !forcePaused;
-    const isProjectVideo = currentlyPlaying?.id === video.id;
     const isThisVideoInPip = pipVideo?.id === video.id;
 
     useEffect(() => {
@@ -379,8 +378,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         const leftAnimeEdits = animeEdits.slice(0, middleIndex);
         const rightAnimeEdits = animeEdits.slice(middleIndex);
 
-        // FIX: Added 'key' to props definition for ThumbnailButton to fix TypeScript errors when used in map.
-        // Also removed redundant 'key' on internal button element.
         const ThumbnailButton = ({ video, index }: { video: VideoWork; index: number; key?: React.Key }) => (
             video.videoId ? (
                 <button
@@ -390,38 +387,44 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                         setCurrentTime(0); 
                         if (onPortfolioPlay) onPortfolioPlay();
                     }}
-                    className={`relative w-full aspect-video rounded-xl overflow-hidden transition-all duration-300 border border-transparent select-none group/thumb ${activeYouTubeId === video.videoId ? 'opacity-100 scale-105 z-10 shadow-xl border-white/20 ring-2 ring-red-600' : 'opacity-40 hover:opacity-100'}`}
+                    className={`relative w-full aspect-video rounded-xl transition-all duration-300 border border-transparent select-none group/thumb bg-black/40 p-0.5 ${activeYouTubeId === video.videoId ? 'opacity-100 scale-105 z-10 shadow-xl border-white/20 ring-2 ring-red-600' : 'opacity-40 hover:opacity-100'}`}
                 >
-                    <img src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover/thumb:scale-110" />
-                    {activeYouTubeId === video.videoId && isYtPlaying && (
-                        <div className="absolute inset-0 bg-red-600/10 flex items-center justify-center">
-                            <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                                <div className="flex gap-1 items-center">
-                                    <div className="w-0.5 h-3 bg-white animate-[bounce_1s_infinite]"></div>
-                                    <div className="w-0.5 h-4 bg-white animate-[bounce_1.2s_infinite]"></div>
-                                    <div className="w-0.5 h-2 bg-white animate-[bounce_0.8s_infinite]"></div>
+                    <div className="w-full h-full rounded-[10px] overflow-hidden relative">
+                        <img 
+                            src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} 
+                            alt="" 
+                            className="w-full h-full object-contain transition-transform duration-500 group-hover/thumb:scale-110" 
+                        />
+                        {activeYouTubeId === video.videoId && isYtPlaying && (
+                            <div className="absolute inset-0 bg-red-600/10 flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                                    <div className="flex gap-1 items-center">
+                                        <div className="w-0.5 h-3 bg-white animate-[bounce_1s_infinite]"></div>
+                                        <div className="w-0.5 h-4 bg-white animate-[bounce_1.2s_infinite]"></div>
+                                        <div className="w-0.5 h-2 bg-white animate-[bounce_0.8s_infinite]"></div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                    <div className="absolute inset-0 bg-black/20 group-hover/thumb:bg-transparent transition-colors"></div>
+                        )}
+                        <div className="absolute inset-0 bg-black/10 group-hover/thumb:bg-transparent transition-colors"></div>
+                    </div>
                 </button>
             ) : null
         );
 
         return (
-            <div className="space-y-12 animate-fade-in">
-                 <div className="flex justify-center select-none">
-                    <div className="inline-flex items-center justify-center gap-4">
+            <div className="space-y-8 md:space-y-12 animate-fade-in">
+                 <div className="flex justify-center select-none px-2">
+                    <div className="inline-flex items-center justify-center gap-2 md:gap-4 w-full md:w-auto">
                         <button
                             onClick={() => setActiveVfxSubTab('anime')}
-                            className={`btn-angular btn-3d px-8 py-3 text-sm font-bold transition-all duration-300 ${activeVfxSubTab === 'anime' ? 'bg-red-600 text-white shadow-lg' : 'bg-transparent text-gray-300 hover:bg-white/20 hover:text-white'}`}
+                            className={`flex-1 md:flex-none btn-angular btn-3d px-4 md:px-8 py-2.5 md:py-3 text-[11px] md:text-sm font-bold transition-all duration-300 ${activeVfxSubTab === 'anime' ? 'bg-red-600 text-white shadow-lg' : 'bg-transparent text-gray-300 hover:bg-white/20 hover:text-white border border-white/5'}`}
                         >
                             YouTube Edits
                         </button>
                         <button
                             onClick={() => setActiveVfxSubTab('vfxEdits')}
-                            className={`btn-angular btn-3d px-8 py-3 text-sm font-bold transition-all duration-300 ${activeVfxSubTab === 'vfxEdits' ? 'bg-red-600 text-white shadow-lg' : 'bg-transparent text-gray-300 hover:bg-white/20 hover:text-white'}`}
+                            className={`flex-1 md:flex-none btn-angular btn-3d px-4 md:px-8 py-2.5 md:py-3 text-[11px] md:text-sm font-bold transition-all duration-300 ${activeVfxSubTab === 'vfxEdits' ? 'bg-red-600 text-white shadow-lg' : 'bg-transparent text-gray-300 hover:bg-white/20 hover:text-white border border-white/5'}`}
                         >
                             Cinematic VFX
                         </button>
@@ -429,16 +432,16 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 </div>
 
                 {activeVfxSubTab === 'anime' ? (
-                    <div className="lg:flex lg:gap-10 lg:items-start max-w-[1600px] mx-auto" ref={ytContainerRef}>
+                    <div className="lg:flex lg:gap-12 lg:items-start max-w-[1700px] mx-auto" ref={ytContainerRef}>
                         {/* Left Side Gallery (Desktop) */}
-                        <div className="hidden lg:flex flex-col gap-4 w-[240px] flex-shrink-0 h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/50 pr-2 pt-2">
-                             <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black mb-1 px-1">Visual Anthology A</div>
+                        <div className="hidden lg:flex flex-col gap-6 w-[300px] flex-shrink-0 h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/50 px-4 pt-2">
+                             <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black mb-1 px-1">Playlist A</div>
                              {leftAnimeEdits.map((video, idx) => <ThumbnailButton key={video.id} video={video} index={idx} />)}
                         </div>
 
                         {/* Main Center Player - Enlarged */}
-                        <div className="flex-1 space-y-6">
-                            <InteractiveCard className={`w-full mx-auto rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10 transition-opacity duration-500`}>
+                        <div className="flex-1 space-y-6 md:space-y-8">
+                            <InteractiveCard className={`w-full mx-auto rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10 transition-opacity duration-500`}>
                                  <div className="aspect-video w-full relative">
                                     {(!forcePaused) ? (
                                         <div id="youtube-portfolio-player" className="w-full h-full"></div>
@@ -451,24 +454,24 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                     )}
                                     
                                     {pipVideo?.id === 'yt-pip' && (
-                                        <div className="absolute inset-0 z-20 bg-black/40 backdrop-blur-[12px] flex flex-col items-center justify-center text-center p-6 transition-all duration-500">
-                                            <div className="flex items-end gap-1.5 h-16 mb-8">
-                                                <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.1s]" style={{ height: '40%' }}></div>
-                                                <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.3s]" style={{ height: '70%' }}></div>
-                                                <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.2s]" style={{ height: '100%' }}></div>
-                                                <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.4s]" style={{ height: '60%' }}></div>
-                                                <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.1s]" style={{ height: '80%' }}></div>
+                                        <div className="absolute inset-0 z-20 bg-black/40 backdrop-blur-[12px] flex flex-col items-center justify-center text-center p-4 md:p-6 transition-all duration-500">
+                                            <div className="flex items-end gap-1 md:gap-1.5 h-12 md:h-16 mb-6 md:mb-8">
+                                                <div className="w-1 md:w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.1s]" style={{ height: '40%' }}></div>
+                                                <div className="w-1 md:w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.3s]" style={{ height: '70%' }}></div>
+                                                <div className="w-1 md:w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.2s]" style={{ height: '100%' }}></div>
+                                                <div className="w-1 md:w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.4s]" style={{ height: '60%' }}></div>
+                                                <div className="w-1 md:w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.1s]" style={{ height: '80%' }}></div>
                                             </div>
-                                            <div className="space-y-2">
+                                            <div className="space-y-1 md:space-y-2">
                                                 <div className="flex items-center justify-center gap-2 text-white">
-                                                    <SparklesIcon className="w-4 h-4 text-red-500 animate-spin-slow" />
-                                                    <h4 className="font-bold text-sm md:text-lg uppercase tracking-[0.2em]">Live Sync Active</h4>
+                                                    <SparklesIcon className="w-3.5 h-3.5 md:w-4 h-4 text-red-500 animate-spin-slow" />
+                                                    <h4 className="font-bold text-[11px] md:text-lg uppercase tracking-[0.2em]">Live Sync Active</h4>
                                                 </div>
-                                                <p className="text-gray-400 text-[10px] md:text-xs font-medium uppercase tracking-widest opacity-80">Playing on Mini-Player</p>
+                                                <p className="text-gray-400 text-[9px] md:text-xs font-medium uppercase tracking-widest opacity-80">Playing on Mini-Player</p>
                                             </div>
                                             <button 
                                                 onClick={() => setPipVideo(null)}
-                                                className="mt-8 bg-white/5 hover:bg-red-600 border border-white/10 hover:border-red-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                                                className="mt-6 md:mt-8 bg-white/5 hover:bg-red-600 border border-white/10 hover:border-red-600 text-white px-5 md:px-6 py-1.5 md:py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all duration-300 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
                                             >
                                                 Restore Main Screen
                                             </button>
@@ -476,25 +479,25 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                     )}
                                  </div>
                                  
-                                 <div className="bg-[#0f0f0f] p-4 md:p-8 border-t border-white/5 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center min-h-[100px] select-none">
-                                    <div className="flex items-center gap-4">
-                                        {isYtPlaying && <div className="w-2.5 h-2.5 bg-red-600 rounded-full animate-pulse shadow-[0_0_12px_rgba(220,38,38,1)]"></div>}
-                                        <h3 className="text-white font-semibold text-xl md:text-3xl break-words tracking-tight">
+                                 <div className="bg-[#0f0f0f] p-4 md:p-10 border-t border-white/5 flex flex-col md:flex-row gap-4 md:gap-6 justify-between items-start md:items-center min-h-[90px] md:min-h-[120px] select-none">
+                                    <div className="flex items-center gap-3 md:gap-5 w-full md:w-auto">
+                                        {isYtPlaying && <div className="w-2 h-2 md:w-3 md:h-3 bg-red-600 rounded-full animate-pulse shadow-[0_0_15px_rgba(220,38,38,1)] flex-shrink-0"></div>}
+                                        <h3 className="text-white font-bold text-lg md:text-4xl break-words tracking-tight leading-tight line-clamp-2">
                                             {currentVideoStats ? currentVideoStats.title : 'Syncing cinematic data...'}
                                         </h3>
                                     </div>
                                     
                                     {currentVideoStats && (
-                                        <div className="flex items-center gap-6 flex-shrink-0 animate-fade-in mt-2 md:mt-0">
-                                            <div className="flex items-center gap-2 text-gray-300 bg-white/5 px-6 py-3 rounded-full border border-white/10">
-                                                <GlobeAltIcon className="w-5 h-5" />
-                                                <span className="font-bold text-base">{currentVideoStats.views}</span>
-                                                <span className="text-xs text-gray-500 uppercase tracking-wide">Views</span>
+                                        <div className="flex items-center gap-4 md:gap-8 flex-shrink-0 animate-fade-in mt-2 md:mt-0 w-full md:w-auto overflow-hidden">
+                                            <div className="flex-1 md:flex-none flex items-center gap-2 md:gap-3 text-gray-300 bg-white/5 px-4 md:px-8 py-2 md:py-4 rounded-full border border-white/10">
+                                                <GlobeAltIcon className="w-4 h-4 md:w-6 md:h-6" />
+                                                <span className="font-bold text-xs md:text-lg">{currentVideoStats.views}</span>
+                                                <span className="text-[7px] md:text-xs text-gray-500 uppercase tracking-widest">Views</span>
                                             </div>
-                                            <div className="flex items-center gap-2 text-gray-300 bg-white/5 px-6 py-3 rounded-full border border-white/10">
-                                                <HandThumbUpIcon className="w-5 h-5 text-red-500" />
-                                                <span className="font-bold text-base">{currentVideoStats.likes}</span>
-                                                <span className="text-xs text-gray-500 uppercase tracking-wide">Likes</span>
+                                            <div className="flex-1 md:flex-none flex items-center gap-2 md:gap-3 text-gray-300 bg-white/5 px-4 md:px-8 py-2 md:py-4 rounded-full border border-white/10">
+                                                <HandThumbUpIcon className="w-4 h-4 md:w-6 md:h-6 text-red-500" />
+                                                <span className="font-bold text-xs md:text-lg">{currentVideoStats.likes}</span>
+                                                <span className="text-[7px] md:text-xs text-gray-500 uppercase tracking-widest">Likes</span>
                                             </div>
                                         </div>
                                     )}
@@ -502,19 +505,19 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                             </InteractiveCard>
 
                             {/* Mobile Grid Thumbs (Visible on Mobile/Tablet) */}
-                            <div className="lg:hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-5xl mx-auto pt-4">
+                            <div className="lg:hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-4 max-w-5xl mx-auto pt-2 px-1">
                                 {animeEdits.map((video, idx) => <ThumbnailButton key={video.id} video={video} index={idx} />)}
                             </div>
                         </div>
 
                         {/* Right Side Gallery (Desktop) */}
-                        <div className="hidden lg:flex flex-col gap-4 w-[240px] flex-shrink-0 h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/50 pl-2 pt-2">
-                             <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black mb-1 px-1 text-right">Visual Anthology B</div>
+                        <div className="hidden lg:flex flex-col gap-6 w-[300px] flex-shrink-0 h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/50 px-4 pt-2">
+                             <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black mb-1 px-1 text-right">Playlist B</div>
                              {rightAnimeEdits.map((video, idx) => <ThumbnailButton key={video.id} video={video} index={idx} />)}
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-8">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-8 px-1">
                        {vfxEdits.map((video) => (
                             <VfxVideoPlayer 
                                 key={video.id} 
@@ -536,32 +539,34 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     
     return (
         <section id="portfolio" className="select-none" style={parallaxStyle}>
-            <div className="max-w-[1700px] mx-auto space-y-32 py-16 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-[1800px] mx-auto space-y-16 md:space-y-32 py-12 md:py-16 px-2 sm:px-6 lg:px-8">
+                {/* Graphic Design Section */}
                 <div className="relative">
                     <div 
-                        className="absolute -inset-y-4 -inset-x-0 sm:-inset-6 md:-inset-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl"
+                        className="absolute -inset-y-2 md:-inset-y-4 -inset-x-0 sm:-inset-6 md:-inset-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl md:rounded-3xl"
                         style={{
-                            transform: 'perspective(2000px) rotateY(-1deg)',
+                            transform: window.innerWidth > 768 ? 'perspective(2000px) rotateY(-1deg)' : 'none',
                         }}
                     ></div>
-                    <div className="relative p-6 md:p-8">
-                        <div className="text-center mb-8">
-                            <h2 className="text-3xl md:text-4xl font-bold text-white">Graphic Design</h2>
+                    <div className="relative p-3 md:p-8">
+                        <div className="text-center mb-6 md:mb-8">
+                            <h2 className="text-2xl md:text-4xl font-bold text-white uppercase tracking-tight">Graphic Design</h2>
                         </div>
                         {GraphicDesignContent}
                     </div>
                 </div>
 
-                <div id="video-editing" className="pt-16 relative">
+                {/* Video Editing Section */}
+                <div id="video-editing" className="pt-8 md:pt-16 relative">
                     <div 
-                        className="absolute -inset-y-4 -inset-x-0 sm:-inset-6 md:-inset-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl"
+                        className="absolute -inset-y-2 md:-inset-y-4 -inset-x-0 sm:-inset-6 md:-inset-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl md:rounded-3xl"
                         style={{
-                            transform: 'perspective(2000px) rotateY(1deg)',
+                            transform: window.innerWidth > 768 ? 'perspective(2000px) rotateY(1deg)' : 'none',
                         }}
                     ></div>
-                    <div className="relative p-6 md:p-8">
-                        <div className="text-center mb-16">
-                             <h2 className="text-3xl md:text-4xl font-bold text-white">Video Editing</h2>
+                    <div className="relative p-3 md:p-8">
+                        <div className="text-center mb-10 md:mb-16">
+                             <h2 className="text-2xl md:text-4xl font-bold text-white uppercase tracking-tight">Video Editing</h2>
                         </div>
                         {VfxContent}
                     </div>
