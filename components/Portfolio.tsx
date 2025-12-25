@@ -394,7 +394,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
 
             {activeVfxSubTab === 'anime' ? (
                 <div className="space-y-6" ref={ytContainerRef}>
-                    <InteractiveCard className={`w-full max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10 transition-opacity duration-500`}>
+                    <InteractiveCard className={`w-full max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10 transition-opacity duration-500`}>
                          <div className="aspect-video w-full relative">
                             {(!forcePaused) ? (
                                 <div id="youtube-portfolio-player" className="w-full h-full"></div>
@@ -457,7 +457,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                          </div>
                     </InteractiveCard>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 max-w-6xl mx-auto pt-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 max-w-5xl mx-auto pt-4">
                         {animeEdits.map((video) => (
                             video.videoId ? (
                                 <button

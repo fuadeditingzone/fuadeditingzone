@@ -19,6 +19,7 @@ import { MediaGridBackground } from './components/MediaGridBackground';
 import { ServicesListPopup } from './components/ServicesListPopup';
 import { VideoPipPlayer } from './components/VideoPipPlayer';
 import { ServiceSelectionModal } from './components/ServiceSelectionModal';
+import { YouTubeRedirectPopup } from './components/YouTubeRedirectPopup';
 
 export default function App() {
   // --- UI State ---
@@ -32,6 +33,7 @@ export default function App() {
   const [isMediaSidebarOpen, setIsMediaSidebarOpen] = useState(false);
   const [isServicesPopupOpen, setIsServicesPopupOpen] = useState(false);
   const [selectionTarget, setSelectionTarget] = useState<'whatsapp' | 'email' | null>(null);
+  const [isYouTubeRedirectOpen, setIsYouTubeRedirectOpen] = useState(false);
   
   // --- Global Video State ---
   const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.content.portfolio.animeEdits[0]?.videoId || '');
@@ -58,7 +60,7 @@ export default function App() {
     ];
   }, []);
 
-  const anyModalOpen = modalState || isGalleryGridOpen || !!singleImageViewerState || isSpecialServicesOpen || isServicesPopupOpen || !!selectionTarget;
+  const anyModalOpen = modalState || isGalleryGridOpen || !!singleImageViewerState || isSpecialServicesOpen || isServicesPopupOpen || !!selectionTarget || isYouTubeRedirectOpen;
 
   const handleSpecialServicesClosed = () => {
       setIsSpecialServicesOpen(false);
@@ -169,6 +171,7 @@ export default function App() {
             onSelectYouTubeId={setActiveYouTubeId}
             isYtPlaying={isYtPlaying}
             setIsYtPlaying={setIsYtPlaying}
+            onYouTubeClick={() => setIsYouTubeRedirectOpen(true)}
           />
           {!isMediaSidebarOpen && !anyModalOpen && (
               <button
@@ -184,6 +187,7 @@ export default function App() {
               <Home 
                 onOpenServices={() => setIsServicesPopupOpen(true)} 
                 onOrderNow={() => handleScrollTo('contact')}
+                onYouTubeClick={() => setIsYouTubeRedirectOpen(true)}
               />
               <Portfolio 
                   openModal={handleOpenModal}
@@ -247,6 +251,17 @@ export default function App() {
                     platform={selectionTarget} 
                     onClose={() => setSelectionTarget(null)} 
                 />
+          )}
+
+          {isYouTubeRedirectOpen && (
+              <YouTubeRedirectPopup 
+                  onClose={() => setIsYouTubeRedirectOpen(false)}
+                  onConfirm={() => {
+                      setIsYouTubeRedirectOpen(false);
+                      setIsMediaSidebarOpen(false);
+                      handleScrollTo('video-editing');
+                  }}
+              />
           )}
 
           {pipVideo && (

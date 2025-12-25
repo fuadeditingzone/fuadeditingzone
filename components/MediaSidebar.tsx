@@ -11,6 +11,7 @@ interface MediaSidebarProps {
     isYtPlaying: boolean;
     setIsYtPlaying: (playing: boolean) => void;
     forcePaused?: boolean;
+    onYouTubeClick?: () => void;
 }
 
 export const MediaSidebar: React.FC<MediaSidebarProps> = ({ 
@@ -20,7 +21,8 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({
     onSelectYouTubeId, 
     isYtPlaying,
     setIsYtPlaying,
-    forcePaused 
+    forcePaused,
+    onYouTubeClick
 }) => {
     const { videos, loading, stats, formatNumber } = useYouTubeChannelStats();
     const playerRef = useRef<any>(null);
@@ -87,10 +89,13 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({
         >
             <div className="flex items-center justify-between p-4 border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl">
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <YouTubeIcon className="w-5 h-5 text-red-600" />
-                        <span className="text-sm font-bold text-white tracking-tight">YouTube</span>
-                    </div>
+                    <button 
+                        onClick={onYouTubeClick}
+                        className="flex items-center gap-2 hover:bg-white/5 px-2 py-1 rounded transition-colors group"
+                    >
+                        <YouTubeIcon className="w-5 h-5 text-red-600 group-hover:scale-110 transition-transform" />
+                        <span className="text-sm font-bold text-white tracking-tight group-hover:text-red-500 transition-colors">YouTube</span>
+                    </button>
                 </div>
                 
                 <button 

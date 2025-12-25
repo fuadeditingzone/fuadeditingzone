@@ -41,11 +41,13 @@ const StretchyCounter: React.FC<{ value: number }> = ({ value }) => {
 interface HomeProps {
   onOpenServices: () => void;
   onOrderNow: () => void;
+  onYouTubeClick?: () => void;
 }
 
 export const Home: React.FC<HomeProps> = ({ 
     onOpenServices, 
-    onOrderNow
+    onOrderNow,
+    onYouTubeClick
 }) => {
     const { stats, loading } = useYouTubeChannelStats();
     const { x, y } = useParallax();
@@ -139,7 +141,12 @@ export const Home: React.FC<HomeProps> = ({
                           <p className="text-lg md:text-3xl font-bold text-white font-mono leading-none">
                               {loading ? '---' : <StretchyCounter value={animatedSubs} />}
                           </p>
-                          <p className="text-[8px] md:text-[10px] text-gray-500 uppercase tracking-widest mt-1">YouTube</p>
+                          <button 
+                            onClick={onYouTubeClick}
+                            className="text-[8px] md:text-[10px] text-gray-500 uppercase tracking-widest mt-1 hover:text-red-500 transition-colors cursor-pointer block"
+                          >
+                            YouTube
+                          </button>
                       </div>
                       <div className="text-left border-l-2 border-white/10 pl-3 md:pl-4">
                           <p className="text-lg md:text-3xl font-bold text-white font-mono leading-none">
