@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import type { GraphicWork, VideoWork, VfxSubTab } from '../hooks/types';
 import { LazyImage } from './LazyImage';
 import { siteConfig } from '../config';
-import { PlayIcon, VolumeOnIcon, VolumeOffIcon, HandThumbUpIcon, GlobeAltIcon } from './Icons';
+import { PlayIcon, VolumeOnIcon, VolumeOffIcon, HandThumbUpIcon, GlobeAltIcon, SparklesIcon } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { InteractiveCard } from './InteractiveCard';
 import { useParallax } from '../contexts/ParallaxContext';
@@ -68,7 +68,6 @@ const VfxVideoPlayer: React.FC<{
 
     // Picture-in-Picture Logic for local/dropbox videos
     useEffect(() => {
-        // Only trigger PiP if it was actively playing (hasActuallyPlayed) and scrolls out of view
         if (isPlaying && hasActuallyPlayed && !isVisible && !isThisVideoInPip) {
             setPipVideo(video);
         }
@@ -357,19 +356,28 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                 </div>
                             )}
                             
-                            {/* PiP Overlay: Shows active feedback when user is in PiP mode */}
+                            {/* NEW: Seamless Sync UI - Integrated visualizer instead of popup-style overlay */}
                             {pipVideo?.id === 'yt-pip' && (
-                                <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 transition-all duration-500">
-                                    <div className="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mb-4 ring-2 ring-red-600 animate-pulse">
-                                        <PlayIcon className="w-8 h-8 text-red-600 ml-1" />
+                                <div className="absolute inset-0 z-20 bg-black/40 backdrop-blur-[12px] flex flex-col items-center justify-center text-center p-6 transition-all duration-500">
+                                    <div className="flex items-end gap-1.5 h-16 mb-8">
+                                        <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.1s]" style={{ height: '40%' }}></div>
+                                        <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.3s]" style={{ height: '70%' }}></div>
+                                        <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.2s]" style={{ height: '100%' }}></div>
+                                        <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.4s]" style={{ height: '60%' }}></div>
+                                        <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.1s]" style={{ height: '80%' }}></div>
                                     </div>
-                                    <h4 className="text-white font-bold text-lg mb-2 uppercase tracking-widest">Streaming to Popup</h4>
-                                    <p className="text-gray-400 text-xs font-light max-w-xs">The video is currently active in the floating player. Scroll back up to restore full view.</p>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-center gap-2 text-white">
+                                            <SparklesIcon className="w-4 h-4 text-red-500 animate-spin-slow" />
+                                            <h4 className="font-bold text-sm md:text-lg uppercase tracking-[0.2em]">Live Sync Active</h4>
+                                        </div>
+                                        <p className="text-gray-400 text-[10px] md:text-xs font-medium uppercase tracking-widest opacity-80">Playing on Mini-Player</p>
+                                    </div>
                                     <button 
                                         onClick={() => setPipVideo(null)}
-                                        className="mt-6 text-red-600 text-[10px] font-black uppercase tracking-widest border-b border-red-600/30 hover:border-red-600 transition-all"
+                                        className="mt-8 bg-white/5 hover:bg-red-600 border border-white/10 hover:border-red-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
                                     >
-                                        Restore Here
+                                        Restore Main Screen
                                     </button>
                                 </div>
                             )}
