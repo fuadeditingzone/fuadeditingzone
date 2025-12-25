@@ -59,13 +59,11 @@ const VfxVideoPlayer: React.FC<{
         }
     }, [isPlaying, isThisVideoInPip]);
 
-    // Picture-in-Picture Logic
+    // Picture-in-Picture Logic for local/dropbox videos
     useEffect(() => {
-        // If this video is playing, but scrolls out of view, and it's not already in PiP, show PiP
         if (isPlaying && !isVisible && !isThisVideoInPip) {
             setPipVideo(video);
         }
-        // If this video is in PiP, but scrolls back into view, close PiP
         if (isThisVideoInPip && isVisible) {
             setPipVideo(null);
         }
@@ -120,11 +118,25 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     onPortfolioPlay
 }) => {
     const [currentYouTubeId, setCurrentYouTubeId] = useState<string>(animeEdits[0]?.videoId || 'oAEDU-nycsE');
-    
+    const [ytContainerRef, isYtVisible] = useIntersectionObserver({ threshold: 0.1 });
     const { videos: youtubeVideos } = useYouTubeChannelStats();
-    
     const [currentVideoStats, setCurrentVideoStats] = useState<{ title: string; views: string; likes: string } | null>(null);
     const { y } = useParallax();
+
+    // YouTube PiP Logic
+    useEffect(() => {
+        // If YouTube is the active tab and we scroll away
+        if (activeVfxSubTab === 'anime' && !isYtVisible && currentYouTubeId && !forcePaused) {
+            // Only set if not already in PiP for something else
+            if (!pipVideo || pipVideo.id !== 'yt-pip') {
+                setPipVideo({ id: 'yt-pip', videoId: currentYouTubeId });
+            }
+        } 
+        // If YouTube section comes back into view, close the PiP
+        else if (isYtVisible && pipVideo?.id === 'yt-pip') {
+            setPipVideo(null);
+        }
+    }, [isYtVisible, activeVfxSubTab, currentYouTubeId, pipVideo, setPipVideo, forcePaused]);
 
     const parallaxStyle = {
       transform: `translateY(${y * -5}px)`,
@@ -272,10 +284,10 @@ export const Portfolio: React.FC<PortfolioProps> = ({
             </div>
 
             {activeVfxSubTab === 'anime' ? (
-                <div className="space-y-6">
-                    <InteractiveCard className="w-full max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10">
+                <div className="space-y-6" ref={ytContainerRef}>
+                    <InteractiveCard className={`w-full max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10 transition-opacity duration-500 ${pipVideo?.id === 'yt-pip' ? 'opacity-30 pointer-events-none' : ''}`}>
                          <div className="aspect-video w-full">
-                            {!forcePaused ? (
+                            {(!forcePaused && pipVideo?.id !== 'yt-pip') ? (
                                 <iframe
                                     src={`https://www.youtube.com/embed/${currentYouTubeId}?autoplay=1&rel=0&showinfo=0&modestbranding=1`}
                                     frameBorder="0"
@@ -285,7 +297,9 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                 ></iframe>
                             ) : (
                                 <div className="w-full h-full bg-black flex items-center justify-center">
-                                    <div className="text-gray-500 text-xs uppercase tracking-widest animate-pulse">Paused for Intro Media</div>
+                                    <div className="text-gray-500 text-xs uppercase tracking-widest animate-pulse">
+                                        {forcePaused ? 'Paused for Intro Media' : 'PiP Mode Active'}
+                                    </div>
                                 </div>
                             )}
                          </div>
@@ -345,7 +359,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 </div>
             )}
         </div>
-    ), [activeVfxSubTab, playingVfxVideo, pipVideo, currentYouTubeId, currentVideoStats, animeEdits, vfxEdits, setActiveVfxSubTab, setPipVideo, openModal, dynamicGraphicWorks, forcePaused, onPortfolioPlay]);
+    ), [activeVfxSubTab, playingVfxVideo, pipVideo, currentYouTubeId, currentVideoStats, animeEdits, vfxEdits, setActiveVfxSubTab, setPipVideo, openModal, dynamicGraphicWorks, forcePaused, onPortfolioPlay, ytContainerRef]);
     
     return (
         <section id="portfolio" className="select-none" style={parallaxStyle}>
