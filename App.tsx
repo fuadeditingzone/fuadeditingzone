@@ -35,6 +35,7 @@ export default function App() {
   
   // --- Global Video State ---
   const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.content.portfolio.animeEdits[0]?.videoId || '');
+  const [isYtPlaying, setIsYtPlaying] = useState(false);
   const [playingVfxVideo, setPlayingVfxVideo] = useState<VideoWork | null>(null);
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
   const [isPortfolioMediaActive, setIsPortfolioMediaActive] = useState(false);
@@ -164,6 +165,8 @@ export default function App() {
             onClose={() => setIsMediaSidebarOpen(false)} 
             activeYouTubeId={activeYouTubeId}
             onSelectYouTubeId={setActiveYouTubeId}
+            isYtPlaying={isYtPlaying}
+            setIsYtPlaying={setIsYtPlaying}
           />
           {!isMediaSidebarOpen && !anyModalOpen && (
               <button
@@ -191,6 +194,8 @@ export default function App() {
                   setPipVideo={setPipVideo}
                   activeYouTubeId={activeYouTubeId}
                   setActiveYouTubeId={setActiveYouTubeId}
+                  isYtPlaying={isYtPlaying}
+                  setIsYtPlaying={setIsYtPlaying}
                   onPortfolioPlay={() => {
                       setIsPortfolioMediaActive(true);
                   } }

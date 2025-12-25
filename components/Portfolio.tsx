@@ -27,6 +27,8 @@ interface PortfolioProps {
     setPipVideo: (video: VideoWork | null) => void;
     activeYouTubeId: string;
     setActiveYouTubeId: (id: string) => void;
+    isYtPlaying: boolean;
+    setIsYtPlaying: (playing: boolean) => void;
     forcePaused?: boolean;
     onPortfolioPlay?: () => void;
 }
@@ -45,6 +47,7 @@ const VfxVideoPlayer: React.FC<{
     const [containerRef, isVisible] = useIntersectionObserver({ threshold: 0.5 });
     const [isMuted, setIsMuted] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
+    const [hasActuallyPlayed, setHasActuallyPlayed] = useState(false);
 
     const isPlaying = currentlyPlaying?.id === video.id && !forcePaused;
     const isThisVideoInPip = pipVideo?.id === video.id;
@@ -55,6 +58,7 @@ const VfxVideoPlayer: React.FC<{
         
         if (isPlaying && !isThisVideoInPip) {
             videoEl.play().catch(() => {});
+            setHasActuallyPlayed(true);
         } else {
             videoEl.pause();
             if (videoEl.currentTime !== 0) videoEl.currentTime = 0;
@@ -63,13 +67,14 @@ const VfxVideoPlayer: React.FC<{
 
     // Picture-in-Picture Logic for local/dropbox videos
     useEffect(() => {
-        if (isPlaying && !isVisible && !isThisVideoInPip) {
+        // Only trigger PiP if it was actively playing (hasActuallyPlayed) and scrolls out of view
+        if (isPlaying && hasActuallyPlayed && !isVisible && !isThisVideoInPip) {
             setPipVideo(video);
         }
         if (isThisVideoInPip && isVisible) {
             setPipVideo(null);
         }
-    }, [isPlaying, isVisible, isThisVideoInPip, video, setPipVideo]);
+    }, [isPlaying, hasActuallyPlayed, isVisible, isThisVideoInPip, video, setPipVideo]);
     
     const handlePlayRequest = () => {
         onPlayRequest(isPlaying ? null : video);
@@ -118,6 +123,8 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     setPipVideo,
     activeYouTubeId,
     setActiveYouTubeId,
+    isYtPlaying,
+    setIsYtPlaying,
     forcePaused,
     onPortfolioPlay
 }) => {
@@ -125,11 +132,51 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     const { videos: youtubeVideos } = useYouTubeChannelStats();
     const [currentVideoStats, setCurrentVideoStats] = useState<{ title: string; views: string; likes: string } | null>(null);
     const { y } = useParallax();
+    const playerRef = useRef<any>(null);
+
+    // Initial player setup
+    useEffect(() => {
+        if (!isYouTubeApiReady || !activeYouTubeId || activeVfxSubTab !== 'anime') return;
+
+        const container = document.getElementById('youtube-portfolio-player');
+        if (!container) return;
+
+        if (playerRef.current) {
+            playerRef.current.destroy();
+        }
+
+        playerRef.current = new window.YT.Player('youtube-portfolio-player', {
+            videoId: activeYouTubeId,
+            playerVars: {
+                autoplay: isYtPlaying ? 1 : 0, // Keep state if switching tabs but already playing
+                modestbranding: 1,
+                rel: 0,
+                showinfo: 0
+            },
+            events: {
+                onStateChange: (event: any) => {
+                    if (event.data === window.YT.PlayerState.PLAYING) {
+                        setIsYtPlaying(true);
+                        if (onPortfolioPlay) onPortfolioPlay();
+                    } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
+                        setIsYtPlaying(false);
+                    }
+                }
+            }
+        });
+
+        return () => {
+            if (playerRef.current) {
+                playerRef.current.destroy();
+                playerRef.current = null;
+            }
+        };
+    }, [isYouTubeApiReady, activeYouTubeId, activeVfxSubTab]);
 
     // YouTube PiP Logic
     useEffect(() => {
-        // If YouTube is the active tab and we scroll away from section
-        if (!isYtVisible && activeYouTubeId && !forcePaused) {
+        // If YouTube is actively playing and we scroll away from section
+        if (!isYtVisible && isYtPlaying && activeYouTubeId && !forcePaused) {
             // Only set if not already in PiP for something else
             if (!pipVideo || pipVideo.id !== 'yt-pip' || pipVideo.videoId !== activeYouTubeId) {
                 setPipVideo({ id: 'yt-pip', videoId: activeYouTubeId });
@@ -139,7 +186,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         else if (isYtVisible && pipVideo?.id === 'yt-pip') {
             setPipVideo(null);
         }
-    }, [isYtVisible, activeYouTubeId, pipVideo, setPipVideo, forcePaused]);
+    }, [isYtVisible, activeYouTubeId, isYtPlaying, pipVideo, setPipVideo, forcePaused]);
 
     const parallaxStyle = {
       transform: `translateY(${y * -5}px)`,
@@ -291,13 +338,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                     <InteractiveCard className={`w-full max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10 transition-opacity duration-500 ${pipVideo?.id === 'yt-pip' ? 'opacity-30 pointer-events-none' : ''}`}>
                          <div className="aspect-video w-full">
                             {(!forcePaused && pipVideo?.id !== 'yt-pip') ? (
-                                <iframe
-                                    src={`https://www.youtube.com/embed/${activeYouTubeId}?autoplay=1&rel=0&showinfo=0&modestbranding=1`}
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                    className="w-full h-full"
-                                ></iframe>
+                                <div id="youtube-portfolio-player" className="w-full h-full"></div>
                             ) : (
                                 <div className="w-full h-full bg-black flex items-center justify-center">
                                     <div className="text-gray-500 text-xs uppercase tracking-widest animate-pulse">
@@ -336,6 +377,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                     key={video.id}
                                     onClick={() => {
                                         setActiveYouTubeId(video.videoId!);
+                                        setIsYtPlaying(true); // Autoplay on thumbnail selection
                                         if (onPortfolioPlay) onPortfolioPlay();
                                     }}
                                     className={`relative aspect-video rounded-xl overflow-hidden transition-all duration-300 border border-transparent select-none ${activeYouTubeId === video.videoId ? 'opacity-100 scale-105 z-10 shadow-xl border-white/20' : 'opacity-60 hover:opacity-100'}`}
@@ -362,7 +404,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 </div>
             )}
         </div>
-    ), [activeVfxSubTab, playingVfxVideo, pipVideo, activeYouTubeId, currentVideoStats, animeEdits, vfxEdits, setActiveVfxSubTab, setPipVideo, setActiveYouTubeId, forcePaused, onPortfolioPlay, ytContainerRef]);
+    ), [activeVfxSubTab, playingVfxVideo, pipVideo, activeYouTubeId, isYtPlaying, currentVideoStats, animeEdits, vfxEdits, setActiveVfxSubTab, setPipVideo, setActiveYouTubeId, setIsYtPlaying, forcePaused, onPortfolioPlay, ytContainerRef, isYouTubeApiReady]);
     
     return (
         <section id="portfolio" className="select-none" style={parallaxStyle}>

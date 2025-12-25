@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { CloseIcon, YouTubeIcon } from './Icons';
 import { siteConfig } from '../config';
@@ -8,14 +8,66 @@ interface MediaSidebarProps {
     onClose: () => void;
     activeYouTubeId: string;
     onSelectYouTubeId: (id: string) => void;
+    isYtPlaying: boolean;
+    setIsYtPlaying: (playing: boolean) => void;
     forcePaused?: boolean;
 }
 
-export const MediaSidebar: React.FC<MediaSidebarProps> = ({ isOpen, onClose, activeYouTubeId, onSelectYouTubeId, forcePaused }) => {
+export const MediaSidebar: React.FC<MediaSidebarProps> = ({ 
+    isOpen, 
+    onClose, 
+    activeYouTubeId, 
+    onSelectYouTubeId, 
+    isYtPlaying,
+    setIsYtPlaying,
+    forcePaused 
+}) => {
     const { videos, loading, stats, formatNumber } = useYouTubeChannelStats();
+    const playerRef = useRef<any>(null);
 
     const channelName = stats.channelTitle || siteConfig.branding.name;
     const channelImage = stats.channelProfilePic || siteConfig.branding.profilePicUrl;
+
+    useEffect(() => {
+        if (!isOpen || !activeYouTubeId) return;
+
+        // Give a tiny bit for the container to render if it was hidden
+        const timer = setTimeout(() => {
+            const container = document.getElementById('youtube-sidebar-player');
+            if (!container) return;
+
+            if (playerRef.current) {
+                playerRef.current.destroy();
+            }
+
+            playerRef.current = new window.YT.Player('youtube-sidebar-player', {
+                videoId: activeYouTubeId,
+                playerVars: {
+                    autoplay: isYtPlaying ? 1 : 0,
+                    modestbranding: 1,
+                    rel: 0,
+                    enablejsapi: 1
+                },
+                events: {
+                    onStateChange: (event: any) => {
+                        if (event.data === window.YT.PlayerState.PLAYING) {
+                            setIsYtPlaying(true);
+                        } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
+                            setIsYtPlaying(false);
+                        }
+                    }
+                }
+            });
+        }, 50);
+
+        return () => {
+            clearTimeout(timer);
+            if (playerRef.current) {
+                playerRef.current.destroy();
+                playerRef.current = null;
+            }
+        };
+    }, [isOpen, activeYouTubeId]);
 
     return (
         <div 
@@ -41,13 +93,7 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({ isOpen, onClose, act
                 
                 <div className="flex-shrink-0 bg-black aspect-video relative border-b border-white/5 shadow-lg z-10">
                     {activeYouTubeId && !forcePaused ? (
-                        <iframe 
-                            src={`https://www.youtube.com/embed/${activeYouTubeId}?autoplay=0&rel=0&modestbranding=1&enablejsapi=1`}
-                            title="YouTube Video Player"
-                            className="w-full h-full"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; identity-credentials-get"
-                            allowFullScreen
-                        ></iframe>
+                        <div id="youtube-sidebar-player" className="w-full h-full"></div>
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-500 flex-col gap-2">
                             {forcePaused ? (
@@ -114,7 +160,10 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({ isOpen, onClose, act
                             videos.map((video) => (
                                 <button
                                     key={video.id}
-                                    onClick={() => onSelectYouTubeId(video.id)}
+                                    onClick={() => {
+                                        onSelectYouTubeId(video.id);
+                                        setIsYtPlaying(true);
+                                    }}
                                     className={`w-full flex gap-3 p-2 rounded-lg transition-all text-left group border border-transparent ${activeYouTubeId === video.id ? 'bg-white/10 border-white/5' : 'hover:bg-white/5'}`}
                                 >
                                     <div className="relative w-32 aspect-video rounded-md overflow-hidden flex-shrink-0 bg-gray-800">
