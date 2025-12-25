@@ -1,0 +1,61 @@
+import type { GraphicWork, VideoWork, Service } from './hooks/types';
+
+export const services: Service[] = [
+    // Graphic Design Category
+    { name: 'Photo Manipulation/Social Media', description: 'Creative photo edits and compelling social media post designs to grab attention and boost engagement.', category: 'Graphic Design', isMain: true, hasBadge: true },
+    { name: 'YouTube Thumbnails', description: 'Click-worthy and high-quality thumbnails designed to maximize your video views and channel growth.', category: 'Graphic Design', isMain: true, hasBadge: true },
+    { name: 'Logo Design & Branding', description: 'Complete branding packages including logo design, color palettes, and style guides to build a strong brand identity.', category: 'Graphic Design', isMain: true, hasBadge: true },
+    { name: 'Banner Designs', description: 'Professional banners for social media profiles (YouTube/Twitter/FB), websites, and advertising campaigns.', category: 'Graphic Design', hasBadge: true },
+    { name: 'Stream Packages', description: 'Custom overlays, alerts, facecam borders, and graphics for streamers on Twitch, YouTube, and Kick.', category: 'Graphic Design' },
+    { name: 'Poster & Flyer Design', description: 'High-impact posters and flyers for events, promotions, or digital marketing that command attention.', category: 'Graphic Design' },
+    { name: 'Social Media Kit', description: 'A complete set of matching profile pictures, covers, and post templates for a consistent online presence.', category: 'Graphic Design' },
+    { name: 'Vector Tracing & Redraw', description: 'Converting low-quality images or sketches into high-quality, infinitely scalable vector graphics.', category: 'Graphic Design' },
+    { name: 'Business Card & Stationery', description: 'Professional business cards, letterheads, and envelopes that leave a lasting impression on clients.', category: 'Graphic Design' },
+    { name: 'UI/UX Landing Page Design', description: 'Clean and modern user interface designs for websites and landing pages focused on user experience.', category: 'Graphic Design' },
+    { name: 'Merchandise Design', description: 'Creative designs for t-shirts, hoodies, and other merch tailored to your brand or personal style.', category: 'Graphic Design' },
+
+    // Video Editing Category
+    { name: 'VFX', description: 'High-end cinematic visual effects, compositing, and motion graphics that bring fantastical concepts to life.', category: 'Video Editing', isMain: true, hasBadge: true },
+    { name: 'Reels Editing', description: 'Engaging and trendy short-form video editing for Instagram Reels, TikTok, and YouTube Shorts.', category: 'Video Editing', hasBadge: true },
+    { name: 'AMV EDIT', description: 'Highly synchronized and stylized anime edits with complex transitions and visual effects.', category: 'Video Editing' },
+    { name: 'Intros & Outros', description: 'Professional animated intros and outros to give your video content a polished and branded look.', category: 'Video Editing' },
+    { name: 'Color Grading', description: 'Cinematic color correction and grading to enhance the mood and professional visual appeal of your footage.', category: 'Video Editing' },
+    { name: '3D Motion Graphics', description: 'Dynamic 3D elements and animations to add depth and modern flair to your video projects.', category: 'Video Editing' },
+    { name: 'Subtitles & Captions', description: 'Dynamic, accurately timed, and visually appealing subtitles to keep your audience engaged.', category: 'Video Editing' },
+];
+
+export const graphicWorks: GraphicWork[] = [
+    // Photo Manipulation / Social Media Posts
+    { id: 1, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/8whz5z17ra4evztzr8tei/7cbe5e230085811.Y3JvcCwxOTk5LDE1NjQsMCwyMTc.jpg?rlkey=te4mefjp0q9xj39dzjh77swin&raw=1', category: 'Photo Manipulation' },
+    { id: 2, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/p739xw6vwmuwpn6x9v2vh/557950765_122151707678645113_2255706365702883316_n.jpg?rlkey=ngt1ga9dnxos9rj52zmqp66f6&raw=1', category: 'Photo Manipulation' },
+    { id: 3, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/llmz5fjru7u9xqd1dy6es/abdb99229320593.Y3JvcCwyMDQ4LDE2MDEsMCwyMjM.jpg?rlkey=1mjr7rc57esbkyptaok9ti6sr&raw=1', category: 'Photo Manipulation' },
+    { id: 4, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/bjyqnbbr0sqvd42n64yt1/518658030_122142975902645113_5365242024363925507_n.jpg?rlkey=l7pz1oflwh5gi53oljv6fygvq&raw=1', category: 'Photo Manipulation' },
+    { id: 5, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/g2q7bt4e8vhlsp23we57u/694dea229321481.Y3JvcCwxMjAwLDkzOCwwLDEzMA.jpg?rlkey=fbaguh47ao4atffhlz0ya6f5w&raw=1', category: 'Photo Manipulation' },
+
+    // YouTube Thumbnails
+    { id: 12, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/0mc1y78tdg0qq2yrsm8lz/6434f9234092365.Y3JvcCwxMzgwLDEwODAsMjcwLDA.jpg?rlkey=qfhr7z9vwuquacnbcb2q5pv3u&raw=1', category: 'YouTube Thumbnails' },
+
+    // Banner Designs
+    { id: 13, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/bzhrxzvxv8mpv7ldad6o4/2025-09-16-7.jpg?rlkey=chpubk19uennb7yw4xnssr90f&raw=1', category: 'Banner Designs' },
+    { id: 14, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/81jlduf6n6ih32b6yfpmg/2025-09-18.jpg?rlkey=f9qgajdy0wycg2araptlpqi2r&raw=1', category: 'Banner Designs' },
+    { id: 15, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/m5o840ywi39vm56n2chlp/2025-09-16-8.jpg?rlkey=kjk0gt52gowqx1n52ts0t6p5m&raw=1', category: 'Banner Designs' },
+    { id: 16, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/va1p1itvxjw4y5zw2mts3/2025-09-19.jpg?rlkey=ltkx333q2wiaehqp2mrtgq4e0&raw=1', category: 'Banner Designs' },
+    { id: 17, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/514fvg60l7rfkz82e5ir9/2025-09-19-1.jpg?rlkey=r6dhha3ml8skzjg6z53mfop5&raw=1', category: 'Banner Designs' },
+    { id: 18, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/gmjmfxpf9s8pohwhhl9bl/2025-09-16-9.jpg?rlkey=crkorp8t3wq2uhh84tiwv0r1z&raw=1', category: 'Banner Designs' },
+];
+
+export const animeEdits: VideoWork[] = [
+    { id: 1, videoId: 'oAEDU-nycsE', thumbnailUrl: 'https://i.ytimg.com/vi/oAEDU-nycsE/hqdefault.jpg', mostViewed: true },
+    { id: 2, videoId: 'GiHZJkUvv6o', thumbnailUrl: 'https://i.ytimg.com/vi/GiHZJkUvv6o/hqdefault.jpg', mostViewed: true },
+    { id: 3, videoId: 'U4ge4NqBFAM', thumbnailUrl: 'https://i.ytimg.com/vi/U4ge4NqBFAM/hqdefault.jpg', mostViewed: true },
+    { id: 4, videoId: 'F-0ATxAccEI', thumbnailUrl: 'https://i.ytimg.com/vi/F-0ATxAccEI/hqdefault.jpg' },
+    { id: 5, videoId: '4YWUaCQkUL0', thumbnailUrl: 'https://i.ytimg.com/vi/4YWUaCQkUL0/hqdefault.jpg' },
+];
+
+export const vfxEdits: VideoWork[] = [
+    { id: 101, url: 'https://dl.dropboxusercontent.com/scl/fi/04puij825k7seih7pwisl/ssstik.io_-fuadeditingzone_1761101162365-1.mp4?rlkey=bczd8sb8sze95e8qurmuzc4fc&raw=1' },
+    { id: 102, url: 'https://dl.dropboxusercontent.com/scl/fi/3jkir989bp56zlg2k9uie/ssstik.io_-fuadeditingzone_1761100951741-1.mp4?rlkey=cognu1404zbja0ss0gch3qo6z&raw=1' },
+    { id: 103, url: 'https://dl.dropboxusercontent.com/scl/fi/13kcdh2keugsqmvzb4d4c/ssstik.io_-fuadeditingzone_1761101016859-1.mp4?rlkey=322uz9xfq95xqgjb9mmt3uf9w&raw=1' },
+    { id: 104, url: 'https://dl.dropboxusercontent.com/scl/fi/wypkzvekmup83x8orz31r/ssstik.io_-fuadeditingzone_1761101128509-1.mp4?rlkey=xlhgik6jc0y3ph2lrrr01ue80&raw=1' },
+    { id: 105, url: 'https://dl.dropboxusercontent.com/scl/fi/zk5q1eehoyhawicr4gb6a/ssstik.io_-fuadeditingzone_1761139677511.mp4?rlkey=vkh5egltt3rn5ff7mv45ddxwr&raw=1' },
+];
