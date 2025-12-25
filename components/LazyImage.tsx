@@ -6,21 +6,38 @@ export const LazyImage: React.FC<{ src: string; alt: string; className?: string;
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Load image instantly without waiting for it to be in view
-    setIsInView(true);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full bg-gray-900/50 rounded-lg overflow-hidden">
+    <div ref={containerRef} className="relative w-full h-full bg-white/5 rounded-lg overflow-hidden">
       {!isLoaded && (
-        <div className="absolute inset-0 shimmer-bg"></div>
+        <div className="absolute inset-0 shimmer-bg opacity-30"></div>
       )}
-      <img
-        src={isInView ? src : undefined}
-        alt={alt}
-        onLoad={() => setIsLoaded(true)}
-        className={`${className} transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-      />
+      {isInView && (
+        <img
+          src={src}
+          alt={alt}
+          onLoad={() => setIsLoaded(true)}
+          loading="lazy"
+          decoding="async"
+          className={`${className} transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+        />
+      )}
     </div>
   );
 };
