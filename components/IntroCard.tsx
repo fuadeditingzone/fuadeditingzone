@@ -27,7 +27,7 @@ export const IntroCard = () => {
             <div className="container mx-auto px-6 relative z-10">
                 <div className="text-center mb-10 md:mb-16">
                     <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tighter">
-                        The Person Behind <span className="text-red-600">FEZ</span>
+                        The Mastermind Behind <span className="text-red-600">Fuad Editing Zone</span>
                     </h2>
                     <div className="w-16 md:w-20 h-1 md:h-1.5 bg-red-600 mx-auto mt-3 rounded-full"></div>
                 </div>
@@ -59,7 +59,7 @@ export const IntroCard = () => {
                         {/* Details Section */}
                         <div className="text-center md:text-left flex-1">
                             <div className="inline-block px-2.5 py-0.5 md:px-3 md:py-1 bg-red-600/10 border border-red-600/20 rounded-md md:rounded-lg mb-3 md:mb-4">
-                                <span className="text-[10px] md:text-xs font-bold text-red-500 uppercase tracking-[0.3em]">Fuad Editing Zone</span>
+                                <span className="text-[10px] md:text-xs font-bold text-red-500 uppercase tracking-[0.3em]">Fuad Editing Zone | Selected Legend</span>
                             </div>
                             <h3 className="text-2xl md:text-5xl font-bold text-white mb-1 md:mb-2 tracking-tight">
                                 {introCard.title}

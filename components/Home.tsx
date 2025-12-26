@@ -141,9 +141,9 @@ export const Home: React.FC<HomeProps> = ({
                             style={{ fontFamily: '"Montserrat", sans-serif' }}
                         >
                             <span className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl block -mb-[0.1em] relative leading-[0.7] opacity-90 whitespace-nowrap drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">FUAD</span>
-                            {/* Removed red glow/shadow, kept it sharp and minimal */}
                             <span className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl block text-red-600 relative leading-[0.7] opacity-100 whitespace-nowrap">AHMED</span>
                         </motion.h1>
+                        <h2 className="sr-only">Fuad Editing Zone - Selected Legend - Sykhet Vfx editor & Sylhety graphic designer</h2>
                     </div>
                 </div>
 
