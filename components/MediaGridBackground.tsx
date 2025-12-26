@@ -53,7 +53,7 @@ const GridCell: React.FC<{ item: typeof allMedia[0] }> = ({ item }) => {
             {item.type === 'image' && (
                 <img 
                     src={item.url} 
-                    alt="" 
+                    alt="VFX & Graphic Design Portfolio Grid Item" 
                     loading="lazy"
                     decoding="async"
                     className="absolute inset-0 w-full h-full object-cover grayscale-[0.5] brightness-50 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700" 

@@ -113,7 +113,7 @@ export const Home: React.FC<HomeProps> = ({
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 src={siteConfig.branding.profilePicUrl} 
-                                alt={siteConfig.branding.author} 
+                                alt={`${siteConfig.branding.author} - Fuad Editing Zone Profile`} 
                                 onLoad={() => setIsImageLoaded(true)}
                                 className="w-full h-full object-cover object-top origin-top transition-all duration-700 group-hover:scale-105 group-hover:brightness-110" 
                             />
@@ -140,10 +140,10 @@ export const Home: React.FC<HomeProps> = ({
                             className="font-black text-white tracking-tighter uppercase m-0 p-0" 
                             style={{ fontFamily: '"Montserrat", sans-serif' }}
                         >
+                            <span className="sr-only">Fuad Ahmed - Fuad Editing Zone | Selected Legend - Sykhet Vfx editor & Sylhety graphic designer</span>
                             <span className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl block -mb-[0.1em] relative leading-[0.7] opacity-90 whitespace-nowrap drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">FUAD</span>
                             <span className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl block text-red-600 relative leading-[0.7] opacity-100 whitespace-nowrap">AHMED</span>
                         </motion.h1>
-                        <h2 className="sr-only">Fuad Editing Zone - Selected Legend - Sykhet Vfx editor & Sylhety graphic designer</h2>
                     </div>
                 </div>
 
