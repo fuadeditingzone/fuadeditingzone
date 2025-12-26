@@ -154,7 +154,7 @@ export const ServiceSelectionModal: React.FC<ServiceSelectionModalProps> = ({ pl
                         ) : (
                             <EmailIcon className="w-5 h-5" />
                         )}
-                        <span>Proceed to {platform === 'whatsapp' ? 'WhatsApp' : 'Email'}</span>
+                        <span>Checkout via {platform === 'whatsapp' ? 'WhatsApp' : 'Email'}</span>
                         <ChevronRightIcon className="w-4 h-4" />
                     </button>
                     

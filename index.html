@@ -33,7 +33,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800;900&family=Teko:wght@600;700&display=swap" rel="stylesheet">
     
     <style>
       :root {
@@ -85,11 +85,29 @@
       }
       @keyframes spin3d {
         from { transform: rotateY(0deg); }
-        to { transform: rotateY(360deg); }
+        to { transform: rotateY(720deg); }
       }
       .logo-3d-spin {
-        animation: spin3d 1s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: spin3d 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
+      @keyframes bounce-slow {
+        0%, 100% { transform: translateY(-5%) translateX(50%); }
+        50% { transform: translateY(0%) translateX(50%); }
+      }
+      .animate-bounce-slow {
+        animation: bounce-slow 3s ease-in-out infinite;
+      }
+      
+      @media (min-width: 1024px) {
+        @keyframes bounce-slow-lg {
+          0%, 100% { transform: translateY(-5%); }
+          50% { transform: translateY(0%); }
+        }
+        .animate-bounce-slow {
+          animation: bounce-slow-lg 3s ease-in-out infinite;
+        }
+      }
+
       .glitch-text {
         text-shadow: 2px 2px #dc2626, -2px -2px #000;
       }
@@ -101,6 +119,20 @@
 
       .animate-fade-in {
         animation: fade-in 1s ease-out forwards;
+      }
+      
+      @keyframes float-3d {
+        0% { transform: translateY(0px) rotateZ(0deg); }
+        50% { transform: translateY(-15px) rotateZ(5deg); }
+        100% { transform: translateY(0px) rotateZ(0deg); }
+      }
+      .animate-float-3d {
+        animation: float-3d 5s ease-in-out infinite;
+      }
+
+      @keyframes scan {
+        0% { top: -10%; }
+        100% { top: 110%; }
       }
     </style>
     <script type="importmap">
