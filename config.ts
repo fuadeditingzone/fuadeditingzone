@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { SocialLink, Service } from './hooks/types';
 import { 
@@ -60,7 +61,7 @@ export const siteConfig = {
         whatsAppNumber: '8801772723595',
         socials: [
             { name: 'Facebook', url: 'https://facebook.com/fuadeditingzone', icon: FacebookIcon },
-            { name: 'Instagram', url: 'https://instagram.com/fuadeditingzone', icon: InstagramIcon },
+            { name: 'Instagram', url: 'https://www.instagram.com/fuadeditingzone', icon: InstagramIcon },
             { name: 'Behance', url: 'https://behance.net/fuadeditingzone', icon: BehanceIcon },
             { name: 'TikTok', url: 'https://tiktok.com/@fuadeditingzone', icon: TikTokIcon },
             { name: 'WhatsApp', url: `https://wa.me/8801772723595`, icon: WhatsAppIcon },
