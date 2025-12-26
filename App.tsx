@@ -45,10 +45,11 @@ export default function App() {
 
   // Initial Logic on Mount
   useEffect(() => {
-    const hasSeenSpecial = localStorage.getItem('hasSeenSpecialServices') === 'true';
-    if (!hasSeenSpecial) {
-        setIsSpecialServicesOpen(true);
-    }
+    // Initial Special Services Popup disabled as requested, replaced with Home Ad Showcase
+    // const hasSeenSpecial = localStorage.getItem('hasSeenSpecialServices') === 'true';
+    // if (!hasSeenSpecial) {
+    //    setIsSpecialServicesOpen(true);
+    // }
   }, []);
 
   // Combined Portfolio for Gallery

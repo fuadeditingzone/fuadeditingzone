@@ -35,23 +35,22 @@ export const IntroCard = () => {
                 <InteractiveCard className="relative w-full max-w-5xl mx-auto bg-gradient-to-br from-gray-900/80 to-black/90 backdrop-blur-2xl rounded-[1.5rem] md:rounded-[2rem] border border-white/10 p-6 md:p-16 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                     <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
                         
-                        {/* Profile Picture Container with stylized frame */}
+                        {/* Profile Picture Container - Clarity Improved */}
                         <div className="relative flex-shrink-0 group">
-                            <div className="relative w-36 h-36 md:w-64 md:h-64 rounded-xl md:rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]">
+                            <div className="relative w-36 h-36 md:w-64 md:h-64 rounded-xl md:rounded-2xl overflow-hidden border-2 border-white/30 shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]">
                                 <img 
                                     src={branding.profilePicUrl} 
                                     alt={introCard.title} 
                                     className="w-full h-full object-cover object-top" 
                                 />
-                                {/* Overlay gradient */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                                {/* Soft overlay removed for clarity */}
                             </div>
                             
                             {/* Animated glowing rings behind the photo */}
                             <div className="absolute -inset-3 md:-inset-4 rounded-2xl md:rounded-3xl ring-1 ring-red-600/30 animate-pulse pointer-events-none"></div>
                             <div className="absolute -inset-6 md:-inset-8 rounded-[2rem] md:rounded-[2.5rem] ring-1 ring-white/5 animate-float-3d pointer-events-none" style={{ animationDuration: '15s' }}></div>
 
-                            {/* Official Badge (Changed from Verified) */}
+                            {/* Official Badge */}
                             <div className="absolute -bottom-2 -right-2 md:-bottom-4 md:-right-4 bg-red-600 text-white p-1.5 md:p-2 rounded-lg md:rounded-xl shadow-xl flex items-center gap-1.5 border border-white/20">
                                 <CheckCircleIcon className="w-3.5 h-3.5 md:w-5 md:h-5" />
                                 <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest pr-1">Official Artist</span>

@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 
 export const InteractiveCard: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => {
@@ -15,7 +14,8 @@ export const InteractiveCard: React.FC<{ children: React.ReactNode; className?: 
         const rotateX = -((y - height / 2) / (height / 2)) * 8; // Max rotation 8 degrees
         const rotateY = ((x - width / 2) / (width / 2)) * 8;
 
-        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+        // Using scale3d and backface-visibility for sharper rendering
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.03, 1.03, 1.03)`;
         
         const glare = card.querySelector('.glare') as HTMLElement;
         if (glare) {
@@ -38,9 +38,15 @@ export const InteractiveCard: React.FC<{ children: React.ReactNode; className?: 
             className={`interactive-3d-card ${className || ''}`}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
+            style={{ 
+                backfaceVisibility: 'hidden', 
+                WebkitBackfaceVisibility: 'hidden',
+                transformStyle: 'preserve-3d',
+                willChange: 'transform'
+            }}
         >
             {children}
-            <div className="glare"></div>
+            <div className="glare pointer-events-none"></div>
         </div>
     );
 };
