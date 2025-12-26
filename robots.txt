@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://fuadeditingzone.vercel.app/sitemap.xml
+Sitemap: https://fuadeditingzone.pages.dev/sitemap.xml
