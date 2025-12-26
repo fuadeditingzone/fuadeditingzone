@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { siteConfig } from '../config';
@@ -21,13 +20,13 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
             id="contact" 
             className="bg-transparent relative z-10 select-none"
         >
-            <div className={`container mx-auto px-6 text-center transition-all duration-1000 ease-out ${animationClass} py-24`}>
+            <div className={`container mx-auto px-6 text-center transition-all duration-1000 ease-out ${animationClass} py-24 flex flex-col items-center`}>
                 <div className="mb-8">
                     <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">Order Now</h2>
                     <p className="text-sm text-gray-400 max-w-md mx-auto font-light">Have a project in mind? <br className="hidden md:block" />Select your services and let's get started.</p>
                 </div>
                 
-                <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-4 w-full">
                     {/* WhatsApp Button - On top as requested */}
                     <button
                         onClick={() => onStartOrder('whatsapp')}
@@ -54,6 +53,28 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                         <p className="text-[10px] text-gray-500 font-mono tracking-tight uppercase">
                             Direct: {email}
                         </p>
+                    </div>
+                </div>
+
+                {/* Social Media Connectivity - Moved from IntroCard */}
+                <div className="mt-16 pt-12 border-t border-white/10 w-full max-w-sm flex flex-col items-center">
+                    <p className="text-[10px] text-gray-500 font-black tracking-[0.4em] uppercase mb-8">Follow My Work</p>
+                    <div className="flex justify-center gap-6 md:gap-8">
+                        {siteConfig.branding.socials.map(link => (
+                            <a
+                                key={link.name}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={link.name}
+                                className="group relative"
+                            >
+                                <link.icon className="text-2xl md:text-3xl text-gray-500 transition-all duration-300 group-hover:text-red-600 group-hover:scale-125 group-hover:-translate-y-1" />
+                                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10 pointer-events-none z-20">
+                                    {link.name}
+                                </span>
+                            </a>
+                        ))}
                     </div>
                 </div>
             </div>

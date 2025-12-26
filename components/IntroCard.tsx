@@ -43,7 +43,6 @@ export const IntroCard = () => {
                                     alt={introCard.title} 
                                     className="w-full h-full object-cover object-top" 
                                 />
-                                {/* Soft overlay removed for clarity */}
                             </div>
                             
                             {/* Animated glowing rings behind the photo */}
@@ -76,7 +75,7 @@ export const IntroCard = () => {
                             </p>
                             
                             {/* Skills Tags */}
-                            <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-3 mb-8 md:mb-10">
+                            <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-3">
                                 {sortedAboutSkills.map(skill => (
                                     <span 
                                         key={skill}
@@ -87,25 +86,6 @@ export const IntroCard = () => {
                                             <span className="ml-1.5 bg-red-600 text-white text-[7px] md:text-[9px] px-1 py-0 rounded-sm font-black ring-1 ring-white/20">PRO</span>
                                         )}
                                     </span>
-                                ))}
-                            </div>
-
-                            {/* Social Connectivity */}
-                            <div className="flex justify-center md:justify-start gap-6 md:gap-8 border-t border-white/5 pt-6 md:pt-8">
-                                {branding.socials.map(link => (
-                                    <a
-                                        key={link.name}
-                                        href={link.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label={link.name}
-                                        className="group relative"
-                                    >
-                                        <link.icon className="text-xl md:text-2xl text-gray-500 transition-all duration-300 group-hover:text-red-600 group-hover:scale-125 group-hover:-translate-y-1" />
-                                        <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10 pointer-events-none">
-                                            {link.name}
-                                        </span>
-                                    </a>
                                 ))}
                             </div>
                         </div>

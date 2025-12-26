@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { siteConfig } from '../config';
 import { IntroCard } from './IntroCard';
@@ -23,7 +21,6 @@ export const AboutAndFooter: React.FC = () => {
                                 <a href="https://github.com/" target="_blank" rel="noopener noreferrer" className="hover:text-red-500 transition-colors">GitHub</a>
                                 <a href="https://www.cloudflare.com/" target="_blank" rel="noopener noreferrer" className="hover:text-red-500 transition-colors">Cloudflare</a>
                             </div>
-                            <p className="mt-2">Website developed with assistance from Gemini.</p>
                             <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 mt-4">
                                <a href="https://www.freeprivacypolicy.com/live/7c5660d5-a851-4105-b7f7-ee7d4f9bf494" target="_blank" rel="noopener noreferrer" className="hover:text-red-500 transition-colors">Privacy Policy</a>
                             </div>
