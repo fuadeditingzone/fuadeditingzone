@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 
 export const FacebookIcon = ({ className }: { className?: string }) => (
@@ -111,7 +109,7 @@ export const GalleryIcon = ({ className }: { className?: string }) => (
 // FIX: Added style prop to allow for inline styling, fixing TypeScript errors in components that use this icon with styles.
 export const PhotoManipulationIcon = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
     <svg className={className} style={style} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.553L16.25 22.5l-.648-1.947a4.5 4.5 0 00-3.09-3.09l-1.947-.648 1.947-.648a4.5 4.5 0 003.09-3.09l.648-1.947.648 1.947a4.5 4.5 0 003.09 3.09l1.947.648-1.947.648a4.5 4.5 0 00-3.09 3.09z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.553L16.25 22.5l-.648-1.947a4.5 4.5 0 00-3.09-3.09l-1.947-.648 1.947-.648a4.5 4.5 0 00-3.09-3.09l.648-1.947.648 1.947a4.5 4.5 0 003.09 3.09l.648-1.947.648 1.947a4.5 4.5 0 003.09 3.09l1.947.648-1.947.648a4.5 4.5 0 00-3.09 3.09z" />
     </svg>
 );
 export const ThumbnailIcon = ({ className }: { className?: string }) => (
@@ -132,7 +130,7 @@ export const PaperAirplaneIcon = ({ className }: { className?: string }) => (
 );
 export const ChatBubbleIcon = ({ className }: { className?: string }) => (
     <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.72.14c-1.107.042-2.098.91-2.098 2.016v.33c0 .414-.336.75-.75.75h-2.5c-.414 0-.75-.336-.75-.75v-.33c0-1.106-.99-1.974-2.098-2.016l-3.72-.14A2.092 2.092 0 013 14.894v-4.286c0-.97.616-1.813 1.5-2.097m14.25-1.118a2.25 2.25 0 00-2.25-2.25h-10.5a2.25 2.25 0 00-2.25 2.25v.441c.621.327 1.25.642 1.875.952l4.125 2.251 4.125-2.251c.625-.31 1.254-.625 1.875-.952v-.441z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.72.14c-1.107.042-2.098.91-2.098 2.016v.33c0 .414-.336.75-.75.75h-2.5c-.414 0-.75-.336-.75-.75v-.33c0-1.106-.99-1.974-2.098-2.016l-3.72-.14A2.092 2.092 0 013 14.894v-4.286c0-.97.616-1.813 1.5-2.097m14.25-1.118a2.25 2.25 0 00-2.25-2.25h-10.5a2.25 2.25 0 00-2.25 2.25v.441c.621.327 1.25.642 1.875.952l4.125 2.251 4.125 2.251c.625-.31 1.254-.625 1.875-.952v-.441z" />
     </svg>
 );
 export const ReplyIcon = ({ className }: { className?: string }) => (
@@ -329,4 +327,20 @@ export const IdIcon = ({ className }: { className?: string }) => (
     <path d="M8.89 5.32H9.97V15.62H8.89V5.32Z" fill="#FF40A8"/>
     <path d="M11.53 5.32H14.99C16.4 5.32 17.21 6.08 17.21 7.71C17.21 9.34 16.4 10.1 14.99 10.1H12.85V12.1H15.3V13.18H12.85V15.62H11.53V5.32ZM12.85 6.4V9.02H14.75C15.6 9.02 16.03 8.56 16.03 7.7C16.03 6.84 15.6 6.38 14.75 6.38H12.85V6.4Z" fill="#FF40A8"/>
   </svg>
+);
+
+export const HeartHoverIcon = ({ className }: { className?: string }) => (
+    <i className={`fa-solid fa-heart ${className || ''}`} />
+);
+
+export const CommentIcon = ({ className }: { className?: string }) => (
+    <i className={`fa-regular fa-comment ${className || ''}`} />
+);
+
+export const ShareIcon = ({ className }: { className?: string }) => (
+    <i className={`fa-regular fa-paper-plane ${className || ''}`} />
+);
+
+export const BookmarkIcon = ({ className }: { className?: string }) => (
+    <i className={`fa-regular fa-bookmark ${className || ''}`} />
 );

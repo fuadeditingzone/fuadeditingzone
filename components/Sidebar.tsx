@@ -25,7 +25,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
   };
 
   return (
-    <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-20 px-8 bg-black/20 backdrop-blur-md">
+    <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-14 px-8 bg-black/20 backdrop-blur-md">
         <div 
             onClick={handleLogoClick}
             className="cursor-pointer group flex items-center gap-3"
@@ -33,7 +33,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
             <img 
                 src={siteConfig.branding.logoUrl} 
                 alt="Logo" 
-                className={`h-10 w-10 rounded-full ${isSpinning ? 'logo-3d-spin' : ''}`}
+                className={`h-8 w-8 rounded-full ${isSpinning ? 'logo-3d-spin' : ''}`}
             />
              <h1 className="font-semibold text-white text-lg leading-none">{siteConfig.branding.name}</h1>
         </div>
@@ -46,7 +46,6 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
             <NavLink onClick={() => onScrollTo('contact')}>Contact</NavLink>
         </nav>
         
-        {/* Placeholder for layout balance if needed, button removed per user request */}
         <div className="w-20 md:w-0"></div>
     </header>
   );
@@ -62,7 +61,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
     };
 
     return (
-        <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-20 px-6 select-none pointer-events-none bg-gradient-to-b from-black/80 to-transparent">
+        <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-14 px-6 select-none pointer-events-none bg-gradient-to-b from-black/80 to-transparent">
             <div 
                 onClick={handleLogoClick} 
                 className="flex items-center gap-3 pointer-events-auto"
@@ -70,13 +69,12 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                 <img 
                     src={siteConfig.branding.logoUrl} 
                     alt="Logo" 
-                    className={`h-10 w-10 rounded-full ${isSpinning ? 'logo-3d-spin' : ''}`}
+                    className={`h-8 w-8 rounded-full ${isSpinning ? 'logo-3d-spin' : ''}`}
                 />
                 <div>
-                    <span className="font-montserrat font-medium text-white tracking-tight block leading-none text-sm">{siteConfig.branding.name}</span>
+                    <span className="font-montserrat font-medium text-white tracking-tight block leading-none text-xs">{siteConfig.branding.name}</span>
                 </div>
             </div>
-            {/* "Order Now" button removed from Mobile view per user request */}
         </header>
     );
 };

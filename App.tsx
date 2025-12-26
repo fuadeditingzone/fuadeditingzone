@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import type { GraphicWork, VideoWork, VfxSubTab, ModalItem } from './hooks/types';
 import { siteConfig } from './config';
@@ -35,6 +35,10 @@ export default function App() {
   const [selectionTarget, setSelectionTarget] = useState<'whatsapp' | 'email' | null>(null);
   const [isYouTubeRedirectOpen, setIsYouTubeRedirectOpen] = useState(false);
   
+  // --- Navigation Idle Visibility ---
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const idleTimeoutRef = useRef<number | null>(null);
+
   // --- Global Video State ---
   const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.content.portfolio.animeEdits[0]?.videoId || '');
   const [isYtPlaying, setIsYtPlaying] = useState(false);
@@ -43,14 +47,43 @@ export default function App() {
   const [isPortfolioMediaActive, setIsPortfolioMediaActive] = useState(false);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
-  // Initial Logic on Mount
+  // Check if any UI overlay is active to prevent hiding nav
+  const isAnyOverlayActive = !!(
+    modalState || 
+    isGalleryGridOpen || 
+    singleImageViewerState || 
+    isSpecialServicesOpen || 
+    isServicesPopupOpen || 
+    selectionTarget || 
+    isYouTubeRedirectOpen || 
+    isMediaSidebarOpen ||
+    contextMenu
+  );
+
+  // --- Navigation Visibility Inactivity Logic ---
+  const handleInactivity = useCallback(() => {
+    // 1. Reset Navigation Visibility (Appear on movement)
+    setIsNavVisible(true);
+    if (idleTimeoutRef.current) window.clearTimeout(idleTimeoutRef.current);
+    
+    if (!isAnyOverlayActive) {
+      idleTimeoutRef.current = window.setTimeout(() => {
+        setIsNavVisible(false);
+      }, 40000); // 40 seconds to hide nav as requested
+    }
+  }, [isAnyOverlayActive]);
+
   useEffect(() => {
-    // Initial Special Services Popup disabled as requested, replaced with Home Ad Showcase
-    // const hasSeenSpecial = localStorage.getItem('hasSeenSpecialServices') === 'true';
-    // if (!hasSeenSpecial) {
-    //    setIsSpecialServicesOpen(true);
-    // }
-  }, []);
+    const events = ['mousemove', 'scroll', 'touchstart', 'mousedown', 'keydown'];
+    events.forEach(evt => window.addEventListener(evt, handleInactivity));
+
+    handleInactivity();
+
+    return () => {
+      events.forEach(evt => window.removeEventListener(evt, handleInactivity));
+      if (idleTimeoutRef.current) window.clearTimeout(idleTimeoutRef.current);
+    };
+  }, [handleInactivity]);
 
   // Combined Portfolio for Gallery
   const combinedPortfolio = useMemo(() => {
@@ -61,13 +94,6 @@ export default function App() {
     ];
   }, []);
 
-  const anyModalOpen = modalState || isGalleryGridOpen || !!singleImageViewerState || isSpecialServicesOpen || isServicesPopupOpen || !!selectionTarget || isYouTubeRedirectOpen;
-
-  const handleSpecialServicesClosed = () => {
-      setIsSpecialServicesOpen(false);
-      localStorage.setItem('hasSeenSpecialServices', 'true');
-  };
-
   const handleGlobalClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     const isInteractive = target.closest('button, a, iframe, .interactive-3d-card, [role="dialog"]');
@@ -75,10 +101,9 @@ export default function App() {
   };
 
   useEffect(() => {
-      // Synchronize PiP if sidebar changes active video while PiP is active
       if (pipVideo?.id === 'yt-pip' && pipVideo.videoId !== activeYouTubeId) {
           setPipVideo({ id: 'yt-pip', videoId: activeYouTubeId });
-          setVideoCurrentTime(0); // Reset time when video identity changes
+          setVideoCurrentTime(0);
       }
   }, [activeYouTubeId, pipVideo]);
 
@@ -106,14 +131,14 @@ export default function App() {
       }
   };
 
-  const handleScrollTo = (section: 'home' | 'portfolio' | 'contact' | 'video-editing' | 'about') => {
-    const element = document.getElementById(section);
+  const handleScrollTo = (target: 'home' | 'portfolio' | 'contact' | 'video-editing' | 'about') => {
+    const element = document.getElementById(target);
     element?.scrollIntoView({ behavior: 'smooth' });
   };
   
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    if(anyModalOpen) return;
+    if(isAnyOverlayActive) return;
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
   
@@ -150,6 +175,19 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [modalState, singleImageViewerState, handleModalNext, handleModalPrev, handleSingleImageNext, handleModalPrev]);
 
+  // Transition styles
+  const navTransitionClass = isNavVisible 
+    ? 'opacity-100 translate-y-0 duration-200 pointer-events-auto' 
+    : 'opacity-0 -translate-y-2 duration-1000 pointer-events-none';
+
+  const footerTransitionClass = isNavVisible
+    ? 'opacity-100 translate-y-0 duration-200 pointer-events-auto'
+    : 'opacity-0 translate-y-10 duration-1000 pointer-events-none';
+
+  const sidebarBtnTransitionClass = isNavVisible
+    ? 'opacity-100 translate-x-0 duration-200 pointer-events-auto'
+    : 'opacity-0 translate-x-full duration-1000 pointer-events-none';
+
   return (
     <ParallaxProvider>
       <div 
@@ -159,12 +197,14 @@ export default function App() {
       >
           <VFXBackground />
           <MediaGridBackground />
-          {isSpecialServicesOpen && <SpecialServicesPopup onClose={handleSpecialServicesClosed} />}
+
+          <div className={`transition-all ease-out fixed top-0 left-0 right-0 z-50 ${navTransitionClass}`}>
+            <DesktopHeader onScrollTo={handleScrollTo} />
+            <MobileHeader onScrollTo={handleScrollTo} />
+          </div>
+
+          {isSpecialServicesOpen && <SpecialServicesPopup onClose={() => setIsSpecialServicesOpen(false)} />}
           
-          <DesktopHeader onScrollTo={handleScrollTo} />
-          <MobileHeader onScrollTo={handleScrollTo} />
-          
-          {/* Media Sidebar & Toggle */}
           <MediaSidebar 
             isOpen={isMediaSidebarOpen} 
             onClose={() => setIsMediaSidebarOpen(false)} 
@@ -174,10 +214,11 @@ export default function App() {
             setIsYtPlaying={setIsYtPlaying}
             onYouTubeClick={() => setIsYouTubeRedirectOpen(true)}
           />
-          {!isMediaSidebarOpen && !anyModalOpen && (
+
+          {!isMediaSidebarOpen && !isAnyOverlayActive && (
               <button
                   onClick={() => setIsMediaSidebarOpen(true)}
-                  className="fixed top-24 right-0 z-40 bg-black/40 backdrop-blur-xl border-l border-t border-b border-white/10 text-white p-3 rounded-l-xl shadow-2xl hover:bg-red-600/50 hover:pl-5 transition-all duration-300 group"
+                  className={`fixed top-24 right-0 z-40 bg-black/40 backdrop-blur-xl border-l border-t border-b border-white/10 text-white p-3 rounded-l-xl shadow-2xl hover:bg-red-600/50 hover:pl-5 transition-all ease-out group ${sidebarBtnTransitionClass}`}
                   aria-label="Open YouTube Sidebar"
               >
                   <YouTubeIcon className="w-6 h-6 text-red-500 group-hover:text-white transition-all" />
@@ -190,6 +231,7 @@ export default function App() {
                 onOrderNow={() => handleScrollTo('contact')}
                 onYouTubeClick={() => setIsYouTubeRedirectOpen(true)}
               />
+              
               <Portfolio 
                   openModal={handleOpenModal}
                   activeVfxSubTab={activeVfxSubTab}
@@ -213,7 +255,6 @@ export default function App() {
               <AboutAndFooter />
           </main>
 
-          {/* Modals & Popups */}
           {modalState && (
               <ModalViewer
                   state={modalState}
@@ -269,7 +310,6 @@ export default function App() {
               <VideoPipPlayer
                   video={pipVideo}
                   onClose={() => {
-                      // Manual dismissal stops the video entirely to prevent re-opening
                       setPipVideo(null);
                       setPlayingVfxVideo(null);
                       setIsYtPlaying(false);
@@ -293,8 +333,9 @@ export default function App() {
               />
           )}
           
-          {/* Mobile Footer Nav */}
-          <MobileFooterNav onScrollTo={handleScrollTo} />
+          <div className={`transition-all ease-out fixed bottom-0 left-0 right-0 z-40 ${footerTransitionClass}`}>
+            <MobileFooterNav onScrollTo={handleScrollTo} />
+          </div>
       </div>
     </ParallaxProvider>
   );
