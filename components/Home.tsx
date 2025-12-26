@@ -97,7 +97,7 @@ export const Home: React.FC<HomeProps> = ({
                 {/* ARTIST IDENTITY HEADER */}
                 <div className="relative flex flex-col md:flex-row items-center justify-center mb-4 md:mb-8 gap-4 md:gap-10 min-h-[140px] md:min-h-[220px]">
                     
-                    {/* ENHANCED PROFILE EFFECT */}
+                    {/* PROFILE CONTAINER */}
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.9, rotateY: 30 }}
                         animate={isImageLoaded ? { opacity: 1, scale: 1, rotateY: 0 } : { opacity: 0 }}
@@ -105,31 +105,27 @@ export const Home: React.FC<HomeProps> = ({
                         className="relative group flex-shrink-0 z-30"
                     >
                         {/* Background Pulsing Glow */}
-                        <div className="absolute -inset-4 bg-red-600/20 rounded-[3rem] blur-2xl animate-pulse group-hover:bg-red-600/40 transition-colors duration-700"></div>
+                        <div className="absolute -inset-4 bg-red-600/10 rounded-[3rem] blur-2xl animate-pulse group-hover:bg-red-600/25 transition-colors duration-700"></div>
                         
-                        {/* Interactive Rotating Frame */}
-                        <div className="relative w-32 h-32 md:w-56 md:h-56 rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden border-2 border-white/20 transition-all duration-1000 bg-black shadow-[0_0_50px_rgba(0,0,0,0.8)] ring-1 ring-white/10">
-                            
+                        {/* Profile Frame */}
+                        <div className="relative w-32 h-32 md:w-56 md:h-56 rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden border-2 border-white/10 transition-all duration-1000 bg-black shadow-[0_0_50px_rgba(0,0,0,0.8)] ring-1 ring-white/5">
                             <motion.img 
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 src={siteConfig.branding.profilePicUrl} 
                                 alt={siteConfig.branding.author} 
                                 onLoad={() => setIsImageLoaded(true)}
-                                className="w-full h-full object-cover object-top origin-top transition-all duration-700 group-hover:scale-110 group-hover:brightness-125" 
+                                className="w-full h-full object-cover object-top origin-top transition-all duration-700 group-hover:scale-105 group-hover:brightness-110" 
                             />
 
-                            {/* HUD Overlay elements */}
-                            <div className="absolute top-2 left-2 text-white/40 text-[6px] uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity font-mono">
-                                TRK_ID: 880-FEZ
-                            </div>
-                            <div className="absolute bottom-2 right-2 text-white/40 text-[6px] uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity font-mono">
-                                LVL: MASTER
+                            {/* HUD Overlay elements (Minimal) */}
+                            <div className="absolute top-2 left-2 text-white/30 text-[6px] uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity font-mono">
+                                ID: 880-FEZ
                             </div>
                         </div>
                         
-                        {/* Verified Badge with Sparkle */}
-                        <div className="absolute -bottom-2 -right-2 md:-bottom-3 md:-right-3 bg-red-600 text-white py-1.5 px-3 md:py-2.5 md:px-5 rounded-full shadow-[0_10px_30px_rgba(220,38,38,0.5)] flex items-center gap-1.5 border border-white/20 z-40 transform hover:scale-110 transition-transform">
+                        {/* Verified Badge */}
+                        <div className="absolute -bottom-2 -right-2 md:-bottom-3 md:-right-3 bg-red-600 text-white py-1.5 px-3 md:py-2.5 md:px-5 rounded-full shadow-lg flex items-center gap-1.5 border border-white/20 z-40 transform hover:scale-110 transition-transform">
                             <CheckCircleIcon className="w-3 h-3 md:w-4.5 md:h-4.5 text-white" />
                             <span className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.25em]">Pro Artist</span>
                         </div>
@@ -145,7 +141,8 @@ export const Home: React.FC<HomeProps> = ({
                             style={{ fontFamily: '"Montserrat", sans-serif' }}
                         >
                             <span className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl block -mb-[0.1em] relative leading-[0.7] opacity-90 whitespace-nowrap drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">FUAD</span>
-                            <span className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl block text-red-600 relative leading-[0.7] opacity-100 whitespace-nowrap drop-shadow-[0_10px_25px_rgba(220,38,38,0.3)]">AHMED</span>
+                            {/* Removed red glow/shadow, kept it sharp and minimal */}
+                            <span className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl block text-red-600 relative leading-[0.7] opacity-100 whitespace-nowrap">AHMED</span>
                         </motion.h1>
                     </div>
                 </div>
@@ -222,8 +219,8 @@ export const Home: React.FC<HomeProps> = ({
             </motion.div>
             
             {/* Ambient Lighting & Glows */}
-            <div className="absolute top-1/4 -left-60 w-[800px] h-[800px] bg-red-600/10 blur-[200px] rounded-full pointer-events-none"></div>
-            <div className="absolute bottom-1/4 -right-60 w-[800px] h-[800px] bg-red-600/10 blur-[200px] rounded-full pointer-events-none"></div>
+            <div className="absolute top-1/4 -left-60 w-[800px] h-[800px] bg-red-600/5 blur-[200px] rounded-full pointer-events-none"></div>
+            <div className="absolute bottom-1/4 -right-60 w-[800px] h-[800px] bg-red-600/5 blur-[200px] rounded-full pointer-events-none"></div>
         </section>
     );
 };

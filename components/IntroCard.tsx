@@ -20,7 +20,7 @@ export const IntroCard = () => {
     return (
         <section id="about" className="py-16 md:py-24 relative overflow-visible">
             {/* Subtle background decorative element using the photo */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/3 h-2/3 opacity-10 pointer-events-none blur-3xl overflow-hidden hidden lg:block">
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/3 h-2/3 opacity-5 pointer-events-none blur-3xl overflow-hidden hidden lg:block">
                 <img src={branding.profilePicUrl} alt="" className="w-full h-full object-cover object-top scale-150 rotate-12" />
             </div>
 
@@ -32,13 +32,12 @@ export const IntroCard = () => {
                     <div className="w-16 md:w-20 h-1 md:h-1.5 bg-red-600 mx-auto mt-3 rounded-full"></div>
                 </div>
 
-                {/* Removed overflow-hidden to prevent clipping of badges/glows and internal scrolling */}
-                <InteractiveCard className="relative w-full max-w-5xl mx-auto bg-gradient-to-br from-gray-900/80 to-black/90 backdrop-blur-2xl rounded-[1.5rem] md:rounded-[2rem] border border-white/10 p-6 md:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                <InteractiveCard className="relative w-full max-w-5xl mx-auto bg-gradient-to-br from-gray-900/80 to-black/90 backdrop-blur-2xl rounded-[1.5rem] md:rounded-[2rem] border border-white/10 p-6 md:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-visible">
                     <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
                         
-                        {/* Profile Picture Container - Clarity Improved */}
+                        {/* Profile Picture Container */}
                         <div className="relative flex-shrink-0 group">
-                            <div className="relative w-36 h-36 md:w-64 md:h-64 rounded-xl md:rounded-2xl overflow-hidden border-2 border-white/30 shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]">
+                            <div className="relative w-36 h-36 md:w-64 md:h-64 rounded-xl md:rounded-2xl overflow-hidden border-2 border-white/30 shadow-2xl transition-transform duration-500 group-hover:scale-[1.02] z-10">
                                 <img 
                                     src={branding.profilePicUrl} 
                                     alt={introCard.title} 
@@ -47,11 +46,11 @@ export const IntroCard = () => {
                             </div>
                             
                             {/* Animated glowing rings behind the photo */}
-                            <div className="absolute -inset-3 md:-inset-4 rounded-2xl md:rounded-3xl ring-1 ring-red-600/30 animate-pulse pointer-events-none"></div>
-                            <div className="absolute -inset-6 md:-inset-8 rounded-[2rem] md:rounded-[2.5rem] ring-1 ring-white/5 animate-float-3d pointer-events-none" style={{ animationDuration: '15s' }}></div>
+                            <div className="absolute -inset-3 md:-inset-4 rounded-2xl md:rounded-3xl ring-1 ring-red-600/20 animate-pulse pointer-events-none z-0"></div>
+                            <div className="absolute -inset-6 md:-inset-8 rounded-[2rem] md:rounded-[2.5rem] ring-1 ring-white/5 animate-float-3d pointer-events-none z-0" style={{ animationDuration: '15s' }}></div>
 
-                            {/* Official Badge - Outside of overflow container to prevent clipping */}
-                            <div className="absolute -bottom-2 -right-2 md:-bottom-4 md:-right-4 bg-red-600 text-white p-1.5 md:p-2 rounded-lg md:rounded-xl shadow-xl flex items-center gap-1.5 border border-white/20 z-10">
+                            {/* Official Badge - Positioned outside to avoid clipping */}
+                            <div className="absolute -bottom-2 -right-2 md:-bottom-4 md:-right-4 bg-red-600 text-white p-1.5 md:p-2.5 rounded-lg md:rounded-xl shadow-2xl flex items-center gap-1.5 border border-white/20 z-20">
                                 <CheckCircleIcon className="w-3.5 h-3.5 md:w-5 md:h-5" />
                                 <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest pr-1">Official Artist</span>
                             </div>
@@ -80,7 +79,7 @@ export const IntroCard = () => {
                                 {sortedAboutSkills.map(skill => (
                                     <span 
                                         key={skill}
-                                        className="flex items-center bg-white/5 border border-white/10 text-gray-300 text-[9px] md:text-xs font-bold px-3 py-1.5 md:px-5 md:py-2 rounded transition-all duration-300 cursor-default hover:bg-red-600 hover:text-white hover:border-red-600"
+                                        className="flex items-center bg-white/5 border border-white/10 text-gray-300 text-[9px] md:text-xs font-bold px-3 py-1.5 md:px-5 md:py-2 rounded-lg transition-all duration-300 cursor-default hover:bg-red-600 hover:text-white hover:border-red-600"
                                     >
                                         {skill}
                                         {proSkills.includes(skill) && (
