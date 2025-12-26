@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { siteConfig } from '../config';
 
@@ -19,6 +18,7 @@ interface ChannelStats {
     videoCount: number;
     channelTitle?: string;
     channelProfilePic?: string;
+    channelDescription?: string;
 }
 
 export const useYouTubeChannelStats = () => {
@@ -50,43 +50,38 @@ export const useYouTubeChannelStats = () => {
                 const apiKey = siteConfig.api.youtubeApiKey;
                 const channelId = siteConfig.api.channelId;
 
-                // OPTIMIZATION: Fetch Channel Stats and Content Details in parallel
-                // This speeds up the initial render of the stats badge while videos load
                 const [statsRes, contentRes] = await Promise.all([
                     fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${apiKey}`, { signal }),
                     fetch(`https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`, { signal })
                 ]);
                 
                 if (!statsRes.ok) throw new Error(`YouTube API Error: ${statsRes.status}`);
+                // FIX: Added check for contentRes.ok to ensure both requests were successful.
+                if (!contentRes.ok) throw new Error(`YouTube Content API Error: ${contentRes.status}`);
                 
                 const statsData = await statsRes.json();
+                // FIX: Defined contentData by parsing the contentRes JSON response to resolve "Cannot find name 'contentData'" error.
+                const contentData = await contentRes.json();
 
                 if (statsData.items && statsData.items.length > 0) {
                     const item = statsData.items[0];
                     const s = item.statistics;
                     const sn = item.snippet;
                     
-                    // Update stats immediately so UI feels responsive
                     setStats({
                         subscribers: parseInt(s.subscriberCount),
                         views: parseInt(s.viewCount),
                         videoCount: parseInt(s.videoCount),
                         channelTitle: sn.title,
-                        channelProfilePic: sn.thumbnails.medium?.url || sn.thumbnails.default?.url
+                        channelProfilePic: sn.thumbnails.medium?.url || sn.thumbnails.default?.url,
+                        channelDescription: sn.description
                     });
                 } else {
                     throw new Error("Channel stats not found");
                 }
 
-                // Process Video List (Uploads)
-                if (!contentRes.ok) throw new Error(`Content API Error: ${contentRes.status}`);
-                
-                const contentData = await contentRes.json();
-                
                 if (contentData.items && contentData.items.length > 0) {
                     const uploadsPlaylistId = contentData.items[0].contentDetails.relatedPlaylists.uploads;
-                    
-                    // Fetch more results (50) for the sidebar browser
                     const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=50&key=${apiKey}`;
                     const playlistRes = await fetch(playlistUrl, { signal });
 
@@ -96,8 +91,6 @@ export const useYouTubeChannelStats = () => {
 
                     if (playlistData.items) {
                         const videoIds = playlistData.items.map((item: any) => item.snippet.resourceId.videoId).join(',');
-                        
-                        // Fetch detailed stats (View Counts & Duration) for these videos
                         const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoIds}&key=${apiKey}`;
                         const videosRes = await fetch(videosUrl, { signal });
                         
@@ -123,7 +116,6 @@ export const useYouTubeChannelStats = () => {
                 }
             } catch (error: any) {
                 if (error.name === 'AbortError') return;
-                // Log warning but fallback gracefully
                 console.warn("YouTube API fetch failed, using fallback data.", error.message);
                 if (!hasLoadedData.current) fallbackData();
             } finally {
@@ -137,7 +129,8 @@ export const useYouTubeChannelStats = () => {
                  views: 1540000, 
                  videoCount: 45,
                  channelTitle: siteConfig.branding.name,
-                 channelProfilePic: siteConfig.branding.profilePicUrl 
+                 channelProfilePic: siteConfig.branding.profilePicUrl,
+                 channelDescription: "Welcome to Fuad Editing Zone! I create high-quality VFX edits and graphic designs. Subscribe for cinematic visuals."
              } : prev);
 
              if (!hasLoadedData.current) {
@@ -147,7 +140,7 @@ export const useYouTubeChannelStats = () => {
                      thumbnail: v.thumbnailUrl || `https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg`,
                      publishedAt: new Date().toISOString(),
                      viewCount: v.mostViewed ? "50K" : "10K",
-                     durationSeconds: 120, // Default to long form
+                     durationSeconds: 120,
                      rawViewCount: v.mostViewed ? 50000 : 10000
                  })).filter(v => v.id);
                  setVideos(fallbackVideos);
