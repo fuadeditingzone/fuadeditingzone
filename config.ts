@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { SocialLink, Service } from './hooks/types';
 import { 
@@ -72,8 +71,8 @@ export const siteConfig = {
         channelId: 'UCFhqRIXlw0XGh3NOOvbhl6A',
     },
     seo: {
-        title: "Fuad Ahmed | Fuad Editing Zone | Professional VFX & Design",
-        description: "Professional VFX editing and graphic design services by Fuad Ahmed. High-impact visuals for content creators.",
+        title: "Fuad Ahmed | Selected Legend | Fuad Editing Zone | Professional VFX & Design",
+        description: "Official portfolio of Fuad Ahmed (Selected Legend). Professional VFX editing, high-impact photo manipulation, and graphic design for creators globally.",
     },
     content: {
         hero: {
@@ -93,9 +92,9 @@ export const siteConfig = {
         },
         introCard: {
             title: "Fuad Ahmed",
-            subtitle: "Lead VFX Artist & Graphic Designer",
+            subtitle: "Selected Legend | VFX Artist & Designer",
             skills: ["VFX Mastery", "Graphic Design", "YouTube Thumbnail", "Photo Manipulation", "AMV EDIT", "Color Science", "Motion Graphics"],
-            experience: "Over 4 years of professional experience in high-end video production and digital art. Dedicated to bringing cinematic quality to every project. Based in Sylhet, serving clients globally via Fuad Editing Zone.",
+            experience: "Over 4 years of professional experience in high-end video production and digital art. Dedicated to bringing cinematic quality to every project. Known as Selected Legend, based in Sylhet, serving clients globally via Fuad Editing Zone.",
         },
     },
 };

@@ -113,7 +113,7 @@ export const Home: React.FC<HomeProps> = ({
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 src={siteConfig.branding.profilePicUrl} 
-                                alt={`${siteConfig.branding.author} - Fuad Editing Zone Profile`} 
+                                alt="Fuad Ahmed | Selected Legend | Fuad Editing Zone Profile Picture" 
                                 onLoad={() => setIsImageLoaded(true)}
                                 className="w-full h-full object-cover object-top origin-top transition-all duration-700 group-hover:scale-105 group-hover:brightness-110" 
                             />
@@ -127,7 +127,7 @@ export const Home: React.FC<HomeProps> = ({
                         {/* Verified Badge */}
                         <div className="absolute -bottom-2 -right-2 md:-bottom-3 md:-right-3 bg-red-600 text-white py-1.5 px-3 md:py-2.5 md:px-5 rounded-full shadow-lg flex items-center gap-1.5 border border-white/20 z-40 transform hover:scale-110 transition-transform">
                             <CheckCircleIcon className="w-3 h-3 md:w-4.5 md:h-4.5 text-white" />
-                            <span className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.25em]">Pro Artist</span>
+                            <span className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em]">Selected Legend</span>
                         </div>
                     </motion.div>
 
@@ -140,7 +140,7 @@ export const Home: React.FC<HomeProps> = ({
                             className="font-black text-white tracking-tighter uppercase m-0 p-0" 
                             style={{ fontFamily: '"Montserrat", sans-serif' }}
                         >
-                            <span className="sr-only">Fuad Ahmed - Fuad Editing Zone | Selected Legend - Sykhet Vfx editor & Sylhety graphic designer</span>
+                            <span className="sr-only">Fuad Ahmed - Selected Legend - Fuad Editing Zone Portfolio | Sylhet VFX Editor & Graphic Designer | Bangladesh's Best VFX Artist</span>
                             <span className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl block -mb-[0.1em] relative leading-[0.7] opacity-90 whitespace-nowrap drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">FUAD</span>
                             <span className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl block text-red-600 relative leading-[0.7] opacity-100 whitespace-nowrap">AHMED</span>
                         </motion.h1>
