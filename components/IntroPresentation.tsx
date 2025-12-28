@@ -171,16 +171,16 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                 ))}
             </div>
 
-            {/* Content Container */}
-            <div className="relative w-full max-w-7xl h-full flex flex-col lg:flex-row gap-8 lg:gap-12 items-center justify-center z-10 p-10 md:p-16">
+            {/* Content Container - Increased padding to ensure edges are never hit */}
+            <div className="relative w-full max-w-7xl h-full flex flex-col lg:flex-row gap-8 lg:gap-12 items-center justify-center z-10 p-12 md:p-16">
                 
-                {/* Main Player Area - Responsive square that respects height and width with extra margins to prevent clipping */}
+                {/* Main Player Area - Stricter max-width to protect against mobile edge clipping */}
                 <div className="w-full flex-1 flex items-center justify-center min-h-0">
                     <motion.div 
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-                        className="relative aspect-square w-full max-w-[min(75vw,55vh,480px)] bg-black rounded-[2rem] md:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(220,38,38,0.2)] ring-1 ring-white/5"
+                        className="relative aspect-square w-full max-w-[min(70vw,50vh,460px)] bg-black rounded-[2rem] md:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(220,38,38,0.2)] ring-1 ring-white/5"
                     >
                         <video 
                             ref={videoRef}
@@ -291,9 +291,9 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                                         
                                         <div className="w-full rounded-lg overflow-hidden bg-black/40 border border-white/5 relative flex items-center justify-center aspect-video">
                                             {feature.media.type === 'video' ? (
-                                                <video src={feature.media.url} autoPlay loop muted playsInline className="w-full h-full object-contain" />
+                                                <video src={feature.media.url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
                                             ) : (
-                                                <LazyImage src={feature.media.url} alt="" className="w-full h-full object-contain" />
+                                                <LazyImage src={feature.media.url} alt="" className="w-full h-full object-cover" />
                                             )}
                                         </div>
                                     </motion.div>
