@@ -131,7 +131,7 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.1, filter: 'blur(30px)' }}
             transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-[250] bg-black flex flex-col items-center overflow-x-hidden overflow-y-auto lg:overflow-hidden select-none"
+            className="fixed inset-0 z-[250] bg-black flex flex-col items-center justify-center overflow-x-hidden overflow-y-auto lg:overflow-hidden select-none"
         >
             {/* Ambient Background Content */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
@@ -172,15 +172,15 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
             </div>
 
             {/* Content Container */}
-            <div className="relative w-full max-w-7xl min-h-full lg:h-full flex flex-col lg:flex-row gap-6 lg:gap-12 items-center justify-center z-10 p-6 md:p-10 lg:p-12">
+            <div className="relative w-full max-w-7xl h-full flex flex-col lg:flex-row gap-8 lg:gap-12 items-center justify-center z-10 p-8 md:p-16">
                 
-                {/* Main Player Area - Updated for better mobile spacing and no clipping */}
-                <div className="w-full lg:flex-1 flex items-center justify-center relative min-h-0">
+                {/* Main Player Area - Responsive square that respects height and width with clear margins */}
+                <div className="w-full flex-1 flex items-center justify-center min-h-0">
                     <motion.div 
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-                        className="relative aspect-square w-[85vw] max-w-[min(85vw,60dvh)] lg:w-full lg:max-w-[min(90vw,65dvh)] bg-black rounded-[2rem] md:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(220,38,38,0.2)] ring-1 ring-white/5"
+                        className="relative aspect-square w-full max-w-[min(80vw,60vh,500px)] bg-black rounded-[2rem] md:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(220,38,38,0.2)] ring-1 ring-white/5"
                     >
                         <video 
                             ref={videoRef}
@@ -205,35 +205,28 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                                         <motion.button 
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.95 }}
-                                            className="relative w-20 h-20 md:w-28 md:h-28 rounded-full bg-red-600 text-white flex items-center justify-center shadow-[0_0_50px_rgba(220,38,38,0.5)] border border-white/20"
+                                            className="relative w-16 h-16 md:w-24 md:h-24 rounded-full bg-red-600 text-white flex items-center justify-center shadow-[0_0_50px_rgba(220,38,38,0.5)] border border-white/20"
                                         >
-                                            <PlayIcon className="w-10 h-10 md:w-14 md:h-14 ml-1.5" />
+                                            <PlayIcon className="w-8 h-8 md:w-12 md:h-12 ml-1" />
                                         </motion.button>
                                     </div>
-                                    <p className="mt-8 text-[10px] md:text-sm font-black uppercase tracking-[0.5em] text-white animate-pulse">Enter Experience</p>
-                                    <p className="mt-2 text-[8px] text-gray-500 font-bold uppercase tracking-widest">Click to enable cinematic audio</p>
+                                    <p className="mt-8 text-[9px] md:text-xs font-black uppercase tracking-[0.5em] text-white animate-pulse">Enter Experience</p>
                                 </motion.div>
                             )}
                         </AnimatePresence>
-
-                        {/* Player Labels */}
-                        <div className="absolute top-3 left-3 md:top-6 md:left-6 flex items-center gap-1.5 z-10 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
-                            <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse shadow-[0_0_8px_rgba(220,38,38,1)]"></div>
-                            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-white/90">HQ VFX Master</span>
-                        </div>
 
                         {/* Volume Control */}
                         {playbackStarted && (
                             <button 
                                 onClick={toggleMute}
-                                className="absolute top-3 right-3 md:top-6 md:right-6 z-10 p-2.5 md:p-4 bg-black/50 hover:bg-red-600 rounded-full border border-white/10 backdrop-blur-md text-white transition-all hover:scale-110"
+                                className="absolute top-4 right-4 z-10 p-2.5 md:p-3 bg-black/50 hover:bg-red-600 rounded-full border border-white/10 backdrop-blur-md text-white transition-all hover:scale-110"
                             >
-                                {isMuted ? <VolumeOffIcon className="w-4 h-4 md:w-6 md:h-6" /> : <VolumeOnIcon className="w-4 h-4 md:w-6 md:h-6" />}
+                                {isMuted ? <VolumeOffIcon className="w-4 h-4" /> : <VolumeOnIcon className="w-4 h-4" />}
                             </button>
                         )}
 
                         {/* Progress Bar */}
-                        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/5">
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5">
                             <motion.div 
                                 className="h-full bg-red-600 shadow-[0_0_20px_rgba(220,38,38,1)]"
                                 style={{ width: `${progress}%` }}
@@ -246,19 +239,19 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                                 <motion.div 
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    className="absolute bottom-10 right-0 z-30"
+                                    className="absolute bottom-8 right-0 z-30"
                                 >
                                     {canSkip ? (
                                         <button
                                             onClick={() => onFinished()}
-                                            className="bg-black/80 hover:bg-red-600 backdrop-blur-md text-white border-l border-t border-b border-white/20 py-3 px-8 md:py-4 md:px-14 flex items-center gap-3 group transition-all"
+                                            className="bg-black/80 hover:bg-red-600 backdrop-blur-md text-white border-l border-t border-b border-white/20 py-2.5 px-6 md:py-3 md:px-10 flex items-center gap-2 group transition-all"
                                         >
-                                            <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em]">Skip Intro</span>
-                                            <ChevronRightIcon className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1.5 transition-transform" />
+                                            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em]">Skip Intro</span>
+                                            <ChevronRightIcon className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform" />
                                         </button>
                                     ) : (
-                                        <div className="bg-black/80 backdrop-blur-md text-white/60 border-l border-t border-b border-white/20 py-3 px-8 md:py-4 md:px-14 flex items-center gap-3">
-                                            <span className="text-[9px] md:text-[11px] font-black uppercase tracking-widest">Available in {skipTimer}s</span>
+                                        <div className="bg-black/80 backdrop-blur-md text-white/60 border-l border-t border-b border-white/20 py-2.5 px-6 md:py-3 md:px-10 flex items-center gap-2">
+                                            <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest">Wait {skipTimer}s</span>
                                         </div>
                                     )}
                                 </motion.div>
@@ -268,15 +261,14 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                 </div>
 
                 {/* Info Sidebar */}
-                <div className="w-full lg:w-[320px] xl:w-[360px] flex flex-col gap-4 lg:gap-6 flex-shrink-0 pb-10 lg:pb-0">
+                <div className="w-full lg:w-[300px] xl:w-[340px] flex flex-col gap-4 lg:gap-6 flex-shrink-0">
                     <div className="text-center lg:text-left">
-                        <h2 className="text-base md:text-2xl lg:text-3xl font-black text-white uppercase tracking-tighter flex items-center gap-3 justify-center lg:justify-start">
-                            Capability Showcase
-                            <div className="hidden lg:block h-0.5 flex-1 bg-gradient-to-r from-red-600 to-transparent"></div>
+                        <h2 className="text-sm md:text-xl lg:text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-3 justify-center lg:justify-start">
+                            Core Capabilities
                         </h2>
                     </div>
 
-                    <div className="relative min-h-[160px] md:min-h-[200px] lg:min-h-[240px]">
+                    <div className="relative min-h-[140px] md:min-h-[180px] lg:min-h-[220px]">
                         <AnimatePresence mode="wait">
                             {randomizedFeatures.map((feature, idx) => (
                                 idx === activeFeature && (
@@ -285,19 +277,19 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -10 }}
-                                        className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden p-4 md:p-6 space-y-4 backdrop-blur-2xl shadow-2xl"
+                                        className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden p-4 md:p-5 space-y-3 backdrop-blur-2xl"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-red-600/10 rounded-xl border border-red-600/20">
-                                                {React.cloneElement(feature.icon as React.ReactElement<any>, { className: 'w-5 h-5 md:w-6 md:h-6 text-red-500' })}
+                                            <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-red-600/10 rounded-lg border border-red-600/20">
+                                                {React.cloneElement(feature.icon as React.ReactElement<any>, { className: 'w-4 h-4 md:w-5 md:h-5 text-red-500' })}
                                             </div>
                                             <div>
-                                                <h4 className="text-xs md:text-base font-black text-white uppercase tracking-tight leading-none">{feature.title}</h4>
-                                                <p className="text-[8px] md:text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1.5">{feature.desc}</p>
+                                                <h4 className="text-[10px] md:text-sm font-black text-white uppercase tracking-tight leading-none">{feature.title}</h4>
+                                                <p className="text-[7px] md:text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">{feature.desc}</p>
                                             </div>
                                         </div>
                                         
-                                        <div className="w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 relative flex items-center justify-center aspect-video">
+                                        <div className="w-full rounded-lg overflow-hidden bg-black/40 border border-white/5 relative flex items-center justify-center aspect-video">
                                             {feature.media.type === 'video' ? (
                                                 <video src={feature.media.url} autoPlay loop muted playsInline className="w-full h-full object-contain" />
                                             ) : (
@@ -310,11 +302,11 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                         </AnimatePresence>
                     </div>
 
-                    <div className="bg-white/5 p-4 rounded-xl border border-white/10 backdrop-blur-md flex items-center justify-between">
-                         <span className="text-[10px] md:text-xs text-gray-400 font-black uppercase tracking-[0.2em]">Selected Legend • 2025</span>
-                         <div className="flex items-center gap-2">
-                            <span className="text-[9px] md:text-[11px] text-red-500 font-black uppercase tracking-widest animate-pulse">Live Edit</span>
-                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-red-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,1)]"></div>
+                    <div className="bg-white/5 p-3 rounded-lg border border-white/10 backdrop-blur-md flex items-center justify-between">
+                         <span className="text-[8px] md:text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Selected Legend • 2025</span>
+                         <div className="flex items-center gap-1.5">
+                            <span className="text-[7px] md:text-[9px] text-red-500 font-black uppercase tracking-widest animate-pulse">Live</span>
+                            <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-red-600 rounded-full"></div>
                          </div>
                     </div>
                 </div>
