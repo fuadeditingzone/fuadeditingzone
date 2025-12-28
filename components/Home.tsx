@@ -117,17 +117,12 @@ export const Home: React.FC<HomeProps> = ({
                                 onLoad={() => setIsImageLoaded(true)}
                                 className="w-full h-full object-cover object-top origin-top transition-all duration-700 group-hover:scale-105 group-hover:brightness-110" 
                             />
-
-                            {/* HUD Overlay elements (Minimal) */}
-                            <div className="absolute top-2 left-2 text-white/30 text-[6px] uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity font-mono">
-                                ID: 880-FEZ
-                            </div>
                         </div>
                         
                         {/* Verified Badge */}
                         <div className="absolute -bottom-2 -right-2 md:-bottom-3 md:-right-3 bg-red-600 text-white py-1.5 px-3 md:py-2.5 md:px-5 rounded-full shadow-lg flex items-center gap-1.5 border border-white/20 z-40 transform hover:scale-110 transition-transform">
                             <CheckCircleIcon className="w-3 h-3 md:w-4.5 md:h-4.5 text-white" />
-                            <span className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em]">Selected Legend</span>
+                            <span className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em]">Official Artist</span>
                         </div>
                     </motion.div>
 
@@ -193,7 +188,6 @@ export const Home: React.FC<HomeProps> = ({
                         transition={{ delay: 1.6, duration: 1.2 }}
                         className="flex items-center gap-8 sm:gap-14 md:gap-20 px-2"
                     >
-                        {/* Subscribers */}
                         <div className="text-left cursor-pointer group/stat flex-shrink-0" onClick={onYouTubeClick}>
                             <div className="flex items-center gap-3 md:gap-5 mb-1 md:mb-2">
                                 <div className="text-3xl sm:text-4xl md:text-7xl font-black text-white leading-none group-hover/stat:text-red-600 transition-colors" style={{ fontFamily: '"Montserrat", sans-serif' }}>
@@ -204,7 +198,6 @@ export const Home: React.FC<HomeProps> = ({
                             <span className="text-[10px] md:text-[14px] text-gray-500 font-bold uppercase tracking-[0.4em] group-hover/stat:text-red-600 transition-colors whitespace-nowrap">Subscribers</span>
                         </div>
 
-                        {/* Views */}
                         <div className="text-left border-l border-white/10 pl-8 sm:pl-14 md:pl-20 cursor-pointer group/stat flex-shrink-0" onClick={onYouTubeClick}>
                             <div className="flex items-center gap-3 md:gap-5 mb-1 md:mb-2">
                                 <div className="text-3xl sm:text-4xl md:text-7xl font-black text-white leading-none group-hover/stat:text-red-600 transition-colors" style={{ fontFamily: '"Montserrat", sans-serif' }}>
@@ -218,7 +211,6 @@ export const Home: React.FC<HomeProps> = ({
                 </div>
             </motion.div>
             
-            {/* Ambient Lighting & Glows */}
             <div className="absolute top-1/4 -left-60 w-[800px] h-[800px] bg-red-600/5 blur-[200px] rounded-full pointer-events-none"></div>
             <div className="absolute bottom-1/4 -right-60 w-[800px] h-[800px] bg-red-600/5 blur-[200px] rounded-full pointer-events-none"></div>
         </section>

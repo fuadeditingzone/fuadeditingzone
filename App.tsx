@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import type { GraphicWork, VideoWork, VfxSubTab, ModalItem } from './hooks/types';
 import { siteConfig } from './config';
@@ -11,7 +12,6 @@ import { AboutAndFooter } from './components/AboutAndFooter';
 import { ModalViewer, GalleryGridModal } from './components/ModalViewer';
 import { ContextMenu } from './components/ContextMenu';
 import { VFXBackground } from './components/VFXBackground';
-import { SpecialServicesPopup } from './components/SpecialServicesPopup';
 import { MediaSidebar } from './components/MediaSidebar';
 import { YouTubeIcon } from './components/Icons';
 import { ParallaxProvider } from './contexts/ParallaxContext';
@@ -20,10 +20,11 @@ import { ServicesListPopup } from './components/ServicesListPopup';
 import { VideoPipPlayer } from './components/VideoPipPlayer';
 import { ServiceSelectionModal } from './components/ServiceSelectionModal';
 import { YouTubeRedirectPopup } from './components/YouTubeRedirectPopup';
+import { IntroPresentation } from './components/IntroPresentation';
 
 export default function App() {
   // --- UI State ---
-  const [isSpecialServicesOpen, setIsSpecialServicesOpen] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
   const [isYouTubeApiReady, setIsYouTubeApiReady] = useState(false);
   const [modalState, setModalState] = useState<{ items: ModalItem[]; currentIndex: number } | null>(null);
   const [isGalleryGridOpen, setIsGalleryGridOpen] = useState(false);
@@ -49,10 +50,10 @@ export default function App() {
 
   // Check if any UI overlay is active to prevent hiding nav
   const isAnyOverlayActive = !!(
+    showIntro ||
     modalState || 
     isGalleryGridOpen || 
     singleImageViewerState || 
-    isSpecialServicesOpen || 
     isServicesPopupOpen || 
     selectionTarget || 
     isYouTubeRedirectOpen || 
@@ -62,14 +63,13 @@ export default function App() {
 
   // --- Navigation Visibility Inactivity Logic ---
   const handleInactivity = useCallback(() => {
-    // 1. Reset Navigation Visibility (Appear on movement)
     setIsNavVisible(true);
     if (idleTimeoutRef.current) window.clearTimeout(idleTimeoutRef.current);
     
     if (!isAnyOverlayActive) {
       idleTimeoutRef.current = window.setTimeout(() => {
         setIsNavVisible(false);
-      }, 40000); // 40 seconds to hide nav as requested
+      }, 40000); 
     }
   }, [isAnyOverlayActive]);
 
@@ -176,25 +176,31 @@ export default function App() {
   }, [modalState, singleImageViewerState, handleModalNext, handleModalPrev, handleSingleImageNext, handleModalPrev]);
 
   // Transition styles
-  const navTransitionClass = isNavVisible 
+  const navTransitionClass = (isNavVisible && !showIntro)
     ? 'opacity-100 translate-y-0 duration-200 pointer-events-auto' 
     : 'opacity-0 -translate-y-2 duration-1000 pointer-events-none';
 
-  const footerTransitionClass = isNavVisible
+  const footerTransitionClass = (isNavVisible && !showIntro)
     ? 'opacity-100 translate-y-0 duration-200 pointer-events-auto'
     : 'opacity-0 translate-y-10 duration-1000 pointer-events-none';
 
-  const sidebarBtnTransitionClass = isNavVisible
+  const sidebarBtnTransitionClass = (isNavVisible && !showIntro)
     ? 'opacity-100 translate-x-0 duration-200 pointer-events-auto'
     : 'opacity-0 translate-x-full duration-1000 pointer-events-none';
 
   return (
     <ParallaxProvider>
       <div 
-        className="text-white min-h-screen" 
+        className="text-white min-h-screen bg-black" 
         onContextMenu={handleContextMenu} 
         onClick={handleGlobalClick}
       >
+          <AnimatePresence>
+            {showIntro && (
+              <IntroPresentation onFinished={() => setShowIntro(false)} />
+            )}
+          </AnimatePresence>
+
           <VFXBackground />
           <MediaGridBackground />
 
@@ -203,8 +209,6 @@ export default function App() {
             <MobileHeader onScrollTo={handleScrollTo} />
           </div>
 
-          {isSpecialServicesOpen && <SpecialServicesPopup onClose={() => setIsSpecialServicesOpen(false)} />}
-          
           <MediaSidebar 
             isOpen={isMediaSidebarOpen} 
             onClose={() => setIsMediaSidebarOpen(false)} 
@@ -225,35 +229,44 @@ export default function App() {
               </button>
           )}
 
-          <main className="main-content relative z-10 pb-20 md:pb-0">
-              <Home 
-                onOpenServices={() => setIsServicesPopupOpen(true)} 
-                onOrderNow={() => handleScrollTo('contact')}
-                onYouTubeClick={() => setIsYouTubeRedirectOpen(true)}
-              />
-              
-              <Portfolio 
-                  openModal={handleOpenModal}
-                  activeVfxSubTab={activeVfxSubTab}
-                  setActiveVfxSubTab={setActiveVfxSubTab}
-                  isYouTubeApiReady={isYouTubeApiReady}
-                  playingVfxVideo={playingVfxVideo}
-                  setPlayingVfxVideo={setPlayingVfxVideo}
-                  pipVideo={pipVideo}
-                  setPipVideo={setPipVideo}
-                  activeYouTubeId={activeYouTubeId}
-                  setActiveYouTubeId={setActiveYouTubeId}
-                  isYtPlaying={isYtPlaying}
-                  setIsYtPlaying={setIsYtPlaying}
-                  onPortfolioPlay={() => {
-                      setIsPortfolioMediaActive(true);
-                  } }
-                  currentTime={videoCurrentTime}
-                  setCurrentTime={setVideoCurrentTime}
-              />
-              <Contact onStartOrder={setSelectionTarget} />
-              <AboutAndFooter />
-          </main>
+          <AnimatePresence>
+            {!showIntro && (
+              <motion.main 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="main-content relative z-10 pb-20 md:pb-0"
+              >
+                  <Home 
+                    onOpenServices={() => setIsServicesPopupOpen(true)} 
+                    onOrderNow={() => handleScrollTo('contact')}
+                    onYouTubeClick={() => setIsYouTubeRedirectOpen(true)}
+                  />
+                  
+                  <Portfolio 
+                      openModal={handleOpenModal}
+                      activeVfxSubTab={activeVfxSubTab}
+                      setActiveVfxSubTab={setActiveVfxSubTab}
+                      isYouTubeApiReady={isYouTubeApiReady}
+                      playingVfxVideo={playingVfxVideo}
+                      setPlayingVfxVideo={setPlayingVfxVideo}
+                      pipVideo={pipVideo}
+                      setPipVideo={setPipVideo}
+                      activeYouTubeId={activeYouTubeId}
+                      setActiveYouTubeId={setActiveYouTubeId}
+                      isYtPlaying={isYtPlaying}
+                      setIsYtPlaying={setIsYtPlaying}
+                      onPortfolioPlay={() => {
+                          setIsPortfolioMediaActive(true);
+                      } }
+                      currentTime={videoCurrentTime}
+                      setCurrentTime={setVideoCurrentTime}
+                  />
+                  <Contact onStartOrder={setSelectionTarget} />
+                  <AboutAndFooter />
+              </motion.main>
+            )}
+          </AnimatePresence>
 
           {modalState && (
               <ModalViewer

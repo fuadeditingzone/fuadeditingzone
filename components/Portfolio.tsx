@@ -29,7 +29,6 @@ interface PortfolioProps {
     setActiveYouTubeId: (id: string) => void;
     isYtPlaying: boolean;
     setIsYtPlaying: (playing: boolean) => void;
-    forcePaused?: boolean;
     onPortfolioPlay?: () => void;
     currentTime: number;
     setCurrentTime: (time: number) => void;
@@ -43,17 +42,16 @@ const VfxVideoPlayer: React.FC<{
     pipVideo: VideoWork | null;
     onPlayRequest: (video: VideoWork | null) => void;
     setPipVideo: (video: VideoWork | null) => void;
-    forcePaused?: boolean;
     currentTime: number;
     setCurrentTime: (time: number) => void;
-}> = ({ video, currentlyPlaying, pipVideo, onPlayRequest, setPipVideo, forcePaused, currentTime, setCurrentTime }) => {
+}> = ({ video, currentlyPlaying, pipVideo, onPlayRequest, setPipVideo, currentTime, setCurrentTime }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [containerRef, isVisible] = useIntersectionObserver({ threshold: 0.5 });
     const [isMuted, setIsMuted] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
     const [hasActuallyPlayed, setHasActuallyPlayed] = useState(false);
 
-    const isPlaying = currentlyPlaying?.id === video.id && !forcePaused;
+    const isPlaying = currentlyPlaying?.id === video.id;
     const isThisVideoInPip = pipVideo?.id === video.id;
 
     useEffect(() => {
@@ -61,7 +59,6 @@ const VfxVideoPlayer: React.FC<{
         if (!videoEl) return;
         
         if (isPlaying && !isThisVideoInPip) {
-            // Restore time if we just came back from PiP
             if (currentTime > 0 && Math.abs(videoEl.currentTime - currentTime) > 1) {
                 videoEl.currentTime = currentTime;
             }
@@ -69,7 +66,6 @@ const VfxVideoPlayer: React.FC<{
             setHasActuallyPlayed(true);
         } else {
             videoEl.pause();
-            // Don't reset time if we are just PiPing it
             if (!isThisVideoInPip && videoEl.currentTime !== 0) {
                 videoEl.currentTime = 0;
             }
@@ -77,7 +73,6 @@ const VfxVideoPlayer: React.FC<{
         }
     }, [isPlaying, isThisVideoInPip, currentlyPlaying]);
 
-    // Periodically sync time back to global state while playing
     useEffect(() => {
         if (!isPlaying || isThisVideoInPip) return;
         const interval = setInterval(() => {
@@ -86,7 +81,6 @@ const VfxVideoPlayer: React.FC<{
         return () => clearInterval(interval);
     }, [isPlaying, isThisVideoInPip]);
 
-    // Picture-in-Picture Logic for local/dropbox videos
     useEffect(() => {
         if (isPlaying && hasActuallyPlayed && !isVisible && !isThisVideoInPip) {
             if (videoRef.current) setCurrentTime(videoRef.current.currentTime);
@@ -146,7 +140,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     setActiveYouTubeId,
     isYtPlaying,
     setIsYtPlaying,
-    forcePaused,
     onPortfolioPlay,
     currentTime,
     setCurrentTime
@@ -157,7 +150,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     const { y } = useParallax();
     const playerRef = useRef<any>(null);
 
-    // Initial player setup
     useEffect(() => {
         if (!isYouTubeApiReady || !activeYouTubeId || activeVfxSubTab !== 'anime') return;
 
@@ -175,7 +167,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 modestbranding: 1,
                 rel: 0,
                 showinfo: 0,
-                start: Math.floor(currentTime) // Use saved time on init if exists
+                start: Math.floor(currentTime) 
             },
             events: {
                 onStateChange: (event: any) => {
@@ -197,7 +189,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         };
     }, [isYouTubeApiReady, activeYouTubeId, activeVfxSubTab]);
 
-    // Periodically sync YouTube time back to global state
     useEffect(() => {
         if (!isYtPlaying || pipVideo?.id === 'yt-pip') return;
         const interval = setInterval(() => {
@@ -208,7 +199,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         return () => clearInterval(interval);
     }, [isYtPlaying, pipVideo]);
 
-    // Sync external play/pause state with YouTube player instance
     useEffect(() => {
         if (playerRef.current && playerRef.current.getPlayerState) {
             const state = playerRef.current.getPlayerState();
@@ -229,9 +219,8 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         }
     }, [isYtPlaying, pipVideo]);
 
-    // YouTube PiP Logic: When playing and out of view, show PiP
     useEffect(() => {
-        if (!isYtVisible && isYtPlaying && activeYouTubeId && !forcePaused) {
+        if (!isYtVisible && isYtPlaying && activeYouTubeId) {
             if (!pipVideo || pipVideo.id !== 'yt-pip' || pipVideo.videoId !== activeYouTubeId) {
                 if (playerRef.current && playerRef.current.getCurrentTime) {
                     setCurrentTime(playerRef.current.getCurrentTime());
@@ -241,13 +230,12 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         } 
         else if (isYtVisible && pipVideo?.id === 'yt-pip') {
             setPipVideo(null);
-            // Restore playback position
             if (isYtPlaying && playerRef.current && playerRef.current.seekTo) {
                 playerRef.current.seekTo(currentTime);
                 playerRef.current.playVideo();
             }
         }
-    }, [isYtVisible, activeYouTubeId, isYtPlaying, pipVideo, setPipVideo, forcePaused]);
+    }, [isYtVisible, activeYouTubeId, isYtPlaying, pipVideo, setPipVideo]);
 
     const parallaxStyle = {
       transform: `translateY(${y * -5}px)`,
@@ -433,25 +421,15 @@ export const Portfolio: React.FC<PortfolioProps> = ({
 
                 {activeVfxSubTab === 'anime' ? (
                     <div className="lg:flex lg:gap-12 lg:items-start max-w-[1700px] mx-auto" ref={ytContainerRef}>
-                        {/* Left Side Gallery (Desktop) */}
                         <div className="hidden lg:flex flex-col gap-6 w-[300px] flex-shrink-0 h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/50 px-4 pt-2">
                              <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black mb-1 px-1">Playlist A</div>
                              {leftAnimeEdits.map((video, idx) => <ThumbnailButton key={video.id} video={video} index={idx} />)}
                         </div>
 
-                        {/* Main Center Player - Enlarged */}
                         <div className="flex-1 space-y-6 md:space-y-8">
                             <InteractiveCard className={`w-full mx-auto rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10 transition-opacity duration-500`}>
                                  <div className="aspect-video w-full relative">
-                                    {(!forcePaused) ? (
-                                        <div id="youtube-portfolio-player" className="w-full h-full"></div>
-                                    ) : (
-                                        <div className="w-full h-full bg-black flex items-center justify-center">
-                                            <div className="text-gray-500 text-xs uppercase tracking-widest animate-pulse">
-                                                Paused for Intro Media
-                                            </div>
-                                        </div>
-                                    )}
+                                    <div id="youtube-portfolio-player" className="w-full h-full"></div>
                                     
                                     {pipVideo?.id === 'yt-pip' && (
                                         <div className="absolute inset-0 z-20 bg-black/40 backdrop-blur-[12px] flex flex-col items-center justify-center text-center p-4 md:p-6 transition-all duration-500">
@@ -504,13 +482,11 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                  </div>
                             </InteractiveCard>
 
-                            {/* Mobile Grid Thumbs (Visible on Mobile/Tablet) */}
                             <div className="lg:hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-4 max-w-5xl mx-auto pt-2 px-1">
                                 {animeEdits.map((video, idx) => <ThumbnailButton key={video.id} video={video} index={idx} />)}
                             </div>
                         </div>
 
-                        {/* Right Side Gallery (Desktop) */}
                         <div className="hidden lg:flex flex-col gap-6 w-[300px] flex-shrink-0 h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/50 px-4 pt-2">
                              <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black mb-1 px-1 text-right">Playlist B</div>
                              {rightAnimeEdits.map((video, idx) => <ThumbnailButton key={video.id} video={video} index={idx} />)}
@@ -526,7 +502,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                 pipVideo={pipVideo}
                                 onPlayRequest={handleVfxPlayRequest}
                                 setPipVideo={setPipVideo}
-                                forcePaused={forcePaused}
                                 currentTime={currentTime}
                                 setCurrentTime={setCurrentTime}
                             />
@@ -535,12 +510,11 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 )}
             </div>
         );
-    }, [activeVfxSubTab, playingVfxVideo, pipVideo, activeYouTubeId, isYtPlaying, currentVideoStats, animeEdits, vfxEdits, setActiveVfxSubTab, setPipVideo, setActiveYouTubeId, setIsYtPlaying, forcePaused, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime]);
+    }, [activeVfxSubTab, playingVfxVideo, pipVideo, activeYouTubeId, isYtPlaying, currentVideoStats, animeEdits, vfxEdits, setActiveVfxSubTab, setPipVideo, setActiveYouTubeId, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime]);
     
     return (
         <section id="portfolio" className="select-none" style={parallaxStyle}>
             <div className="max-w-[1800px] mx-auto space-y-16 md:space-y-32 py-12 md:py-16 px-2 sm:px-6 lg:px-8">
-                {/* Graphic Design Section */}
                 <div className="relative">
                     <div 
                         className="absolute -inset-y-2 md:-inset-y-4 -inset-x-0 sm:-inset-6 md:-inset-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl md:rounded-3xl"
@@ -556,7 +530,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                     </div>
                 </div>
 
-                {/* Video Editing Section */}
                 <div id="video-editing" className="pt-8 md:pt-16 relative">
                     <div 
                         className="absolute -inset-y-2 md:-inset-y-4 -inset-x-0 sm:-inset-6 md:-inset-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl md:rounded-3xl"
