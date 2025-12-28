@@ -1,9 +1,13 @@
+
 import React from 'react';
 
 export interface GraphicWork {
   id: string | number;
   imageUrl: string;
   category: 'Photo Manipulation' | 'YouTube Thumbnails' | 'Banner Designs';
+  // FIX: Added title and description to support detailed item metadata used in data.ts and App.tsx
+  title?: string;
+  description?: string;
 }
 
 export interface VideoWork {
@@ -12,6 +16,9 @@ export interface VideoWork {
   videoId?: string;
   thumbnailUrl?: string;
   mostViewed?: boolean;
+  // FIX: Added title and description to support detailed item metadata used in data.ts and App.tsx
+  title?: string;
+  description?: string;
 }
 
 export type ModalItem = GraphicWork | VideoWork;

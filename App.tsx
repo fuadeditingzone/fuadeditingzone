@@ -98,6 +98,48 @@ export default function App() {
     return [...graphics, ...vfx, ...anime];
   }, []);
 
+  // --- Dynamic Meta Tag Updates (SEO Share Previews) ---
+  useEffect(() => {
+    const updateMeta = (title: string, desc: string, image: string) => {
+        document.title = title;
+        
+        const selectors = {
+            'meta[property="og:title"]': title,
+            'meta[name="twitter:title"]': title,
+            'meta[property="og:description"]': desc,
+            'meta[name="description"]': desc,
+            'meta[name="twitter:description"]': desc,
+            'meta[property="og:image"]': image,
+            'meta[name="twitter:image"]': image
+        };
+
+        Object.entries(selectors).forEach(([selector, value]) => {
+            const el = document.querySelector(selector);
+            if (el) el.setAttribute('content', value);
+        });
+    };
+
+    if (modalState) {
+        const item = modalState.items[modalState.currentIndex] as any;
+        const itemTitle = item.title || 'Creative Work';
+        const itemDesc = item.description || siteConfig.seo.description;
+        const itemImage = item.imageUrl || item.thumbnailUrl || `https://i.ytimg.com/vi/${item.videoId}/maxresdefault.jpg`;
+        
+        updateMeta(
+            `${itemTitle} | ${siteConfig.branding.author}`,
+            itemDesc,
+            itemImage
+        );
+    } else {
+        // Reset to default
+        updateMeta(
+            siteConfig.seo.title,
+            siteConfig.seo.description,
+            siteConfig.branding.profilePicUrl
+        );
+    }
+  }, [modalState]);
+
   // --- Deep Linking Support ---
   useEffect(() => {
     const handleHashChange = () => {
