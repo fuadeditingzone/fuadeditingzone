@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { GraphicWork, VideoWork } from '../hooks/types';
 import { LazyImage } from './LazyImage';
 import { siteConfig } from '../config';
-import { PlayIcon, VolumeOnIcon, VolumeOffIcon, HandThumbUpIcon, GlobeAltIcon, SparklesIcon, CloseIcon } from './Icons';
+import { PlayIcon, VolumeOnIcon, VolumeOffIcon, HandThumbUpIcon, GlobeAltIcon, SparklesIcon, CloseIcon, CheckCircleIcon } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { InteractiveCard } from './InteractiveCard';
 import { useParallax } from '../contexts/ParallaxContext';
@@ -14,6 +14,7 @@ declare global {
   interface Window {
     YT: any;
     onYouTubeIframeAPIReady: () => void;
+    gapi: any;
   }
 }
 
@@ -142,7 +143,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     setCurrentTime
 }) => {
     const [ytContainerRef, isYtVisible] = useIntersectionObserver({ threshold: 0.1 });
-    const { videos: youtubeVideos } = useYouTubeChannelStats();
+    const { videos: youtubeVideos, stats, loading, formatNumber } = useYouTubeChannelStats();
     const [currentVideoStats, setCurrentVideoStats] = useState<{ title: string; views: string; likes: string } | null>(null);
     const { y } = useParallax();
     const playerRef = useRef<any>(null);
@@ -187,6 +188,13 @@ export const Portfolio: React.FC<PortfolioProps> = ({
             }
         };
     }, [isYouTubeApiReady, activeYouTubeId]);
+
+    // Re-render Google Subscribe Button when the view changes
+    useEffect(() => {
+        if (window.gapi && window.gapi.ytsubscribe) {
+            window.gapi.ytsubscribe.go();
+        }
+    }, [isYtVisible]);
 
     // Handle Floating Logic via IntersectionObserver + Scroll behavior
     useEffect(() => {
@@ -330,7 +338,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 </div>
 
                 {/* Main Player Center */}
-                <div className="flex-1 space-y-6 md:space-y-8">
+                <div className="flex-1 space-y-6 md:space-y-4">
                     <div className="relative aspect-video w-full mx-auto rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10">
                         {/* THE ACTUAL PLAYER - This container is the one that floats */}
                         <motion.div 
@@ -397,29 +405,75 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                         )}
                     </div>
                     
-                    {/* Metadata Section */}
-                    <div className="bg-[#0f0f0f] p-4 md:p-10 border-t border-white/5 flex flex-col md:flex-row gap-4 md:gap-6 justify-between items-start md:items-center min-h-[90px] md:min-h-[120px] select-none">
-                            <div className="flex items-center gap-3 md:gap-5 w-full md:w-auto">
-                                {isYtPlaying && <div className="w-2 h-2 md:w-3 md:h-3 bg-red-600 rounded-full animate-pulse shadow-[0_0_15px_rgba(220,38,38,1)] flex-shrink-0"></div>}
-                                <h3 className="text-white font-bold text-lg md:text-4xl break-words tracking-tight leading-tight line-clamp-2">
-                                    {currentVideoStats ? currentVideoStats.title : 'Syncing cinematic data...'}
-                                </h3>
-                            </div>
-                            
-                            {currentVideoStats && (
-                                <div className="flex items-center gap-4 md:gap-8 flex-shrink-0 animate-fade-in mt-2 md:mt-0 w-full md:w-auto overflow-hidden">
-                                    <div className="flex-1 md:flex-none flex items-center gap-2 md:gap-3 text-gray-300 bg-white/5 px-4 md:px-8 py-2 md:py-4 rounded-full border border-white/10">
-                                        <GlobeAltIcon className="w-4 h-4 md:w-6 md:h-6" />
-                                        <span className="font-bold text-xs md:text-lg">{currentVideoStats.views}</span>
-                                        <span className="text-[7px] md:text-xs text-gray-500 uppercase tracking-widest">Views</span>
+                    {/* YouTube Style Metadata Section */}
+                    <div className="bg-[#0f0f0f] p-4 md:p-6 border-t border-white/5 space-y-4 select-none animate-fade-in">
+                        {/* Row 1: Video Title */}
+                        <div className="flex items-center gap-3">
+                            {isYtPlaying && <div className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 bg-red-600 rounded-full animate-pulse shadow-[0_0_15px_rgba(220,38,38,1)] flex-shrink-0"></div>}
+                            <h3 className="text-white font-bold text-base md:text-2xl break-words tracking-tight leading-tight line-clamp-2">
+                                {currentVideoStats ? currentVideoStats.title : 'Syncing cinematic data...'}
+                            </h3>
+                        </div>
+
+                        {/* Row 2: Channel Info & Actions */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            {/* Channel Profile & Subscribe */}
+                            <div className="flex items-center gap-3 md:gap-4">
+                                <a 
+                                    href={`https://www.youtube.com/channel/${siteConfig.api.channelId}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="relative flex-shrink-0"
+                                >
+                                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border border-white/10 ring-2 ring-red-600/20">
+                                        <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} alt={stats.channelTitle} className="w-full h-full object-cover object-top" />
                                     </div>
-                                    <div className="flex-1 md:flex-none flex items-center gap-2 md:gap-3 text-gray-300 bg-white/5 px-4 md:px-8 py-2 md:py-4 rounded-full border border-white/10">
-                                        <HandThumbUpIcon className="w-4 h-4 md:w-6 md:h-6 text-red-500" />
-                                        <span className="font-bold text-xs md:text-lg">{currentVideoStats.likes}</span>
-                                        <span className="text-[7px] md:text-xs text-gray-500 uppercase tracking-widest">Likes</span>
+                                    <div className="absolute -bottom-0.5 -right-0.5 bg-red-600 rounded-full p-0.5 border border-black">
+                                        <CheckCircleIcon className="w-2.5 h-2.5 text-white" />
+                                    </div>
+                                </a>
+                                <div className="flex flex-col min-w-0">
+                                    <a 
+                                        href={`https://www.youtube.com/channel/${siteConfig.api.channelId}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-white font-bold text-xs md:text-base leading-none truncate hover:opacity-80 transition-opacity"
+                                    >
+                                        {stats.channelTitle || siteConfig.branding.name}
+                                    </a>
+                                    <span className="text-gray-400 text-[9px] md:text-xs font-medium mt-1">
+                                        {loading ? '...' : formatNumber(stats.subscribers)} subscribers
+                                    </span>
+                                </div>
+                                
+                                {/* OFFICIAL YOUTUBE SUBSCRIBE WIDGET */}
+                                <div className="ml-2 md:ml-4 flex items-center h-10">
+                                    <div 
+                                        className="g-ytsubscribe" 
+                                        data-channelid={siteConfig.api.channelId} 
+                                        data-layout="default" 
+                                        data-count="default"
+                                        data-theme="dark"
+                                    ></div>
+                                </div>
+                            </div>
+
+                            {/* Stats Display */}
+                            {currentVideoStats && (
+                                <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
+                                    <div className="flex items-center gap-2 bg-white/5 px-3 md:px-6 py-2 md:py-3 rounded-full border border-white/10 text-gray-300">
+                                        <GlobeAltIcon className="w-3.5 h-3.5 md:w-5 md:h-5 text-gray-500" />
+                                        <span className="font-bold text-[10px] md:text-sm">{currentVideoStats.views}</span>
+                                        <span className="text-[8px] md:text-[10px] text-gray-600 font-black uppercase tracking-widest hidden sm:inline">Views</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 bg-white/5 px-3 md:px-6 py-2 md:py-3 rounded-full border border-white/10 text-gray-300">
+                                        <HandThumbUpIcon className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-600" />
+                                        <span className="font-bold text-[10px] md:text-sm">{currentVideoStats.likes}</span>
+                                        <span className="text-[8px] md:text-[10px] text-gray-600 font-black uppercase tracking-widest hidden sm:inline">Likes</span>
                                     </div>
                                 </div>
                             )}
+                        </div>
                     </div>
 
                     <div className="lg:hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-4 max-w-5xl mx-auto pt-2 px-1">
@@ -434,7 +488,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 </div>
             </div>
         );
-    }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, isFloating, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime]);
+    }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, isFloating, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime, stats, loading, formatNumber]);
 
     const GraphicDesignContent = useMemo(() => {
         const categories: GraphicWork['category'][] = ['Photo Manipulation', 'YouTube Thumbnails', 'Banner Designs'];
