@@ -25,13 +25,6 @@ export const IntroCard = () => {
             </div>
 
             <div className="container mx-auto px-6 relative z-10">
-                <div className="text-center mb-10 md:mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tighter">
-                        The Mastermind Behind <span className="text-red-600">Fuad Editing Zone</span>
-                    </h2>
-                    <div className="w-16 md:w-20 h-1 md:h-1.5 bg-red-600 mx-auto mt-3 rounded-full"></div>
-                </div>
-
                 <InteractiveCard className="relative w-full max-w-5xl mx-auto bg-gradient-to-br from-gray-900/80 to-black/90 backdrop-blur-2xl rounded-[1.5rem] md:rounded-[2rem] border border-white/10 p-6 md:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-visible">
                     <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
                         

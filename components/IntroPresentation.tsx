@@ -171,10 +171,10 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                 ))}
             </div>
 
-            {/* Content Container: Centered properly on all screens with flexible stacking */}
-            <div className="relative w-full max-w-7xl flex-1 flex flex-col lg:flex-row gap-6 lg:gap-12 items-center justify-center z-10 p-6 md:p-10 lg:p-12">
+            {/* Content Container: Dynamic stacking with NO clipping */}
+            <div className="relative w-full max-w-7xl min-h-full lg:h-full flex flex-col lg:flex-row gap-6 lg:gap-12 items-center justify-center z-10 p-6 md:p-10 lg:p-12">
                 
-                {/* Main Player Area - Restrict size on mobile to prevent clipping */}
+                {/* Main Player Area */}
                 <div className="w-full lg:flex-1 flex items-center justify-center relative min-h-0">
                     <motion.div 
                         initial={{ scale: 0.9, opacity: 0 }}
@@ -263,8 +263,8 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                     </motion.div>
                 </div>
 
-                {/* Info Sidebar: expertise cards and status - Optimized for no clipping */}
-                <div className="w-full lg:w-[320px] xl:w-[360px] flex flex-col gap-4 lg:gap-6 flex-shrink-0">
+                {/* Info Sidebar: expertise cards and status - No clipping, Original aspect ratios */}
+                <div className="w-full lg:w-[320px] xl:w-[360px] flex flex-col gap-4 lg:gap-6 flex-shrink-0 pb-10 lg:pb-0">
                     <div className="text-center lg:text-left">
                         <h2 className="text-base md:text-2xl lg:text-3xl font-black text-white uppercase tracking-tighter flex items-center gap-3 justify-center lg:justify-start">
                             Expertise
@@ -293,11 +293,14 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                                             </div>
                                         </div>
                                         
-                                        <div className="aspect-video w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 relative">
+                                        {/* Original Size / No Crop Container */}
+                                        <div className="w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 relative flex items-center justify-center">
                                             {feature.media.type === 'video' ? (
-                                                <video src={feature.media.url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                                                <video src={feature.media.url} autoPlay loop muted playsInline className="w-full h-auto max-h-[160px] md:max-h-[200px] object-contain" />
                                             ) : (
-                                                <LazyImage src={feature.media.url} alt="" className="w-full h-full object-cover" />
+                                                <div className="w-full h-auto max-h-[160px] md:max-h-[200px] overflow-hidden flex items-center justify-center">
+                                                    <LazyImage src={feature.media.url} alt="" className="w-full h-auto max-h-[160px] md:max-h-[200px] object-contain" />
+                                                </div>
                                             )}
                                         </div>
                                     </motion.div>
@@ -317,8 +320,8 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                 </div>
             </div>
 
-            {/* Sub-label Branding Footer - Pushed to bottom with enough padding for mobile UI */}
-            <div className="relative mt-auto pb-8 flex flex-col items-center gap-2.5 opacity-30 pointer-events-none z-10 px-4 text-center">
+            {/* Sub-label Branding Footer */}
+            <div className="relative mt-auto pb-10 flex flex-col items-center gap-2.5 opacity-30 pointer-events-none z-10 px-4 text-center flex-shrink-0">
                 <span className="text-[8px] md:text-[10px] text-white uppercase tracking-[0.6em] font-black">Official Presentation • Fuad Ahmed • 2025</span>
                 <div className="flex gap-3">
                     <div className="w-1 h-1 bg-white rounded-full"></div>

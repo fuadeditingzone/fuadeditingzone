@@ -24,7 +24,13 @@ import { IntroPresentation } from './components/IntroPresentation';
 
 export default function App() {
   // --- UI State ---
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(() => {
+    // Check if user has already seen the intro
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('fez_intro_seen');
+    }
+    return true;
+  });
   const [isYouTubeApiReady, setIsYouTubeApiReady] = useState(false);
   const [modalState, setModalState] = useState<{ items: ModalItem[]; currentIndex: number } | null>(null);
   const [isGalleryGridOpen, setIsGalleryGridOpen] = useState(false);
@@ -175,6 +181,12 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [modalState, singleImageViewerState, handleModalNext, handleModalPrev, handleSingleImageNext, handleModalPrev]);
 
+  // Handle intro finish
+  const handleIntroFinished = () => {
+    localStorage.setItem('fez_intro_seen', 'true');
+    setShowIntro(false);
+  };
+
   // Transition styles
   const navTransitionClass = (isNavVisible && !showIntro)
     ? 'opacity-100 translate-y-0 duration-200 pointer-events-auto' 
@@ -197,7 +209,7 @@ export default function App() {
       >
           <AnimatePresence>
             {showIntro && (
-              <IntroPresentation onFinished={() => setShowIntro(false)} />
+              <IntroPresentation onFinished={handleIntroFinished} />
             )}
           </AnimatePresence>
 
