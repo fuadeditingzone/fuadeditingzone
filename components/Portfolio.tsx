@@ -102,7 +102,6 @@ const VfxVideoPlayer: React.FC<{
     };
 
     return (
-        // FIX: Corrected attribute naming from itemscope/itemtype to itemScope/itemType for React.
         <div ref={containerRef} itemScope itemType="http://schema.org/VideoObject">
             <InteractiveCard className={`relative group w-full aspect-square bg-gray-900 rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 select-none ${isPlaying ? 'shadow-2xl z-10' : 'opacity-90 hover:opacity-100'} ${isThisVideoInPip ? 'opacity-30 pointer-events-none' : ''}`}>
                 <figure className="w-full h-full m-0 p-0" onClick={handlePlayRequest}>
@@ -112,12 +111,10 @@ const VfxVideoPlayer: React.FC<{
                         loop
                         muted={isMuted}
                         playsInline
-                        // FIX: Corrected attribute naming from itemprop to itemProp.
                         itemProp="contentUrl"
                         className="w-full h-full object-cover"
                         onCanPlay={() => setIsLoading(false)}
                     />
-                    {/* FIX: Corrected attribute naming from itemprop to itemProp. */}
                     <meta itemProp="name" content={video.title || "VFX Portfolio Piece"} />
                     <meta itemProp="description" content={video.description || "Cinematic VFX edit by Fuad Ahmed."} />
                     <meta itemProp="uploadDate" content="2025-01-01" />
@@ -226,7 +223,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         });
         filteredVideos.sort((a, b) => (b.rawViewCount || 0) - (a.rawViewCount || 0));
         const finalSelection = filteredVideos.slice(0, 20);
-        // FIX: Added title and description properties to the mapped objects to satisfy the GraphicWork interface and component expectations.
         return [...graphicWorks, ...finalSelection.map(v => ({ 
             id: v.id, 
             imageUrl: v.thumbnail, 
@@ -347,6 +343,12 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                     const filtered = dynamicGraphicWorks.filter(w => w.category === cat);
                     const CategoryIcon = cat === 'Photo Manipulation' ? PhotoManipulationIcon : 
                                          cat === 'YouTube Thumbnails' ? ThumbnailIcon : BannerIcon;
+                    
+                    // Determine grid aspect ratio based on category
+                    // YouTube Thumbnails and Banner Designs should be in 16:9
+                    const gridAspect = (cat === 'YouTube Thumbnails' || cat === 'Banner Designs') ? 'aspect-video' : 'aspect-[4/3]';
+                    const imageFit = (cat === 'YouTube Thumbnails' || cat === 'Banner Designs') ? 'object-cover' : 'object-contain';
+
                     return (
                         <div key={cat} className="space-y-6">
                             <div className="flex items-center gap-3 border-l-4 border-red-600 pl-4 mb-8">
@@ -357,17 +359,14 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                 {filtered.map((work) => {
                                     const origIdx = dynamicGraphicWorks.findIndex(item => item.id === work.id);
                                     return (
-                                        // FIX: Corrected attribute naming from itemscope/itemtype to itemScope/itemType for React.
                                         <div key={work.id} onClick={() => openModal(dynamicGraphicWorks, origIdx)} itemScope itemType="http://schema.org/ImageObject">
-                                            <InteractiveCard className="relative group rounded-xl overflow-hidden bg-black cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/10 aspect-[4/3]">
+                                            <InteractiveCard className={`relative group rounded-xl overflow-hidden bg-black cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/10 ${gridAspect}`}>
                                                 <figure className="w-full h-full m-0 p-0 transition-transform duration-300 group-hover:scale-105">
                                                   <LazyImage 
                                                     src={work.imageUrl} 
                                                     alt={`${work.title || work.category} - Digital Art by Fuad Ahmed`} 
-                                                    // FIX: Corrected attribute naming from itemprop to itemProp.
-                                                    className="relative w-full h-full object-contain" 
+                                                    className={`relative w-full h-full ${imageFit}`} 
                                                   />
-                                                  {/* FIX: Corrected attribute naming from itemprop to itemProp. */}
                                                   <figcaption className="sr-only" itemProp="caption">{work.title} - {work.category} work at Fuad Editing Zone.</figcaption>
                                                 </figure>
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">

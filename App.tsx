@@ -86,7 +86,7 @@ export default function App() {
         document.title = title;
         
         // Target all major social preview variants
-        const selectors = {
+        const selectors: Record<string, string> = {
             'meta[property="og:title"]': title,
             'meta[name="twitter:title"]': title,
             'meta[name="title"]': title,
@@ -99,6 +99,13 @@ export default function App() {
             'link[rel="canonical"]': window.location.href
         };
 
+        // If it's a video, hint the type
+        if (item && (item.videoId || item.url)) {
+            selectors['meta[property="og:type"]'] = 'video.other';
+        } else {
+            selectors['meta[property="og:type"]'] = 'website';
+        }
+
         Object.entries(selectors).forEach(([selector, value]) => {
             const el = document.querySelector(selector);
             if (el) {
@@ -107,11 +114,23 @@ export default function App() {
             }
         });
 
-        // Forced high-quality dimension hints for crawlers
-        const widthTag = document.querySelector('meta[property="og:image:width"]');
-        const heightTag = document.querySelector('meta[property="og:image:height"]');
-        if (widthTag) widthTag.setAttribute('content', '1200');
-        if (heightTag) heightTag.setAttribute('content', '630');
+        // Forced high-quality dimension hints for crawlers (1200x630)
+        let widthTag = document.querySelector('meta[property="og:image:width"]');
+        let heightTag = document.querySelector('meta[property="og:image:height"]');
+        
+        if (!widthTag) {
+            widthTag = document.createElement('meta');
+            widthTag.setAttribute('property', 'og:image:width');
+            document.head.appendChild(widthTag);
+        }
+        if (!heightTag) {
+            heightTag = document.createElement('meta');
+            heightTag.setAttribute('property', 'og:image:height');
+            document.head.appendChild(heightTag);
+        }
+        
+        widthTag.setAttribute('content', '1200');
+        heightTag.setAttribute('content', '630');
 
         // JSON-LD Injection for Google Search Discovery
         let existingSchema = document.getElementById('fez-item-schema');
@@ -155,8 +174,18 @@ export default function App() {
         const item = modalState.items[modalState.currentIndex] as any;
         const itemTitle = item.title || 'Official Portfolio Piece';
         const itemDesc = item.description || siteConfig.seo.description;
-        // Priority: Direct Image > High Res YouTube Thumb > Default Profile
-        const itemImage = item.imageUrl || item.thumbnailUrl || (item.videoId ? `https://i.ytimg.com/vi/${item.videoId}/maxresdefault.jpg` : siteConfig.branding.profilePicUrl);
+        
+        // Priority high-quality image selection
+        let itemImage = siteConfig.branding.profilePicUrl;
+        if (item.imageUrl) {
+            itemImage = item.imageUrl;
+        } else if (item.videoId) {
+            // Force High Res YouTube Thumbnail for sharing
+            itemImage = `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg`;
+        } else if (item.thumbnailUrl) {
+            itemImage = item.thumbnailUrl;
+        }
+
         updateMeta(`${itemTitle} | Fuad Editing Zone`, itemDesc, itemImage, item);
     } else {
         updateMeta(siteConfig.seo.title, siteConfig.seo.description, siteConfig.branding.profilePicUrl);

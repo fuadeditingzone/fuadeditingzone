@@ -500,7 +500,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
             role="dialog"
             aria-modal="true"
         >
-            {isImage(currentItem) && (
+            {isImage(currentItem) && !isYouTubeThumbnail && (
                 <div 
                     className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-3xl brightness-50 scale-110 transition-all duration-300 opacity-60"
                     style={{ backgroundImage: `url(${currentItem.imageUrl})` }}
@@ -567,7 +567,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                         aria-label={isZoomed ? "Zoom out" : "Zoom in"}
                         className="text-white/70 hover:text-white transition-colors p-2.5 rounded-full bg-black/50 hover:bg-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white border border-white/10 backdrop-blur-sm"
                     >
-                        {isZoomed ? <ZoomOutIcon className="h-6 w-6 md:h-8 md:w-8" /> : <ZoomInIcon className="h-6 w-6 md:h-8 md:w-8" />}
+                        {isZoomed ? <ZoomOutIcon className="h-6 w-6 md:h-8 md:w-8" : <ZoomInIcon className="h-6 w-6 md:h-8 md:w-8" />}
                     </button>
                 )}
                 <button
