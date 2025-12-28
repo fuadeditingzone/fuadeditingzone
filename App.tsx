@@ -80,10 +80,12 @@ export default function App() {
     return [...graphics, ...vfx, ...anime];
   }, []);
 
-  // --- DYNAMIC META TAG SYNC FOR SHARING ---
+  // --- ENHANCED SEO ENGINE (Meta Tags & JSON-LD) ---
   useEffect(() => {
-    const updateMeta = (title: string, desc: string, image: string) => {
+    const updateMeta = (title: string, desc: string, image: string, item?: any) => {
         document.title = title;
+        
+        // Standard Meta Tags
         const selectors = {
             'meta[property="og:title"]': title,
             'meta[name="twitter:title"]': title,
@@ -96,6 +98,7 @@ export default function App() {
             'meta[property="og:url"]': window.location.href,
             'link[rel="canonical"]': window.location.href
         };
+
         Object.entries(selectors).forEach(([selector, value]) => {
             const el = document.querySelector(selector);
             if (el) {
@@ -103,6 +106,43 @@ export default function App() {
                 else el.setAttribute('content', value);
             }
         });
+
+        // JSON-LD Injection for Google Search Discovery
+        let existingSchema = document.getElementById('fez-item-schema');
+        if (existingSchema) existingSchema.remove();
+
+        if (item) {
+            const isVideo = item.videoId || item.url;
+            const schemaData = isVideo ? {
+                "@context": "https://schema.org",
+                "@type": "VideoObject",
+                "name": title,
+                "description": desc,
+                "thumbnailUrl": image,
+                "uploadDate": new Date().toISOString(), // Standard placeholder
+                "contentUrl": item.url || `https://www.youtube.com/watch?v=${item.videoId}`,
+                "embedUrl": item.videoId ? `https://www.youtube.com/embed/${item.videoId}` : item.url,
+                "publisher": {
+                    "@type": "Organization",
+                    "name": "Fuad Editing Zone",
+                    "logo": { "@type": "ImageObject", "url": siteConfig.branding.logoUrl }
+                }
+            } : {
+                "@context": "https://schema.org",
+                "@type": "ImageObject",
+                "contentUrl": image,
+                "name": title,
+                "description": desc,
+                "author": "Fuad Ahmed",
+                "creator": "Selected Legend"
+            };
+
+            const script = document.createElement('script');
+            script.id = 'fez-item-schema';
+            script.type = 'application/ld+json';
+            script.text = JSON.stringify(schemaData);
+            document.head.appendChild(script);
+        }
     };
 
     if (modalState) {
@@ -110,7 +150,7 @@ export default function App() {
         const itemTitle = item.title || 'Official Portfolio Piece';
         const itemDesc = item.description || siteConfig.seo.description;
         const itemImage = item.imageUrl || item.thumbnailUrl || (item.videoId ? `https://i.ytimg.com/vi/${item.videoId}/maxresdefault.jpg` : siteConfig.branding.profilePicUrl);
-        updateMeta(`${itemTitle} | Fuad Editing Zone`, itemDesc, itemImage);
+        updateMeta(`${itemTitle} | Fuad Editing Zone`, itemDesc, itemImage, item);
     } else {
         updateMeta(siteConfig.seo.title, siteConfig.seo.description, siteConfig.branding.profilePicUrl);
     }
