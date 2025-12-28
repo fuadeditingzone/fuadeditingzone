@@ -27,7 +27,6 @@ export default function App() {
   // --- UI State ---
   const [showIntro, setShowIntro] = useState(() => {
     if (typeof window !== 'undefined') {
-      // Switched to sessionStorage so it shows back for new sessions/tabs
       return !sessionStorage.getItem('fez_intro_seen');
     }
     return true;
@@ -48,11 +47,10 @@ export default function App() {
   const idleTimeoutRef = useRef<number | null>(null);
 
   // --- Global Video State ---
-  const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.content.portfolio.animeEdits[0]?.videoId || '');
+  const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.api.channelId ? '' : '');
   const [isYtPlaying, setIsYtPlaying] = useState(false);
   const [playingVfxVideo, setPlayingVfxVideo] = useState<VideoWork | null>(null);
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
-  const [isPortfolioMediaActive, setIsPortfolioMediaActive] = useState(false);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
   const isAnyOverlayActive = !!(showIntro || modalState || isGalleryGridOpen || singleImageViewerState || isServicesPopupOpen || selectionTarget || isYouTubeRedirectOpen || isMediaSidebarOpen || contextMenu);
@@ -82,85 +80,55 @@ export default function App() {
     return [...graphics, ...vfx, ...anime];
   }, []);
 
-  // --- ENHANCED SEO ENGINE (Meta Tags & JSON-LD) ---
+  // --- ENHANCED SEO ENGINE (Meta Tags & Social Previews) ---
   useEffect(() => {
     const updateMeta = (title: string, desc: string, image: string, item?: any) => {
         document.title = title;
         
-        const selectors: Record<string, string> = {
+        const metaConfig: Record<string, string> = {
             'meta[property="og:title"]': title,
             'meta[name="twitter:title"]': title,
             'meta[name="title"]': title,
+            'meta[itemprop="name"]': title,
             'meta[property="og:description"]': desc,
             'meta[name="description"]': desc,
             'meta[name="twitter:description"]': desc,
+            'meta[itemprop="description"]': desc,
             'meta[property="og:image"]': image,
             'meta[property="og:image:secure_url"]': image,
             'meta[name="twitter:image"]': image,
+            'meta[itemprop="image"]': image,
             'meta[property="og:url"]': window.location.href,
             'link[rel="canonical"]': window.location.href
         };
 
-        if (item && (item.videoId || item.url)) {
-            selectors['meta[property="og:type"]'] = 'video.other';
-        } else {
-            selectors['meta[property="og:type"]'] = 'website';
-        }
-
-        Object.entries(selectors).forEach(([selector, value]) => {
+        Object.entries(metaConfig).forEach(([selector, value]) => {
             const el = document.querySelector(selector);
             if (el) {
                 if (el.tagName === 'LINK') el.setAttribute('href', value);
                 else el.setAttribute('content', value);
-            } else {
-                // If tag doesn't exist, try to create it for property-based tags
-                if (selector.startsWith('meta[property=')) {
-                    const newMeta = document.createElement('meta');
-                    const prop = selector.match(/property="([^"]+)"/)?.[1];
-                    if (prop) {
-                        newMeta.setAttribute('property', prop);
-                        newMeta.setAttribute('content', value);
-                        document.head.appendChild(newMeta);
-                    }
-                }
             }
         });
 
-        let widthTag = document.querySelector('meta[property="og:image:width"]');
-        let heightTag = document.querySelector('meta[property="og:image:height"]');
-        
-        if (!widthTag) {
-            widthTag = document.createElement('meta');
-            widthTag.setAttribute('property', 'og:image:width');
-            document.head.appendChild(widthTag);
-        }
-        if (!heightTag) {
-            heightTag = document.createElement('meta');
-            heightTag.setAttribute('property', 'og:image:height');
-            document.head.appendChild(heightTag);
-        }
-        
-        widthTag.setAttribute('content', '1200');
-        heightTag.setAttribute('content', '630');
+        // Forced Dimensions for Social Bots
+        ['meta[property="og:image:width"]', 'meta[property="og:image:height"]'].forEach(sel => {
+            const el = document.querySelector(sel);
+            if (el) el.setAttribute('content', sel.includes('width') ? '1200' : '630');
+        });
     };
 
     if (modalState) {
         const item = modalState.items[modalState.currentIndex] as any;
-        const itemTitle = item.title || 'Official Portfolio Piece';
+        const itemTitle = item.title || 'Official Portfolio Work';
         const itemDesc = item.description || siteConfig.seo.description;
         
         let itemImage = siteConfig.branding.profilePicUrl;
-        if (item.imageUrl) {
-            itemImage = item.imageUrl;
-        } else if (item.videoId) {
-            itemImage = `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg`;
-        } else if (item.thumbnailUrl) {
-            itemImage = item.thumbnailUrl;
-        }
+        if (item.imageUrl) itemImage = item.imageUrl;
+        else if (item.videoId) itemImage = `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg`;
+        else if (item.thumbnailUrl) itemImage = item.thumbnailUrl;
 
         updateMeta(`${itemTitle} | Fuad Editing Zone`, itemDesc, itemImage, item);
     } else {
-        // Use the default hero/site image when not in a modal
         const defaultImage = "https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1";
         updateMeta(siteConfig.seo.title, siteConfig.seo.description, defaultImage);
     }
@@ -211,7 +179,6 @@ export default function App() {
             return { ...item, slug: `${prefix}-${item.id}` };
           });
           setModalState({ items: itemsWithSlugs, currentIndex: startIndex });
-          setIsPortfolioMediaActive(false);
       }
   };
 
@@ -222,11 +189,6 @@ export default function App() {
   
   const handleModalNext = useCallback(() => { setModalState(s => s ? { ...s, currentIndex: (s.currentIndex + 1) % s.items.length } : null); }, []);
   const handleModalPrev = useCallback(() => { setModalState(s => s ? { ...s, currentIndex: (s.currentIndex - 1 + s.items.length) % s.items.length } : null); }, []);
-
-  const handleReplayIntro = () => {
-    setShowIntro(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   return (
     <ParallaxProvider>
@@ -260,7 +222,7 @@ export default function App() {
                       <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
                       <Portfolio openModal={handleOpenModal} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
                       <Contact onStartOrder={setSelectionTarget} />
-                      <AboutAndFooter onReplayIntro={handleReplayIntro} />
+                      <AboutAndFooter onReplayIntro={() => setShowIntro(true)} />
                   </motion.main>
               )}
           </AnimatePresence>

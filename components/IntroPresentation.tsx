@@ -172,15 +172,15 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
             </div>
 
             {/* Content Container */}
-            <div className="relative w-full max-w-7xl h-full flex flex-col lg:flex-row gap-8 lg:gap-12 items-center justify-center z-10 p-8 md:p-16">
+            <div className="relative w-full max-w-7xl h-full flex flex-col lg:flex-row gap-8 lg:gap-12 items-center justify-center z-10 p-10 md:p-16">
                 
-                {/* Main Player Area - Responsive square that respects height and width with clear margins */}
+                {/* Main Player Area - Responsive square that respects height and width with extra margins to prevent clipping */}
                 <div className="w-full flex-1 flex items-center justify-center min-h-0">
                     <motion.div 
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-                        className="relative aspect-square w-full max-w-[min(80vw,60vh,500px)] bg-black rounded-[2rem] md:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(220,38,38,0.2)] ring-1 ring-white/5"
+                        className="relative aspect-square w-full max-w-[min(75vw,55vh,480px)] bg-black rounded-[2rem] md:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(220,38,38,0.2)] ring-1 ring-white/5"
                     >
                         <video 
                             ref={videoRef}
