@@ -36,7 +36,6 @@ export default function App() {
   const [isGalleryGridOpen, setIsGalleryGridOpen] = useState(false);
   const [singleImageViewerState, setSingleImageViewerState] = useState<{ items: GraphicWork[]; currentIndex: number } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-  const [activeVfxSubTab, setActiveVfxSubTab] = useState<VfxSubTab>('anime');
   const [isMediaSidebarOpen, setIsMediaSidebarOpen] = useState(false);
   const [isServicesPopupOpen, setIsServicesPopupOpen] = useState(false);
   const [selectionTarget, setSelectionTarget] = useState<'whatsapp' | 'email' | null>(null);
@@ -257,8 +256,6 @@ export default function App() {
                   
                   <Portfolio 
                       openModal={handleOpenModal}
-                      activeVfxSubTab={activeVfxSubTab}
-                      setActiveVfxSubTab={setActiveVfxSubTab}
                       isYouTubeApiReady={isYouTubeApiReady}
                       playingVfxVideo={playingVfxVideo}
                       setPlayingVfxVideo={setPlayingVfxVideo}
