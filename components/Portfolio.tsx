@@ -14,7 +14,6 @@ declare global {
   interface Window {
     YT: any;
     onYouTubeIframeAPIReady: () => void;
-    gapi: any;
   }
 }
 
@@ -188,13 +187,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
             }
         };
     }, [isYouTubeApiReady, activeYouTubeId]);
-
-    // Re-render Google Subscribe Button when the view changes
-    useEffect(() => {
-        if (window.gapi && window.gapi.ytsubscribe) {
-            window.gapi.ytsubscribe.go();
-        }
-    }, [isYtVisible]);
 
     // Handle Floating Logic via IntersectionObserver + Scroll behavior
     useEffect(() => {
@@ -445,17 +437,14 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                         {loading ? '...' : formatNumber(stats.subscribers)} subscribers
                                     </span>
                                 </div>
-                                
-                                {/* OFFICIAL YOUTUBE SUBSCRIBE WIDGET */}
-                                <div className="ml-2 md:ml-4 flex items-center h-10">
-                                    <div 
-                                        className="g-ytsubscribe" 
-                                        data-channelid={siteConfig.api.channelId} 
-                                        data-layout="default" 
-                                        data-count="default"
-                                        data-theme="dark"
-                                    ></div>
-                                </div>
+                                <a 
+                                    href={`https://www.youtube.com/channel/${siteConfig.api.channelId}?sub_confirmation=1`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="ml-2 md:ml-4 bg-white hover:bg-gray-200 text-black px-4 md:px-6 py-1.5 md:py-2.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-wider transition-all shadow-lg active:scale-95"
+                                >
+                                    Subscribe
+                                </a>
                             </div>
 
                             {/* Stats Display */}
