@@ -106,22 +106,16 @@ export default function App() {
         const selectors = {
             'meta[property="og:title"]': title,
             'meta[name="twitter:title"]': title,
-            'meta[name="title"]': title,
             'meta[property="og:description"]': desc,
             'meta[name="description"]': desc,
             'meta[name="twitter:description"]': desc,
             'meta[property="og:image"]': image,
-            'meta[name="twitter:image"]': image,
-            'meta[property="og:url"]': window.location.href,
-            'link[rel="canonical"]': window.location.href
+            'meta[name="twitter:image"]': image
         };
 
         Object.entries(selectors).forEach(([selector, value]) => {
             const el = document.querySelector(selector);
-            if (el) {
-                if (el.tagName === 'LINK') el.setAttribute('href', value);
-                else el.setAttribute('content', value);
-            }
+            if (el) el.setAttribute('content', value);
         });
     };
 

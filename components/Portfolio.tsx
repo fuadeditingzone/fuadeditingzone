@@ -6,8 +6,7 @@ import { siteConfig } from '../config';
 import { 
     PlayIcon, VolumeOnIcon, VolumeOffIcon, HandThumbUpIcon, 
     GlobeAltIcon, SparklesIcon, CloseIcon, CheckCircleIcon,
-    ShareIcon, DownloadIcon, ThreeDotsIcon, PhotoManipulationIcon,
-    ThumbnailIcon, BannerIcon
+    ShareIcon, DownloadIcon, ThreeDotsIcon
 } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { InteractiveCard } from './InteractiveCard';
@@ -150,9 +149,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     const [ytContainerRef, isYtVisible] = useIntersectionObserver({ threshold: 0.1 });
     const { videos: youtubeVideos, stats, loading, formatNumber } = useYouTubeChannelStats();
     
-    // --- Portfolio State ---
-    const [currentGraphicFilter, setCurrentGraphicFilter] = useState<'All' | GraphicWork['category']>('All');
-
     // --- Video Metadata State ---
     const [currentVideoStats, setCurrentVideoStats] = useState<{ id: string; title: string; views: string; likes: number; formattedLikes: string } | null>(null);
     const [userLikes, setUserLikes] = useState<Record<string, boolean>>({});
@@ -458,74 +454,37 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, isFloating, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime, stats, loading, formatNumber, userLikes, likeCountOverrides]);
 
     const GraphicDesignContent = useMemo(() => {
-        const filterOptions: ('All' | GraphicWork['category'])[] = ['All', 'Photo Manipulation', 'YouTube Thumbnails', 'Banner Designs'];
-        
-        const filteredWorks = currentGraphicFilter === 'All' 
-            ? dynamicGraphicWorks 
-            : dynamicGraphicWorks.filter(w => w.category === currentGraphicFilter);
-
+        const categories: GraphicWork['category'][] = ['Photo Manipulation', 'YouTube Thumbnails', 'Banner Designs'];
         return (
-            <div className="space-y-10 animate-fade-in">
-                {/* Modern Filter Bar */}
-                <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 mb-8">
-                    {filterOptions.map((filter) => {
-                        const Icon = filter === 'Photo Manipulation' ? PhotoManipulationIcon : 
-                                     filter === 'YouTube Thumbnails' ? ThumbnailIcon : 
-                                     filter === 'Banner Designs' ? BannerIcon : GlobeAltIcon;
-                        const isActive = currentGraphicFilter === filter;
-                        return (
-                            <button
-                                key={filter}
-                                onClick={() => setCurrentGraphicFilter(filter)}
-                                className={`flex items-center gap-2.5 px-5 md:px-7 py-2.5 md:py-3.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 border ${
-                                    isActive 
-                                        ? 'bg-red-600 border-red-600 text-white shadow-[0_10px_30px_rgba(220,38,38,0.3)]' 
-                                        : 'bg-white/5 border-white/10 text-gray-500 hover:text-white hover:bg-white/10'
-                                }`}
-                            >
-                                <Icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isActive ? 'text-white' : 'text-gray-500'}`} />
-                                {filter}
-                            </button>
-                        );
-                    })}
-                </div>
-
-                <motion.div 
-                    layout
-                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4"
-                >
-                    <AnimatePresence mode="popLayout">
-                        {filteredWorks.map((work) => {
-                            const origIdx = dynamicGraphicWorks.findIndex(item => item.id === work.id);
-                            return (
-                                <motion.div 
-                                    key={`${work.id}-${work.category}`}
-                                    layout
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    transition={{ duration: 0.4 }}
-                                    onClick={() => openModal(dynamicGraphicWorks, origIdx)}
-                                >
-                                    <InteractiveCard className="relative group rounded-xl sm:rounded-2xl overflow-hidden bg-black cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/10 aspect-[4/3]">
-                                        <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
-                                          <img src={work.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover filter blur-lg brightness-50 scale-110" aria-hidden="true" />
-                                          <LazyImage src={work.imageUrl} alt={work.category} className="relative w-full h-full object-contain" />
+            <div className="space-y-16 animate-fade-in">
+                {categories.map(category => {
+                    const works = dynamicGraphicWorks.filter(w => w.category === category);
+                    if (works.length === 0) return null;
+                    return (
+                        <div key={category} className="space-y-6">
+                            <h3 className="text-2xl font-bold text-gray-300">{category}</h3>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
+                                {works.map((work, idx) => {
+                                    const origIdx = dynamicGraphicWorks.findIndex(item => item.id === work.id);
+                                    return (
+                                        <div key={`${work.id}-${idx}`} onClick={() => openModal(dynamicGraphicWorks, origIdx)}>
+                                            <InteractiveCard className="relative group rounded-xl sm:rounded-2xl overflow-hidden bg-black cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/10 aspect-[4/3]">
+                                                <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
+                                                  <img src={work.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover filter blur-lg brightness-50 scale-110" aria-hidden="true" />
+                                                  <LazyImage src={work.imageUrl} alt={work.category} className="relative w-full h-full object-contain" />
+                                                </div>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            </InteractiveCard>
                                         </div>
-                                        {/* Dynamic Category Tag Overlay */}
-                                        <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <span className="text-[7px] md:text-[8px] font-black text-gray-300 uppercase tracking-widest">{work.category}</span>
-                                        </div>
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    </InteractiveCard>
-                                </motion.div>
-                            );
-                        })}
-                    </AnimatePresence>
-                </motion.div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
         );
-    }, [dynamicGraphicWorks, currentGraphicFilter, openModal]);
+    }, [dynamicGraphicWorks, openModal]);
 
     const CinematicVfxSection = useMemo(() => {
         return (
