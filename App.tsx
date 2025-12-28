@@ -26,7 +26,6 @@ import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 export default function App() {
   // --- UI State ---
   const [showIntro, setShowIntro] = useState(() => {
-    // Check if user has already seen the intro
     if (typeof window !== 'undefined') {
       return !localStorage.getItem('fez_intro_seen');
     }
@@ -91,14 +90,51 @@ export default function App() {
     };
   }, [handleInactivity]);
 
-  // Combined Portfolio for Gallery
+  // Combined Portfolio for Gallery and Deep Linking
   const combinedPortfolio = useMemo(() => {
-    return [
-        ...siteConfig.content.portfolio.graphicWorks,
-        ...siteConfig.content.portfolio.vfxEdits,
-        ...siteConfig.content.portfolio.animeEdits
-    ];
+    const graphics = siteConfig.content.portfolio.graphicWorks.map(w => ({ ...w, slug: `g-${w.id}` }));
+    const vfx = siteConfig.content.portfolio.vfxEdits.map(v => ({ ...v, slug: `v-${v.id}` }));
+    const anime = siteConfig.content.portfolio.animeEdits.map(a => ({ ...a, slug: `a-${a.id}` }));
+    return [...graphics, ...vfx, ...anime];
   }, []);
+
+  // --- Deep Linking Support ---
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (!hash) {
+        if (!isAnyOverlayActive) setModalState(null);
+        return;
+      }
+
+      const foundIndex = combinedPortfolio.findIndex(item => (item as any).slug === hash);
+      if (foundIndex !== -1 && !modalState) {
+        setModalState({ items: combinedPortfolio, currentIndex: foundIndex });
+        // If we found a deep link, skip the intro for a better user experience
+        setShowIntro(false);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    // Initial check on mount
+    handleHashChange();
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [combinedPortfolio]);
+
+  // Sync Hash with Modal State
+  useEffect(() => {
+    if (modalState) {
+      const currentItem = modalState.items[modalState.currentIndex] as any;
+      if (currentItem?.slug) {
+        window.history.replaceState(null, '', `#${currentItem.slug}`);
+      }
+    } else {
+      if (window.location.hash && !isGalleryGridOpen && !singleImageViewerState) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    }
+  }, [modalState, isGalleryGridOpen, singleImageViewerState]);
 
   const handleGlobalClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -132,7 +168,13 @@ export default function App() {
 
   const handleOpenModal = (items: (GraphicWork | VideoWork)[], startIndex: number) => {
       if (Array.isArray(items) && items.length > 0) {
-          setModalState({ items, currentIndex: startIndex });
+          // Attach slugs to items for sharing if they don't have them
+          const itemsWithSlugs = items.map(item => {
+            if ((item as any).slug) return item;
+            const prefix = 'imageUrl' in item ? 'g' : ('videoId' in item ? 'a' : 'v');
+            return { ...item, slug: `${prefix}-${item.id}` };
+          });
+          setModalState({ items: itemsWithSlugs, currentIndex: startIndex });
           setIsPortfolioMediaActive(false);
       }
   };

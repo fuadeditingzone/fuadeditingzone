@@ -31,6 +31,7 @@ export const graphicWorks: GraphicWork[] = [
     { id: 3, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/llmz5fjru7u9xqd1dy6es/abdb99229320593.Y3JvcCwyMDQ4LDE2MDEsMCwyMjM.jpg?rlkey=1mjr7rc57esbkyptaok9ti6sr&raw=1', category: 'Photo Manipulation' },
     { id: 4, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/bjyqnbbr0sqvd42n64yt1/518658030_122142975902645113_5365242024363925507_n.jpg?rlkey=l7pz1oflwh5gi53oljv6fygvq&raw=1', category: 'Photo Manipulation' },
     { id: 5, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/g2q7bt4e8vhlsp23we57u/694dea229321481.Y3JvcCwxMjAwLDkzOCwwLDEzMA.jpg?rlkey=fbaguh47ao4atffhlz0ya6f5w&raw=1', category: 'Photo Manipulation' },
+    { id: 7, imageUrl: 'https://www.dropbox.com/scl/fi/ot4xvfzucr57b817xsbpx/Justice-For-Osman-Hadi.jpg?rlkey=14bocvhbrbcpg7pgiim7ziv35&st=72jhupwi&raw=1', category: 'Photo Manipulation' },
 
     // YouTube Thumbnails
     { id: 12, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/0mc1y78tdg0qq2yrsm8lz/6434f9234092365.Y3JvcCwxMzgwLDEwODAsMjcwLDA.jpg?rlkey=qfhr7z9vwuquacnbcb2q5pv3u&raw=1', category: 'YouTube Thumbnails' },

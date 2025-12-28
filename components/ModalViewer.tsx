@@ -6,9 +6,10 @@ import {
     SearchIcon, MicrophoneIcon, Bars3Icon, UserCircleIcon, 
     HomeIcon, ReelsIcon, PlaylistIcon, YouTubeIcon,
     ThreeDotsIcon, CheckCircleIcon, InstagramIcon, HeartHoverIcon,
-    CommentIcon, ShareIcon, BookmarkIcon
+    CommentIcon, ShareIcon, BookmarkIcon, CheckCircleIcon as CheckIcon
 } from './Icons';
 import { siteConfig } from '../config';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ModalViewerProps {
   state: { items: ModalItem[]; currentIndex: number };
@@ -441,6 +442,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
     const { items, currentIndex } = state;
     const currentItem = items[currentIndex];
     const [isZoomed, setIsZoomed] = useState(false);
+    const [showShareToast, setShowShareToast] = useState(false);
     
     useEffect(() => {
         // Reset zoom state when the image changes
@@ -461,6 +463,35 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
     const videoUrl = isVideo(currentItem) 
         ? (currentItem.url ? currentItem.url : `https://www.youtube.com/embed/${currentItem.videoId}?autoplay=1&rel=0`)
         : '';
+
+    const handleShare = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const slug = (currentItem as any).slug || `${isImage(currentItem) ? 'g' : (isVideo(currentItem) && 'videoId' in currentItem ? 'a' : 'v')}-${currentItem.id}`;
+        const shareUrl = `${window.location.origin}${window.location.pathname}#${slug}`;
+        const shareTitle = `Portfolio Work by Fuad Ahmed | FEZ`;
+        const shareText = `Check out this amazing ${isImage(currentItem) ? 'artwork' : 'video'} by Fuad Ahmed at Fuad Editing Zone!`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: shareTitle,
+                    text: shareText,
+                    url: shareUrl,
+                });
+            } catch (err) {
+                console.warn('Share cancelled or failed:', err);
+            }
+        } else {
+            // Fallback: Copy to clipboard
+            try {
+                await navigator.clipboard.writeText(shareUrl);
+                setShowShareToast(true);
+                setTimeout(() => setShowShareToast(false), 3000);
+            } catch (err) {
+                console.error('Failed to copy link:', err);
+            }
+        }
+    };
 
     return (
         <div 
@@ -520,8 +551,16 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 ) : null}
             </div>
 
-            {/* Controls */}
+            {/* Top Controls Bar */}
             <div className="absolute top-4 right-4 flex gap-2 z-[100]">
+                 <button
+                    onClick={handleShare}
+                    aria-label="Share this work"
+                    className="text-white/70 hover:text-white transition-colors p-2.5 rounded-full bg-black/50 hover:bg-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white border border-white/10 backdrop-blur-sm group"
+                >
+                    <ShareIcon className="h-6 w-6 md:h-8 md:w-8 group-hover:scale-110 transition-transform" />
+                </button>
+                
                  {isImage(currentItem) && !isYouTubeThumbnail && !isInstagramMockup && (
                     <button
                         onClick={(e) => { e.stopPropagation(); setIsZoomed(!isZoomed); }}
@@ -539,6 +578,21 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                     <CloseIcon className="h-6 w-6 md:h-8 md:w-8" />
                 </button>
             </div>
+
+            {/* Share Feedback Toast */}
+            <AnimatePresence>
+                {showShareToast && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-3 rounded-full font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-2xl z-[120]"
+                    >
+                        <CheckIcon className="w-4 h-4 text-green-600" />
+                        Link copied to clipboard
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <button
                 onClick={(e) => { e.stopPropagation(); onPrev(); }}
