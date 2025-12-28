@@ -98,40 +98,56 @@ export default function App() {
     return [...graphics, ...vfx, ...anime];
   }, []);
 
-  // --- Dynamic Meta Tag Updates (SEO Share Previews) ---
+  // --- ENHANCED DYNAMIC META TAG ENGINE ---
   useEffect(() => {
     const updateMeta = (title: string, desc: string, image: string) => {
         document.title = title;
         
+        // Target all major meta tag property/name variants for cross-platform compatibility
         const selectors = {
             'meta[property="og:title"]': title,
             'meta[name="twitter:title"]': title,
+            'meta[name="title"]': title,
             'meta[property="og:description"]': desc,
             'meta[name="description"]': desc,
             'meta[name="twitter:description"]': desc,
             'meta[property="og:image"]': image,
-            'meta[name="twitter:image"]': image
+            'meta[name="twitter:image"]': image,
+            'meta[property="og:url"]': window.location.href,
+            'link[rel="canonical"]': window.location.href
         };
 
         Object.entries(selectors).forEach(([selector, value]) => {
             const el = document.querySelector(selector);
-            if (el) el.setAttribute('content', value);
+            if (el) {
+                if (el.tagName === 'LINK') el.setAttribute('href', value);
+                else el.setAttribute('content', value);
+            }
         });
     };
 
     if (modalState) {
         const item = modalState.items[modalState.currentIndex] as any;
-        const itemTitle = item.title || 'Creative Work';
+        const itemTitle = item.title || 'Official Portfolio Work';
         const itemDesc = item.description || siteConfig.seo.description;
-        const itemImage = item.imageUrl || item.thumbnailUrl || `https://i.ytimg.com/vi/${item.videoId}/maxresdefault.jpg`;
+        
+        // PRIORITY THUMBNAIL LOGIC: Use direct image if available, then video thumb, then fallback
+        let itemImage = siteConfig.branding.profilePicUrl;
+        if (item.imageUrl) {
+            itemImage = item.imageUrl;
+        } else if (item.thumbnailUrl) {
+            itemImage = item.thumbnailUrl;
+        } else if (item.videoId) {
+            itemImage = `https://i.ytimg.com/vi/${item.videoId}/maxresdefault.jpg`;
+        }
         
         updateMeta(
-            `${itemTitle} | ${siteConfig.branding.author}`,
+            `${itemTitle} | Fuad Editing Zone`,
             itemDesc,
             itemImage
         );
     } else {
-        // Reset to default
+        // Reset to global defaults when no specific item is focused
         updateMeta(
             siteConfig.seo.title,
             siteConfig.seo.description,
@@ -152,13 +168,11 @@ export default function App() {
       const foundIndex = combinedPortfolio.findIndex(item => (item as any).slug === hash);
       if (foundIndex !== -1 && !modalState) {
         setModalState({ items: combinedPortfolio, currentIndex: foundIndex });
-        // If we found a deep link, skip the intro for a better user experience
         setShowIntro(false);
       }
     };
 
     window.addEventListener('hashchange', handleHashChange);
-    // Initial check on mount
     handleHashChange();
 
     return () => window.removeEventListener('hashchange', handleHashChange);
@@ -210,7 +224,6 @@ export default function App() {
 
   const handleOpenModal = (items: (GraphicWork | VideoWork)[], startIndex: number) => {
       if (Array.isArray(items) && items.length > 0) {
-          // Attach slugs to items for sharing if they don't have them
           const itemsWithSlugs = items.map(item => {
             if ((item as any).slug) return item;
             const prefix = 'imageUrl' in item ? 'g' : ('videoId' in item ? 'a' : 'v');
@@ -265,13 +278,11 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [modalState, singleImageViewerState, handleModalNext, handleModalPrev, handleSingleImageNext, handleModalPrev]);
 
-  // Handle intro finish
   const handleIntroFinished = () => {
     localStorage.setItem('fez_intro_seen', 'true');
     setShowIntro(false);
   };
 
-  // Transition styles
   const navTransitionClass = (isNavVisible && !showIntro)
     ? 'opacity-100 translate-y-0 duration-200 pointer-events-auto' 
     : 'opacity-0 -translate-y-2 duration-1000 pointer-events-none';

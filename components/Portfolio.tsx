@@ -6,7 +6,8 @@ import { siteConfig } from '../config';
 import { 
     PlayIcon, VolumeOnIcon, VolumeOffIcon, HandThumbUpIcon, 
     GlobeAltIcon, SparklesIcon, CloseIcon, CheckCircleIcon,
-    ShareIcon, DownloadIcon, ThreeDotsIcon
+    ShareIcon, DownloadIcon, ThreeDotsIcon, PhotoManipulationIcon,
+    ThumbnailIcon, BannerIcon
 } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { InteractiveCard } from './InteractiveCard';
@@ -290,11 +291,8 @@ export const Portfolio: React.FC<PortfolioProps> = ({
             [activeYouTubeId]: (prev[activeYouTubeId] || currentVideoStats.likes) + (newLikedState ? 1 : -1)
         }));
 
-        // In a real app, you'd trigger an OAuth popup here. 
-        // For the "Live" feel, we simulate it and if they click again, we open the YT link.
         if (newLikedState) {
             const timer = setTimeout(() => {
-                // Open YouTube for the actual permanent like
                 window.open(`https://www.youtube.com/watch?v=${activeYouTubeId}`, '_blank');
             }, 800);
             return () => clearTimeout(timer);
@@ -374,7 +372,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                         )}
                     </div>
                     
-                    {/* ENHANCED YOUTUBE ACTION BAR */}
                     <div className="bg-[#0f0f0f] p-4 md:p-6 border-t border-white/5 space-y-5 select-none animate-fade-in">
                         <div className="flex items-center gap-3">
                             {isYtPlaying && <div className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 bg-red-600 rounded-full animate-pulse shadow-[0_0_15px_rgba(220,38,38,1)] flex-shrink-0"></div>}
@@ -400,9 +397,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                 </div>
                             </div>
 
-                            {/* MODERN PILL ACTION BUTTONS */}
                             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                                {/* Like / Dislike Pill */}
                                 <div className="flex items-center bg-white/10 rounded-full h-9 md:h-10 overflow-hidden border border-white/5">
                                     <button 
                                         onClick={handleLikeClick}
@@ -424,7 +419,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                     </button>
                                 </div>
 
-                                {/* Share Button */}
                                 <button 
                                     onClick={() => window.open(`https://www.youtube.com/watch?v=${activeYouTubeId}`, '_blank')}
                                     className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 md:px-4 h-9 md:h-10 rounded-full border border-white/5 transition-all active:scale-95 group"
@@ -433,7 +427,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                     <span className="text-[11px] md:text-sm font-bold text-white">Share</span>
                                 </button>
 
-                                {/* Remix / More */}
                                 <button className="flex items-center justify-center bg-white/10 hover:bg-white/20 w-9 md:w-10 h-9 md:h-10 rounded-full border border-white/5 transition-all">
                                     <ThreeDotsIcon className="w-4 h-4 text-white" />
                                 </button>
@@ -453,27 +446,46 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         );
     }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, isFloating, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime, stats, loading, formatNumber, userLikes, likeCountOverrides]);
 
+    // RE-SEPARATED CATEGORICAL SECTIONS FOR GRAPHIC DESIGN
     const GraphicDesignContent = useMemo(() => {
         const categories: GraphicWork['category'][] = ['Photo Manipulation', 'YouTube Thumbnails', 'Banner Designs'];
+        
         return (
-            <div className="space-y-16 animate-fade-in">
-                {categories.map(category => {
-                    const works = dynamicGraphicWorks.filter(w => w.category === category);
-                    if (works.length === 0) return null;
+            <div className="space-y-24 md:space-y-32">
+                {categories.map((cat) => {
+                    const filtered = dynamicGraphicWorks.filter(w => w.category === cat);
+                    const CategoryIcon = cat === 'Photo Manipulation' ? PhotoManipulationIcon : 
+                                         cat === 'YouTube Thumbnails' ? ThumbnailIcon : BannerIcon;
+                    
                     return (
-                        <div key={category} className="space-y-6">
-                            <h3 className="text-2xl font-bold text-gray-300">{category}</h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
-                                {works.map((work, idx) => {
+                        <div key={cat} className="animate-fade-in space-y-8">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="p-3 bg-red-600/10 rounded-xl border border-red-600/20">
+                                    <CategoryIcon className="w-6 h-6 text-red-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-wider">{cat}</h3>
+                                    <div className="h-0.5 w-16 bg-red-600 mt-1"></div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-6">
+                                {filtered.map((work) => {
+                                    // Find original index in dynamicGraphicWorks for modal navigation
                                     const origIdx = dynamicGraphicWorks.findIndex(item => item.id === work.id);
                                     return (
-                                        <div key={`${work.id}-${idx}`} onClick={() => openModal(dynamicGraphicWorks, origIdx)}>
+                                        <div 
+                                            key={work.id} 
+                                            onClick={() => openModal(dynamicGraphicWorks, origIdx)}
+                                        >
                                             <InteractiveCard className="relative group rounded-xl sm:rounded-2xl overflow-hidden bg-black cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/10 aspect-[4/3]">
                                                 <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
                                                   <img src={work.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover filter blur-lg brightness-50 scale-110" aria-hidden="true" />
                                                   <LazyImage src={work.imageUrl} alt={work.category} className="relative w-full h-full object-contain" />
                                                 </div>
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                                                     <span className="text-[10px] font-black text-white uppercase tracking-widest bg-red-600 px-2 py-1 rounded">View Work</span>
+                                                </div>
                                             </InteractiveCard>
                                         </div>
                                     );
@@ -502,10 +514,14 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 <div className="relative">
                     <div className="absolute -inset-y-2 md:-inset-y-4 -inset-x-0 sm:-inset-6 md:-inset-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl md:rounded-3xl" style={{ transform: window.innerWidth > 768 ? 'perspective(2000px) rotateY(-1deg)' : 'none' }}></div>
                     <div className="relative p-3 md:p-8">
-                        <div className="text-center mb-6 md:mb-8"><h2 className="text-2xl md:text-4xl font-bold text-white uppercase tracking-tight">Graphic Design</h2></div>
+                        <div className="text-center mb-16 md:mb-24">
+                            <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter">Graphic Design</h2>
+                            <p className="text-gray-500 text-[10px] md:text-xs font-bold uppercase tracking-[0.4em] mt-3">Professional Visual Assets</p>
+                        </div>
                         {GraphicDesignContent}
                     </div>
                 </div>
+                
                 <div id="video-editing" className="pt-8 md:pt-16 relative space-y-16 md:space-y-24">
                     <div className="absolute -inset-y-2 md:-inset-y-4 -inset-x-0 sm:-inset-6 md:-inset-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl md:rounded-3xl" style={{ transform: window.innerWidth > 768 ? 'perspective(2000px) rotateY(1deg)' : 'none' }}></div>
                     <div className="relative p-3 md:p-8">
