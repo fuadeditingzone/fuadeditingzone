@@ -72,27 +72,28 @@ export default function App() {
   }, []);
 
   // --- EXACT RAW PREVIEW ENGINE ---
-  useEffect(() => {
-    const updateMeta = (title: string, desc: string, imageUrl: string) => {
-        document.title = title;
-        const mapping: Record<string, string> = {
-            'meta[property="og:title"]': title,
-            'meta[name="twitter:title"]': title,
-            'meta[property="og:description"]': desc,
-            'meta[name="description"]': desc,
-            'meta[name="twitter:description"]': desc,
-            'meta[property="og:image"]': imageUrl,
-            'meta[property="og:image:secure_url"]': imageUrl,
-            'meta[name="twitter:image"]': imageUrl,
-            'meta[itemprop="image"]': imageUrl,
-            'meta[property="og:url"]': window.location.href,
-        };
-        Object.entries(mapping).forEach(([sel, val]) => {
-            const el = document.querySelector(sel);
-            if (el) el.setAttribute('content', val);
-        });
+  const updateMeta = useCallback((title: string, desc: string, imageUrl: string) => {
+    document.title = title;
+    const mapping: Record<string, string> = {
+        'meta[property="og:title"]': title,
+        'meta[name="twitter:title"]': title,
+        'meta[name="title"]': title,
+        'meta[property="og:description"]': desc,
+        'meta[name="description"]': desc,
+        'meta[name="twitter:description"]': desc,
+        'meta[property="og:image"]': imageUrl,
+        'meta[property="og:image:secure_url"]': imageUrl,
+        'meta[name="twitter:image"]': imageUrl,
+        'meta[itemprop="image"]': imageUrl,
+        'meta[property="og:url"]': window.location.href,
     };
+    Object.entries(mapping).forEach(([sel, val]) => {
+        const el = document.querySelector(sel);
+        if (el) el.setAttribute('content', val);
+    });
+  }, []);
 
+  useEffect(() => {
     if (modalState) {
         const item = modalState.items[modalState.currentIndex] as any;
         const itemImage = item.imageUrl || (item.videoId ? `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg` : siteConfig.branding.profilePicUrl);
@@ -104,7 +105,7 @@ export default function App() {
     } else {
         updateMeta(siteConfig.seo.title, siteConfig.seo.description, "https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1");
     }
-  }, [modalState]);
+  }, [modalState, updateMeta]);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -112,6 +113,11 @@ export default function App() {
       if (!hash) return;
       const foundIndex = combinedPortfolio.findIndex(item => (item as any).slug === hash);
       if (foundIndex !== -1 && !modalState) {
+        // Find the item to update metadata BEFORE state kicks in for faster sharing detection
+        const item = combinedPortfolio[foundIndex] as any;
+        const itemImage = item.imageUrl || (item.videoId ? `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg` : siteConfig.branding.profilePicUrl);
+        updateMeta(`${item.title || 'Selected Legend Art'} | FEZ Portfolio`, item.description || siteConfig.seo.description, itemImage);
+        
         setModalState({ items: combinedPortfolio, currentIndex: foundIndex });
         setShowIntro(false);
       }
@@ -119,7 +125,7 @@ export default function App() {
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange();
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [combinedPortfolio]);
+  }, [combinedPortfolio, updateMeta]);
 
   useEffect(() => {
     if (modalState) {
