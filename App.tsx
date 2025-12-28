@@ -95,6 +95,7 @@ export default function App() {
             'meta[name="description"]': desc,
             'meta[name="twitter:description"]': desc,
             'meta[property="og:image"]': image,
+            'meta[property="og:image:secure_url"]': image,
             'meta[name="twitter:image"]': image,
             'meta[property="og:url"]': window.location.href,
             'link[rel="canonical"]': window.location.href
@@ -111,6 +112,17 @@ export default function App() {
             if (el) {
                 if (el.tagName === 'LINK') el.setAttribute('href', value);
                 else el.setAttribute('content', value);
+            } else {
+                // If tag doesn't exist, try to create it for property-based tags
+                if (selector.startsWith('meta[property=')) {
+                    const newMeta = document.createElement('meta');
+                    const prop = selector.match(/property="([^"]+)"/)?.[1];
+                    if (prop) {
+                        newMeta.setAttribute('property', prop);
+                        newMeta.setAttribute('content', value);
+                        document.head.appendChild(newMeta);
+                    }
+                }
             }
         });
 
@@ -148,7 +160,9 @@ export default function App() {
 
         updateMeta(`${itemTitle} | Fuad Editing Zone`, itemDesc, itemImage, item);
     } else {
-        updateMeta(siteConfig.seo.title, siteConfig.seo.description, siteConfig.branding.profilePicUrl);
+        // Use the default hero/site image when not in a modal
+        const defaultImage = "https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1";
+        updateMeta(siteConfig.seo.title, siteConfig.seo.description, defaultImage);
     }
   }, [modalState]);
 

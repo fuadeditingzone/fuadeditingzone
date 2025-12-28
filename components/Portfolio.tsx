@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { GraphicWork, VideoWork } from '../hooks/types';
@@ -103,7 +102,7 @@ const VfxVideoPlayer: React.FC<{
 
     return (
         <div ref={containerRef} itemScope itemType="http://schema.org/VideoObject">
-            <InteractiveCard className={`relative group w-full aspect-square bg-gray-900 rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 select-none ${isPlaying ? 'shadow-2xl z-10' : 'opacity-90 hover:opacity-100'} ${isThisVideoInPip ? 'opacity-30 pointer-events-none' : ''}`}>
+            <InteractiveCard className={`relative group w-full aspect-square bg-black rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 select-none ${isPlaying ? 'shadow-2xl z-10 border-red-600/50' : 'opacity-90 hover:opacity-100 border-white/5'} border ${isThisVideoInPip ? 'opacity-30 pointer-events-none' : ''}`}>
                 <figure className="w-full h-full m-0 p-0" onClick={handlePlayRequest}>
                     <video
                         ref={videoRef}
@@ -112,7 +111,7 @@ const VfxVideoPlayer: React.FC<{
                         muted={isMuted}
                         playsInline
                         itemProp="contentUrl"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         onCanPlay={() => setIsLoading(false)}
                     />
                     <meta itemProp="name" content={video.title || "VFX Portfolio Piece"} />
@@ -121,11 +120,11 @@ const VfxVideoPlayer: React.FC<{
                     <meta itemProp="thumbnailUrl" content={siteConfig.branding.profilePicUrl} />
                 
                     <div className={`absolute inset-0 bg-black/20 transition-opacity duration-300 flex items-center justify-center select-none ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
-                         {!isPlaying && !isLoading && <PlayIcon className="w-8 h-8 md:w-12 md:h-12 text-white/80" />}
+                         {!isPlaying && !isLoading && <PlayIcon className="w-8 h-8 md:w-12 md:h-12 text-white/80 drop-shadow-lg" />}
                     </div>
 
                     {isPlaying && (
-                        <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 p-2 bg-black/50 backdrop-blur-md rounded-full select-none" onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}>
+                        <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 p-2 bg-black/50 backdrop-blur-md rounded-full select-none z-20" onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}>
                             {isMuted ? <VolumeOffIcon className="w-3 h-3 md:w-4 md:h-4 text-white" /> : <VolumeOnIcon className="w-3 h-3 md:w-4 md:h-4 text-white" />}
                         </div>
                     )}
@@ -338,39 +337,44 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     const GraphicDesignContent = useMemo(() => {
         const categories: GraphicWork['category'][] = ['Photo Manipulation', 'YouTube Thumbnails', 'Banner Designs'];
         return (
-            <div className="space-y-16 md:space-y-24">
+            <div className="space-y-12 md:space-y-16">
                 {categories.map((cat) => {
                     const filtered = dynamicGraphicWorks.filter(w => w.category === cat);
                     const CategoryIcon = cat === 'Photo Manipulation' ? PhotoManipulationIcon : 
                                          cat === 'YouTube Thumbnails' ? ThumbnailIcon : BannerIcon;
                     
-                    // Determine grid aspect ratio based on category
-                    // YouTube Thumbnails and Banner Designs should be in 16:9
-                    const gridAspect = (cat === 'YouTube Thumbnails' || cat === 'Banner Designs') ? 'aspect-video' : 'aspect-[4/3]';
-                    const imageFit = (cat === 'YouTube Thumbnails' || cat === 'Banner Designs') ? 'object-cover' : 'object-contain';
+                    // Aspect ratio logic to prevent clipping
+                    let gridAspect = 'aspect-video';
+                    if (cat === 'Photo Manipulation') gridAspect = 'aspect-square';
+                    if (cat === 'Banner Designs') gridAspect = 'aspect-[3/1] md:aspect-[3.5/1]';
+
+                    // Specific grid columns for banners to make them larger
+                    const gridClass = cat === 'Banner Designs' 
+                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6" 
+                        : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4";
 
                     return (
-                        <div key={cat} className="space-y-6">
-                            <div className="flex items-center gap-3 border-l-4 border-red-600 pl-4 mb-8">
-                                <CategoryIcon className="w-6 h-6 text-red-500" />
-                                <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-wider">{cat}</h3>
+                        <div key={cat} className="space-y-4">
+                            <div className="flex items-center gap-3 border-l-4 border-red-600 pl-4 mb-6">
+                                <CategoryIcon className="w-5 h-5 text-red-500" />
+                                <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-wider">{cat}</h3>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-6">
+                            <div className={gridClass}>
                                 {filtered.map((work) => {
                                     const origIdx = dynamicGraphicWorks.findIndex(item => item.id === work.id);
                                     return (
                                         <div key={work.id} onClick={() => openModal(dynamicGraphicWorks, origIdx)} itemScope itemType="http://schema.org/ImageObject">
-                                            <InteractiveCard className={`relative group rounded-xl overflow-hidden bg-black cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/10 ${gridAspect}`}>
+                                            <InteractiveCard className={`relative group rounded-lg overflow-hidden bg-[#0a0a0a] cursor-pointer shadow-md hover:shadow-xl transition-all duration-500 border border-white/5 ${gridAspect}`}>
                                                 <figure className="w-full h-full m-0 p-0 transition-transform duration-300 group-hover:scale-105">
                                                   <LazyImage 
                                                     src={work.imageUrl} 
                                                     alt={`${work.title || work.category} - Digital Art by Fuad Ahmed`} 
-                                                    className={`relative w-full h-full ${imageFit}`} 
+                                                    className="relative w-full h-full object-contain" 
                                                   />
                                                   <figcaption className="sr-only" itemProp="caption">{work.title} - {work.category} work at Fuad Editing Zone.</figcaption>
                                                 </figure>
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                                                     <span className="text-[10px] font-black text-white uppercase tracking-widest bg-red-600 px-2 py-1 rounded">View Project</span>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                                                     <span className="text-[8px] font-black text-white uppercase tracking-widest bg-red-600 px-1.5 py-0.5 rounded">View</span>
                                                 </div>
                                             </InteractiveCard>
                                         </div>
@@ -386,16 +390,16 @@ export const Portfolio: React.FC<PortfolioProps> = ({
 
     return (
         <section id="portfolio" className="select-none" style={parallaxStyle}>
-            <div className="max-w-[1800px] mx-auto space-y-16 md:space-y-32 py-12 md:py-16 px-2 sm:px-6 lg:px-8">
-                <div className="relative p-3 md:p-8">
-                    <header className="text-center mb-12 md:mb-16">
+            <div className="max-w-[1800px] mx-auto space-y-12 md:space-y-24 py-8 md:py-12 px-2 sm:px-6 lg:px-8">
+                <div className="relative p-2 md:p-4">
+                    <header className="text-center mb-10 md:mb-14">
                         <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter">Graphic Design</h2>
                         <p className="text-gray-500 text-xs md:text-sm font-bold uppercase tracking-widest mt-2">Professional Digital Composition & Visualization</p>
                         <div className="h-1 w-20 bg-red-600 mx-auto mt-4"></div>
                     </header>
                     {GraphicDesignContent}
                 </div>
-                <div id="video-editing" className="relative p-3 md:p-8 space-y-16 md:space-y-24">
+                <div id="video-editing" className="relative p-2 md:p-4 space-y-12 md:space-y-20">
                     <header className="text-center">
                         <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter">Video Editing</h2>
                         <p className="text-gray-500 text-xs md:text-sm font-bold uppercase tracking-widest mt-2">Cinematic VFX & Professional Motion Design</p>
@@ -403,7 +407,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                     </header>
                     <div><h3 className="text-xl md:text-2xl font-bold text-white uppercase mb-8 ml-4 border-l-4 border-red-600 pl-4">YouTube Edits</h3>{YoutubeEditsSection}</div>
                     <div><h3 className="text-xl md:text-2xl font-bold text-white uppercase mb-8 ml-4 border-l-4 border-red-600 pl-4">Cinematic VFX</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-8 px-1 animate-fade-in">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-8 px-1 animate-fade-in">
                             {vfxEdits.map((video) => <VfxVideoPlayer key={video.id} video={video} currentlyPlaying={playingVfxVideo} pipVideo={pipVideo} onPlayRequest={v => setPlayingVfxVideo(v)} setPipVideo={setPipVideo} currentTime={currentTime} setCurrentTime={setCurrentTime} />)}
                         </div>
                     </div>

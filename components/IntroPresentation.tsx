@@ -163,9 +163,9 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                         }}
                     >
                         {media.type === 'video' ? (
-                            <video src={media.url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                            <video src={media.url} autoPlay loop muted playsInline className="w-full h-full object-contain" />
                         ) : (
-                            <img src={media.url} alt="" className="w-full h-full object-cover" />
+                            <img src={media.url} alt="" className="w-full h-full object-contain" />
                         )}
                     </motion.div>
                 ))}
@@ -174,13 +174,13 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
             {/* Content Container */}
             <div className="relative w-full max-w-7xl min-h-full lg:h-full flex flex-col lg:flex-row gap-6 lg:gap-12 items-center justify-center z-10 p-6 md:p-10 lg:p-12">
                 
-                {/* Main Player Area */}
+                {/* Main Player Area - Updated for better mobile spacing and no clipping */}
                 <div className="w-full lg:flex-1 flex items-center justify-center relative min-h-0">
                     <motion.div 
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-                        className="relative aspect-square w-full h-auto max-w-[min(85vw,42dvh)] lg:max-w-[min(80vw,65dvh)] bg-black rounded-[2rem] md:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(220,38,38,0.2)] ring-1 ring-white/5"
+                        className="relative aspect-square w-[85vw] max-w-[min(85vw,60dvh)] lg:w-full lg:max-w-[min(90vw,65dvh)] bg-black rounded-[2rem] md:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(220,38,38,0.2)] ring-1 ring-white/5"
                     >
                         <video 
                             ref={videoRef}
@@ -299,9 +299,9 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                                         
                                         <div className="w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 relative flex items-center justify-center aspect-video">
                                             {feature.media.type === 'video' ? (
-                                                <video src={feature.media.url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                                                <video src={feature.media.url} autoPlay loop muted playsInline className="w-full h-full object-contain" />
                                             ) : (
-                                                <LazyImage src={feature.media.url} alt="" className="w-full h-full object-cover" />
+                                                <LazyImage src={feature.media.url} alt="" className="w-full h-full object-contain" />
                                             )}
                                         </div>
                                     </motion.div>

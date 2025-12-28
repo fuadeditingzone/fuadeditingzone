@@ -89,7 +89,6 @@ export const graphicWorks: GraphicWork[] = [
     { id: 14, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/81jlduf6n6ih32b6yfpmg/2025-09-18.jpg?rlkey=f9qgajdy0wycg2araptlpqi2r&raw=1', category: 'Banner Designs', title: 'YouTube Channel Art', description: 'Professional brand banner for high-tier content creators.' },
     { id: 15, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/m5o840ywi39vm56n2chlp/2025-09-16-8.jpg?rlkey=kjk0gt52gowqx1n52ts0t6p5m&raw=1', category: 'Banner Designs', title: 'Minimalist Branding Banner', description: 'Sleek and professional branding for social media profiles.' },
     { id: 16, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/va1p1itvxjw4y5zw2mts3/2025-09-19.jpg?rlkey=ltkx333q2wiaehqp2mrtgq4e0&raw=1', category: 'Banner Designs', title: 'Gaming Community Header', description: 'Vibrant and engaging banner for gaming teams and communities.' },
-    { id: 17, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/514fvg60l7rfkz82e5ir9/2025-09-19-1.jpg?rlkey=r6dhha3ml8skzjg6z53mfop5&raw=1', category: 'Banner Designs', title: 'Esports Team Banner', description: 'Aggressive and professional header for competitive gaming organizations.' },
     { id: 18, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/gmjmfxpf9s8pohwhhl9bl/2025-09-16-9.jpg?rlkey=crkorp8t3wq2uhh84tiwv0r1z&raw=1', category: 'Banner Designs', title: 'Creative Artist Header', description: 'Artistic and clean banner showcasing design excellence.' },
 ];
 
