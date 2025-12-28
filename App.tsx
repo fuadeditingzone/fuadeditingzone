@@ -53,44 +53,26 @@ export default function App() {
   const [isPortfolioMediaActive, setIsPortfolioMediaActive] = useState(false);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
-  // Check if any UI overlay is active to prevent hiding nav
-  const isAnyOverlayActive = !!(
-    showIntro ||
-    modalState || 
-    isGalleryGridOpen || 
-    singleImageViewerState || 
-    isServicesPopupOpen || 
-    selectionTarget || 
-    isYouTubeRedirectOpen || 
-    isMediaSidebarOpen ||
-    contextMenu
-  );
+  const isAnyOverlayActive = !!(showIntro || modalState || isGalleryGridOpen || singleImageViewerState || isServicesPopupOpen || selectionTarget || isYouTubeRedirectOpen || isMediaSidebarOpen || contextMenu);
 
-  // --- Navigation Visibility Inactivity Logic ---
   const handleInactivity = useCallback(() => {
     setIsNavVisible(true);
     if (idleTimeoutRef.current) window.clearTimeout(idleTimeoutRef.current);
-    
     if (!isAnyOverlayActive) {
-      idleTimeoutRef.current = window.setTimeout(() => {
-        setIsNavVisible(false);
-      }, 40000); 
+      idleTimeoutRef.current = window.setTimeout(() => { setIsNavVisible(false); }, 40000); 
     }
   }, [isAnyOverlayActive]);
 
   useEffect(() => {
     const events = ['mousemove', 'scroll', 'touchstart', 'mousedown', 'keydown'];
     events.forEach(evt => window.addEventListener(evt, handleInactivity));
-
     handleInactivity();
-
     return () => {
       events.forEach(evt => window.removeEventListener(evt, handleInactivity));
       if (idleTimeoutRef.current) window.clearTimeout(idleTimeoutRef.current);
     };
   }, [handleInactivity]);
 
-  // Combined Portfolio for Gallery and Deep Linking
   const combinedPortfolio = useMemo(() => {
     const graphics = siteConfig.content.portfolio.graphicWorks.map(w => ({ ...w, slug: `g-${w.id}` }));
     const vfx = siteConfig.content.portfolio.vfxEdits.map(v => ({ ...v, slug: `v-${v.id}` }));
@@ -98,12 +80,10 @@ export default function App() {
     return [...graphics, ...vfx, ...anime];
   }, []);
 
-  // --- ENHANCED DYNAMIC META TAG ENGINE ---
+  // --- DYNAMIC META TAG SYNC FOR SHARING ---
   useEffect(() => {
     const updateMeta = (title: string, desc: string, image: string) => {
         document.title = title;
-        
-        // Target all major meta tag property/name variants for cross-platform compatibility
         const selectors = {
             'meta[property="og:title"]': title,
             'meta[name="twitter:title"]': title,
@@ -116,7 +96,6 @@ export default function App() {
             'meta[property="og:url"]': window.location.href,
             'link[rel="canonical"]': window.location.href
         };
-
         Object.entries(selectors).forEach(([selector, value]) => {
             const el = document.querySelector(selector);
             if (el) {
@@ -128,35 +107,15 @@ export default function App() {
 
     if (modalState) {
         const item = modalState.items[modalState.currentIndex] as any;
-        const itemTitle = item.title || 'Official Portfolio Work';
+        const itemTitle = item.title || 'Official Portfolio Piece';
         const itemDesc = item.description || siteConfig.seo.description;
-        
-        // PRIORITY THUMBNAIL LOGIC: Use direct image if available, then video thumb, then fallback
-        let itemImage = siteConfig.branding.profilePicUrl;
-        if (item.imageUrl) {
-            itemImage = item.imageUrl;
-        } else if (item.thumbnailUrl) {
-            itemImage = item.thumbnailUrl;
-        } else if (item.videoId) {
-            itemImage = `https://i.ytimg.com/vi/${item.videoId}/maxresdefault.jpg`;
-        }
-        
-        updateMeta(
-            `${itemTitle} | Fuad Editing Zone`,
-            itemDesc,
-            itemImage
-        );
+        const itemImage = item.imageUrl || item.thumbnailUrl || (item.videoId ? `https://i.ytimg.com/vi/${item.videoId}/maxresdefault.jpg` : siteConfig.branding.profilePicUrl);
+        updateMeta(`${itemTitle} | Fuad Editing Zone`, itemDesc, itemImage);
     } else {
-        // Reset to global defaults when no specific item is focused
-        updateMeta(
-            siteConfig.seo.title,
-            siteConfig.seo.description,
-            siteConfig.branding.profilePicUrl
-        );
+        updateMeta(siteConfig.seo.title, siteConfig.seo.description, siteConfig.branding.profilePicUrl);
     }
   }, [modalState]);
 
-  // --- Deep Linking Support ---
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
@@ -164,61 +123,33 @@ export default function App() {
         if (!isAnyOverlayActive) setModalState(null);
         return;
       }
-
       const foundIndex = combinedPortfolio.findIndex(item => (item as any).slug === hash);
       if (foundIndex !== -1 && !modalState) {
         setModalState({ items: combinedPortfolio, currentIndex: foundIndex });
         setShowIntro(false);
       }
     };
-
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange();
-
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [combinedPortfolio]);
 
-  // Sync Hash with Modal State
   useEffect(() => {
     if (modalState) {
       const currentItem = modalState.items[modalState.currentIndex] as any;
-      if (currentItem?.slug) {
-        window.history.replaceState(null, '', `#${currentItem.slug}`);
-      }
-    } else {
-      if (window.location.hash && !isGalleryGridOpen && !singleImageViewerState) {
-        window.history.replaceState(null, '', window.location.pathname + window.location.search);
-      }
+      if (currentItem?.slug) window.history.replaceState(null, '', `#${currentItem.slug}`);
+    } else if (window.location.hash && !isGalleryGridOpen && !singleImageViewerState) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
     }
   }, [modalState, isGalleryGridOpen, singleImageViewerState]);
 
-  const handleGlobalClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    const isInteractive = target.closest('button, a, iframe, .interactive-3d-card, [role="dialog"]');
-    if (isInteractive) return;
-  };
-
-  useEffect(() => {
-      if (pipVideo?.id === 'yt-pip' && pipVideo.videoId !== activeYouTubeId) {
-          setPipVideo({ id: 'yt-pip', videoId: activeYouTubeId });
-          setVideoCurrentTime(0);
-      }
-  }, [activeYouTubeId, pipVideo]);
-
   useEffect(() => {
       window.onYouTubeIframeAPIReady = () => setIsYouTubeApiReady(true);
-  
-      if (window.YT && window.YT.Player) {
-        setIsYouTubeApiReady(true);
-      } else {
+      if (window.YT && window.YT.Player) setIsYouTubeApiReady(true);
+      else {
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        if (firstScriptTag && firstScriptTag.parentNode) {
-          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        } else {
-          document.head.appendChild(tag);
-        }
+        document.head.appendChild(tag);
       }
     }, []);
 
@@ -239,221 +170,37 @@ export default function App() {
     element?.scrollIntoView({ behavior: 'smooth' });
   };
   
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if(isAnyOverlayActive) return;
-    setContextMenu({ x: e.clientX, y: e.clientY });
-  };
-  
-  const handleModalNext = useCallback(() => {
-    setModalState(s => s ? { ...s, currentIndex: (s.currentIndex + 1) % s.items.length } : null);
-  }, []);
-
-  const handleModalPrev = useCallback(() => {
-    setModalState(s => s ? { ...s, currentIndex: (s.currentIndex - 1 + s.items.length) % s.items.length } : null);
-  }, []);
-
-  const handleSingleImageNext = useCallback(() => {
-    setSingleImageViewerState(s => s ? { ...s, currentIndex: (s.currentIndex + 1) % s.items.length } : null);
-  }, []);
-
-  const handleSingleImagePrev = useCallback(() => {
-    setSingleImageViewerState(s => s ? { ...s, currentIndex: (s.currentIndex - 1 + s.items.length) % s.items.length } : null);
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-        if (!modalState && !singleImageViewerState) return;
-
-        if (modalState) {
-            if (e.key === 'ArrowRight') handleModalNext();
-            if (e.key === 'ArrowLeft') handleModalPrev();
-        }
-        if (singleImageViewerState) {
-            if (e.key === 'ArrowRight') handleSingleImageNext();
-            if (e.key === 'ArrowLeft') handleSingleImagePrev();
-        }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [modalState, singleImageViewerState, handleModalNext, handleModalPrev, handleSingleImageNext, handleModalPrev]);
-
-  const handleIntroFinished = () => {
-    localStorage.setItem('fez_intro_seen', 'true');
-    setShowIntro(false);
-  };
-
-  const navTransitionClass = (isNavVisible && !showIntro)
-    ? 'opacity-100 translate-y-0 duration-200 pointer-events-auto' 
-    : 'opacity-0 -translate-y-2 duration-1000 pointer-events-none';
-
-  const footerTransitionClass = (isNavVisible && !showIntro)
-    ? 'opacity-100 translate-y-0 duration-200 pointer-events-auto'
-    : 'opacity-0 translate-y-10 duration-1000 pointer-events-none';
-
-  const sidebarBtnTransitionClass = (isNavVisible && !showIntro)
-    ? 'opacity-100 translate-x-0 duration-200 pointer-events-auto'
-    : 'opacity-0 translate-x-full duration-1000 pointer-events-none';
+  const handleModalNext = useCallback(() => { setModalState(s => s ? { ...s, currentIndex: (s.currentIndex + 1) % s.items.length } : null); }, []);
+  const handleModalPrev = useCallback(() => { setModalState(s => s ? { ...s, currentIndex: (s.currentIndex - 1 + s.items.length) % s.items.length } : null); }, []);
 
   return (
     <ParallaxProvider>
-      <div 
-        className="text-white min-h-screen bg-black" 
-        onContextMenu={handleContextMenu} 
-        onClick={handleGlobalClick}
-      >
-          <AnimatePresence>
-            {showIntro && (
-              <IntroPresentation onFinished={handleIntroFinished} />
-            )}
-          </AnimatePresence>
-
-          <VFXBackground />
-          <MediaGridBackground />
-
-          <div className={`transition-all ease-out fixed top-0 left-0 right-0 z-50 ${navTransitionClass}`}>
-            <DesktopHeader onScrollTo={handleScrollTo} />
-            <MobileHeader onScrollTo={handleScrollTo} />
+      <div className="text-white min-h-screen bg-black" onContextMenu={e => { e.preventDefault(); if(!isAnyOverlayActive) setContextMenu({ x: e.clientX, y: e.clientY }); }}>
+          <AnimatePresence>{showIntro && <IntroPresentation onFinished={() => { localStorage.setItem('fez_intro_seen', 'true'); setShowIntro(false); }} />}</AnimatePresence>
+          <VFXBackground /><MediaGridBackground />
+          <div className={`transition-all fixed top-0 left-0 right-0 z-50 ${(isNavVisible && !showIntro) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
+            <DesktopHeader onScrollTo={handleScrollTo} /><MobileHeader onScrollTo={handleScrollTo} />
           </div>
-
-          <MediaSidebar 
-            isOpen={isMediaSidebarOpen} 
-            onClose={() => setIsMediaSidebarOpen(false)} 
-            activeYouTubeId={activeYouTubeId}
-            onSelectYouTubeId={setActiveYouTubeId}
-            isYtPlaying={isYtPlaying}
-            setIsYtPlaying={setIsYtPlaying}
-            onYouTubeClick={() => setIsYouTubeRedirectOpen(true)}
-          />
-
+          <MediaSidebar isOpen={isMediaSidebarOpen} onClose={() => setIsMediaSidebarOpen(false)} activeYouTubeId={activeYouTubeId} onSelectYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
           {!isMediaSidebarOpen && !isAnyOverlayActive && (
-              <button
-                  onClick={() => setIsMediaSidebarOpen(true)}
-                  className={`fixed top-24 right-0 z-40 bg-black/40 backdrop-blur-xl border-l border-t border-b border-white/10 text-white p-3 rounded-l-xl shadow-2xl hover:bg-red-600/50 hover:pl-5 transition-all ease-out group ${sidebarBtnTransitionClass}`}
-                  aria-label="Open YouTube Sidebar"
-              >
-                  <YouTubeIcon className="w-6 h-6 text-red-500 group-hover:text-white transition-all" />
-              </button>
+              <button onClick={() => setIsMediaSidebarOpen(true)} className={`fixed top-24 right-0 z-40 bg-black/40 backdrop-blur-xl border-l border-t border-b border-white/10 text-white p-3 rounded-l-xl transition-all ${(isNavVisible && !showIntro) ? 'opacity-100' : 'opacity-0 translate-x-full'}`}><YouTubeIcon className="w-6 h-6 text-red-500" /></button>
           )}
-
-          <AnimatePresence>
-            {!showIntro && (
-              <motion.main 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="main-content relative z-10 pb-20 md:pb-0"
-              >
-                  <Home 
-                    onOpenServices={() => setIsServicesPopupOpen(true)} 
-                    onOrderNow={() => handleScrollTo('contact')}
-                    onYouTubeClick={() => setIsYouTubeRedirectOpen(true)}
-                  />
-                  
-                  <Portfolio 
-                      openModal={handleOpenModal}
-                      isYouTubeApiReady={isYouTubeApiReady}
-                      playingVfxVideo={playingVfxVideo}
-                      setPlayingVfxVideo={setPlayingVfxVideo}
-                      pipVideo={pipVideo}
-                      setPipVideo={setPipVideo}
-                      activeYouTubeId={activeYouTubeId}
-                      setActiveYouTubeId={setActiveYouTubeId}
-                      isYtPlaying={isYtPlaying}
-                      setIsYtPlaying={setIsYtPlaying}
-                      onPortfolioPlay={() => {
-                          setIsPortfolioMediaActive(true);
-                      } }
-                      currentTime={videoCurrentTime}
-                      setCurrentTime={setVideoCurrentTime}
-                  />
-                  <Contact onStartOrder={setSelectionTarget} />
-                  <AboutAndFooter />
+          <AnimatePresence>{!showIntro && (
+              <motion.main initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="main-content relative z-10 pb-20 md:pb-0">
+                  <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
+                  <Portfolio openModal={handleOpenModal} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
+                  <Contact onStartOrder={setSelectionTarget} /><AboutAndFooter />
               </motion.main>
-            )}
-          </AnimatePresence>
-
-          {modalState && (
-              <ModalViewer
-                  state={modalState}
-                  onClose={() => setModalState(null)}
-                  onNext={handleModalNext}
-                  onPrev={handleModalPrev}
-              />
-          )}
-
-          {isGalleryGridOpen && (
-              <GalleryGridModal 
-                  items={combinedPortfolio} 
-                  onClose={() => setIsGalleryGridOpen(false)}
-                  onItemClick={(index) => {
-                      setIsGalleryGridOpen(false);
-                      handleOpenModal(combinedPortfolio, index);
-                  }}
-              />
-          )}
-          
-          {singleImageViewerState && (
-              <ModalViewer
-                  state={singleImageViewerState}
-                  onClose={() => setSingleImageViewerState(null)}
-                  onNext={handleSingleImageNext}
-                  onPrev={handleSingleImagePrev}
-              />
-          )}
-
-          {isServicesPopupOpen && (
-              <ServicesListPopup onClose={() => setIsServicesPopupOpen(false)} />
-          )}
-
-          {selectionTarget && (
-                <ServiceSelectionModal 
-                    platform={selectionTarget} 
-                    onClose={() => setSelectionTarget(null)} 
-                />
-          )}
-
-          {isYouTubeRedirectOpen && (
-              <YouTubeRedirectPopup 
-                  onClose={() => setIsYouTubeRedirectOpen(false)}
-                  onConfirm={() => {
-                      setIsYouTubeRedirectOpen(false);
-                      setIsMediaSidebarOpen(false);
-                      handleScrollTo('video-editing');
-                  }}
-              />
-          )}
-
-          {pipVideo && (
-              <VideoPipPlayer
-                  video={pipVideo}
-                  onClose={() => {
-                      setPipVideo(null);
-                      setPlayingVfxVideo(null);
-                      setIsYtPlaying(false);
-                      setIsPortfolioMediaActive(false);
-                      setVideoCurrentTime(0);
-                  }}
-                  currentTime={videoCurrentTime}
-                  setCurrentTime={setVideoCurrentTime}
-              />
-          )}
-
-          {contextMenu && (
-              <ContextMenu 
-                  x={contextMenu.x} 
-                  y={contextMenu.y} 
-                  onClose={() => setContextMenu(null)}
-                  onGalleryOpen={() => {
-                      setContextMenu(null);
-                      setIsGalleryGridOpen(true);
-                  }}
-              />
-          )}
-          
+          )}</AnimatePresence>
+          {modalState && <ModalViewer state={modalState} onClose={() => setModalState(null)} onNext={handleModalNext} onPrev={handleModalPrev} />}
+          {isGalleryGridOpen && <GalleryGridModal items={combinedPortfolio} onClose={() => setIsGalleryGridOpen(false)} onItemClick={index => { setIsGalleryGridOpen(false); handleOpenModal(combinedPortfolio, index); }} />}
+          {isServicesPopupOpen && <ServicesListPopup onClose={() => setIsServicesPopupOpen(false)} />}
+          {selectionTarget && <ServiceSelectionModal platform={selectionTarget} onClose={() => setSelectionTarget(null)} />}
+          {isYouTubeRedirectOpen && <YouTubeRedirectPopup onClose={() => setIsYouTubeRedirectOpen(false)} onConfirm={() => { setIsYouTubeRedirectOpen(false); handleScrollTo('video-editing'); }} />}
+          {pipVideo && <VideoPipPlayer video={pipVideo} onClose={() => setPipVideo(null)} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />}
+          {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} onClose={() => setContextMenu(null)} onGalleryOpen={() => { setContextMenu(null); setIsGalleryGridOpen(true); }} />}
           <PwaInstallPrompt />
-
-          <div className={`transition-all ease-out fixed bottom-0 left-0 right-0 z-40 ${footerTransitionClass}`}>
+          <div className={`transition-all fixed bottom-0 left-0 right-0 z-40 ${(isNavVisible && !showIntro) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
             <MobileFooterNav onScrollTo={handleScrollTo} />
           </div>
       </div>
