@@ -28,7 +28,7 @@ const InstagramMockup: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     }, []);
 
     const channelPic = siteConfig.branding.profilePicUrl;
-    const channelName = siteConfig.branding.author.toLowerCase().replace(/\s+/g, '_');
+    const channelName = "fuadeditingzone";
 
     if (isMobile) {
         return (
@@ -93,7 +93,7 @@ const YouTubeMockup: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
     }, []);
 
     const channelPic = siteConfig.branding.profilePicUrl;
-    const channelName = siteConfig.branding.author;
+    const channelName = "fuadeditingzone";
 
     if (isMobile) {
         return (
