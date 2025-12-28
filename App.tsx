@@ -85,7 +85,7 @@ export default function App() {
     const updateMeta = (title: string, desc: string, image: string, item?: any) => {
         document.title = title;
         
-        // Standard Meta Tags
+        // Target all major social preview variants
         const selectors = {
             'meta[property="og:title"]': title,
             'meta[name="twitter:title"]': title,
@@ -107,6 +107,12 @@ export default function App() {
             }
         });
 
+        // Forced high-quality dimension hints for crawlers
+        const widthTag = document.querySelector('meta[property="og:image:width"]');
+        const heightTag = document.querySelector('meta[property="og:image:height"]');
+        if (widthTag) widthTag.setAttribute('content', '1200');
+        if (heightTag) heightTag.setAttribute('content', '630');
+
         // JSON-LD Injection for Google Search Discovery
         let existingSchema = document.getElementById('fez-item-schema');
         if (existingSchema) existingSchema.remove();
@@ -119,7 +125,7 @@ export default function App() {
                 "name": title,
                 "description": desc,
                 "thumbnailUrl": image,
-                "uploadDate": new Date().toISOString(), // Standard placeholder
+                "uploadDate": new Date().toISOString(),
                 "contentUrl": item.url || `https://www.youtube.com/watch?v=${item.videoId}`,
                 "embedUrl": item.videoId ? `https://www.youtube.com/embed/${item.videoId}` : item.url,
                 "publisher": {
@@ -149,6 +155,7 @@ export default function App() {
         const item = modalState.items[modalState.currentIndex] as any;
         const itemTitle = item.title || 'Official Portfolio Piece';
         const itemDesc = item.description || siteConfig.seo.description;
+        // Priority: Direct Image > High Res YouTube Thumb > Default Profile
         const itemImage = item.imageUrl || item.thumbnailUrl || (item.videoId ? `https://i.ytimg.com/vi/${item.videoId}/maxresdefault.jpg` : siteConfig.branding.profilePicUrl);
         updateMeta(`${itemTitle} | Fuad Editing Zone`, itemDesc, itemImage, item);
     } else {
