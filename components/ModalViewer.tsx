@@ -144,6 +144,11 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [onClose]);
 
+    // Reset mockup state when changing items
+    useEffect(() => {
+        setUseMockup(true);
+    }, [currentIndex]);
+
     const isImage = (item: ModalItem): item is GraphicWork => 'imageUrl' in item;
     const isVideo = (item: ModalItem): item is VideoWork => ('url' in item || 'videoId' in item);
     const isYTThumbnail = isImage(currentItem) && currentItem.category === 'YouTube Thumbnails';
@@ -178,15 +183,17 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 {isImage(currentItem) ? (
                     (useMockup && isYTThumbnail) ? <YouTubeMockup imageUrl={currentItem.imageUrl} /> :
                     (useMockup && isManipulation) ? <InstagramMockup imageUrl={currentItem.imageUrl} /> :
-                    <div className="w-full h-full flex items-center justify-center">
-                        <motion.img 
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
+                    <motion.div 
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="w-full h-full flex items-center justify-center p-2"
+                    >
+                        <img 
                             src={currentItem.imageUrl} 
                             alt="Raw Portfolio Piece" 
-                            className="max-w-full max-h-full object-contain rounded-sm shadow-2xl border border-white/5" 
+                            className="max-w-full max-h-full object-contain rounded-sm shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/5" 
                         />
-                    </div>
+                    </motion.div>
                 ) : isVideo(currentItem) ? (
                     <div className="w-full max-w-5xl aspect-video bg-black rounded-lg shadow-2xl overflow-hidden">
                         {currentItem.url ? <video src={currentItem.url} controls autoPlay className="w-full h-full" /> : 
@@ -195,26 +202,27 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 ) : null}
             </div>
 
-            {/* Stop propagation on this container to prevent closing modal when clicking toggle/share */}
-            <div className="absolute top-4 right-4 flex gap-2 z-[100]" onClick={e => e.stopPropagation()}>
+            <div className="absolute top-4 right-4 flex flex-col sm:flex-row gap-2 z-[100]" onClick={e => e.stopPropagation()}>
                  {(isYTThumbnail || isManipulation) && (
                     <button 
                         onClick={() => setUseMockup(!useMockup)} 
-                        className={`text-white transition-all p-2.5 rounded-full backdrop-blur-xl flex items-center gap-2 px-5 border ${!useMockup ? 'bg-red-600 border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.5)]' : 'bg-black/50 border-white/10 hover:bg-black/80'}`}
+                        className={`text-white transition-all p-2.5 md:p-3 rounded-full backdrop-blur-xl flex items-center gap-2 px-5 border ${!useMockup ? 'bg-red-600 border-red-500 shadow-[0_0_30px_rgba(220,38,38,0.6)]' : 'bg-black/60 border-white/10 hover:bg-black/80 hover:scale-105'}`}
                     >
                         <EyeIcon className="h-5 w-5" />
-                        <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">
-                            {useMockup ? 'View Raw' : 'Raw View Active'}
+                        <span className="text-[10px] font-black uppercase tracking-widest">
+                            {useMockup ? 'View Raw' : 'Back to Mockup'}
                         </span>
                     </button>
                  )}
-                 <button onClick={handleShare} className="text-white/70 hover:text-white p-2.5 rounded-full bg-black/50 border border-white/10 backdrop-blur-xl transition-all hover:scale-110"><ShareIcon className="h-6 w-6" /></button>
-                 <button onClick={onClose} className="text-white/70 hover:text-white p-2.5 rounded-full bg-black/50 border border-white/10 backdrop-blur-xl transition-all hover:scale-110"><CloseIcon className="h-6 w-6" /></button>
+                 <div className="flex gap-2 justify-end">
+                    <button onClick={handleShare} className="text-white/70 hover:text-white p-2.5 md:p-3 rounded-full bg-black/60 border border-white/10 backdrop-blur-xl transition-all hover:scale-110 hover:bg-black/80"><ShareIcon className="h-6 w-6" /></button>
+                    <button onClick={onClose} className="text-white/70 hover:text-white p-2.5 md:p-3 rounded-full bg-black/60 border border-white/10 backdrop-blur-xl transition-all hover:scale-110 hover:bg-black/80"><CloseIcon className="h-6 w-6" /></button>
+                 </div>
             </div>
 
             <AnimatePresence>
                 {showShareToast && (
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl z-[120]">
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute bottom-24 md:bottom-12 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl z-[120]">
                         Link copied to clipboard
                     </motion.div>
                 )}
