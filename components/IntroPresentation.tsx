@@ -52,7 +52,7 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
         if (!video) return;
 
         video.muted = false;
-        video.volume = 0.2;
+        video.volume = 0.3;
 
         const attemptPlay = async () => {
             try {
@@ -109,7 +109,7 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
         const video = videoRef.current;
         if (video) {
             video.muted = false;
-            video.volume = 0.2;
+            video.volume = 0.4;
             video.play();
             setIsMuted(false);
             setPlaybackStarted(true);
@@ -171,7 +171,7 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                 ))}
             </div>
 
-            {/* Content Container: Dynamic stacking with NO clipping */}
+            {/* Content Container */}
             <div className="relative w-full max-w-7xl min-h-full lg:h-full flex flex-col lg:flex-row gap-6 lg:gap-12 items-center justify-center z-10 p-6 md:p-10 lg:p-12">
                 
                 {/* Main Player Area */}
@@ -180,7 +180,7 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-                        className="relative aspect-square w-full h-auto max-w-[min(85vw,38dvh)] lg:max-w-[min(80vw,65dvh)] bg-black rounded-[2rem] md:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(220,38,38,0.15)] ring-1 ring-white/5"
+                        className="relative aspect-square w-full h-auto max-w-[min(85vw,42dvh)] lg:max-w-[min(80vw,65dvh)] bg-black rounded-[2rem] md:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(220,38,38,0.2)] ring-1 ring-white/5"
                     >
                         <video 
                             ref={videoRef}
@@ -197,41 +197,45 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="absolute inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center z-20 cursor-pointer"
+                                    className="absolute inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center z-20 cursor-pointer group"
                                     onClick={handleStartExperience}
                                 >
-                                    <motion.button 
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-red-600 text-white flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.5)] animate-pulse"
-                                    >
-                                        <PlayIcon className="w-7 h-7 md:w-10 md:h-10 ml-1" />
-                                    </motion.button>
-                                    <p className="mt-3 text-[8px] md:text-xs font-black uppercase tracking-[0.4em] text-white/90 text-center px-4">Initialize</p>
+                                    <div className="relative">
+                                        <div className="absolute -inset-8 bg-red-600/20 blur-3xl animate-pulse rounded-full"></div>
+                                        <motion.button 
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            className="relative w-20 h-20 md:w-28 md:h-28 rounded-full bg-red-600 text-white flex items-center justify-center shadow-[0_0_50px_rgba(220,38,38,0.5)] border border-white/20"
+                                        >
+                                            <PlayIcon className="w-10 h-10 md:w-14 md:h-14 ml-1.5" />
+                                        </motion.button>
+                                    </div>
+                                    <p className="mt-8 text-[10px] md:text-sm font-black uppercase tracking-[0.5em] text-white animate-pulse">Enter Experience</p>
+                                    <p className="mt-2 text-[8px] text-gray-500 font-bold uppercase tracking-widest">Click to enable cinematic audio</p>
                                 </motion.div>
                             )}
                         </AnimatePresence>
 
                         {/* Player Labels */}
-                        <div className="absolute top-3 left-3 md:top-6 md:left-6 flex items-center gap-1.5 z-10 bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
-                            <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-red-600 rounded-full animate-pulse"></div>
-                            <span className="text-[7px] md:text-[9px] font-black uppercase tracking-widest text-white/90">Premium Playback</span>
+                        <div className="absolute top-3 left-3 md:top-6 md:left-6 flex items-center gap-1.5 z-10 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                            <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse shadow-[0_0_8px_rgba(220,38,38,1)]"></div>
+                            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-white/90">HQ VFX Master</span>
                         </div>
 
                         {/* Volume Control */}
                         {playbackStarted && (
                             <button 
                                 onClick={toggleMute}
-                                className="absolute top-3 right-3 md:top-6 md:right-6 z-10 p-2 md:p-3 bg-black/50 hover:bg-black/70 rounded-full border border-white/10 backdrop-blur-md text-white/90 transition-all hover:scale-110"
+                                className="absolute top-3 right-3 md:top-6 md:right-6 z-10 p-2.5 md:p-4 bg-black/50 hover:bg-red-600 rounded-full border border-white/10 backdrop-blur-md text-white transition-all hover:scale-110"
                             >
-                                {isMuted ? <VolumeOffIcon className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <VolumeOnIcon className="w-3.5 h-3.5 md:w-5 md:h-5" />}
+                                {isMuted ? <VolumeOffIcon className="w-4 h-4 md:w-6 md:h-6" /> : <VolumeOnIcon className="w-4 h-4 md:w-6 md:h-6" />}
                             </button>
                         )}
 
                         {/* Progress Bar */}
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5">
+                        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/5">
                             <motion.div 
-                                className="h-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,1)]"
+                                className="h-full bg-red-600 shadow-[0_0_20px_rgba(220,38,38,1)]"
                                 style={{ width: `${progress}%` }}
                             />
                         </div>
@@ -242,19 +246,19 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                                 <motion.div 
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    className="absolute bottom-8 right-0 z-30"
+                                    className="absolute bottom-10 right-0 z-30"
                                 >
                                     {canSkip ? (
                                         <button
                                             onClick={() => onFinished()}
-                                            className="bg-black/80 hover:bg-red-600 backdrop-blur-md text-white border-l border-t border-b border-white/20 py-2 px-5 md:py-3 md:px-10 flex items-center gap-2 group transition-all"
+                                            className="bg-black/80 hover:bg-red-600 backdrop-blur-md text-white border-l border-t border-b border-white/20 py-3 px-8 md:py-4 md:px-14 flex items-center gap-3 group transition-all"
                                         >
-                                            <span className="text-[9px] md:text-xs font-black uppercase tracking-widest">Skip</span>
-                                            <ChevronRightIcon className="w-3 h-3 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform" />
+                                            <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em]">Skip Intro</span>
+                                            <ChevronRightIcon className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1.5 transition-transform" />
                                         </button>
                                     ) : (
-                                        <div className="bg-black/80 backdrop-blur-md text-white/60 border-l border-t border-b border-white/20 py-2 px-5 md:py-3 md:px-10 flex items-center gap-2">
-                                            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">Skip in {skipTimer}s</span>
+                                        <div className="bg-black/80 backdrop-blur-md text-white/60 border-l border-t border-b border-white/20 py-3 px-8 md:py-4 md:px-14 flex items-center gap-3">
+                                            <span className="text-[9px] md:text-[11px] font-black uppercase tracking-widest">Available in {skipTimer}s</span>
                                         </div>
                                     )}
                                 </motion.div>
@@ -263,45 +267,41 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                     </motion.div>
                 </div>
 
-                {/* Info Sidebar: expertise cards and status - No clipping, Original aspect ratios */}
+                {/* Info Sidebar */}
                 <div className="w-full lg:w-[320px] xl:w-[360px] flex flex-col gap-4 lg:gap-6 flex-shrink-0 pb-10 lg:pb-0">
                     <div className="text-center lg:text-left">
                         <h2 className="text-base md:text-2xl lg:text-3xl font-black text-white uppercase tracking-tighter flex items-center gap-3 justify-center lg:justify-start">
-                            Expertise
+                            Capability Showcase
                             <div className="hidden lg:block h-0.5 flex-1 bg-gradient-to-r from-red-600 to-transparent"></div>
                         </h2>
                     </div>
 
-                    <div className="relative min-h-[140px] md:min-h-[180px] lg:min-h-[220px]">
+                    <div className="relative min-h-[160px] md:min-h-[200px] lg:min-h-[240px]">
                         <AnimatePresence mode="wait">
                             {randomizedFeatures.map((feature, idx) => (
                                 idx === activeFeature && (
                                     <motion.div 
                                         key={idx}
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 1.05 }}
-                                        className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden p-3.5 md:p-5 space-y-3 lg:space-y-4 backdrop-blur-2xl shadow-xl"
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden p-4 md:p-6 space-y-4 backdrop-blur-2xl shadow-2xl"
                                     >
-                                        <div className="flex items-center gap-2.5">
-                                            <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-red-600/20 rounded-xl border border-red-600/30">
-                                                {/* FIX: Explicitly cast feature.icon to React.ReactElement<any> to allow className prop injection without TypeScript errors. */}
-                                                {React.cloneElement(feature.icon as React.ReactElement<any>, { className: 'w-4 h-4 md:w-5 md:h-5 text-red-500' })}
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-red-600/10 rounded-xl border border-red-600/20">
+                                                {React.cloneElement(feature.icon as React.ReactElement<any>, { className: 'w-5 h-5 md:w-6 md:h-6 text-red-500' })}
                                             </div>
                                             <div>
-                                                <h4 className="text-[10px] md:text-sm font-black text-white uppercase tracking-tight leading-none">{feature.title}</h4>
-                                                <p className="text-[7px] md:text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">{feature.desc}</p>
+                                                <h4 className="text-xs md:text-base font-black text-white uppercase tracking-tight leading-none">{feature.title}</h4>
+                                                <p className="text-[8px] md:text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1.5">{feature.desc}</p>
                                             </div>
                                         </div>
                                         
-                                        {/* Original Size / No Crop Container */}
-                                        <div className="w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 relative flex items-center justify-center">
+                                        <div className="w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 relative flex items-center justify-center aspect-video">
                                             {feature.media.type === 'video' ? (
-                                                <video src={feature.media.url} autoPlay loop muted playsInline className="w-full h-auto max-h-[160px] md:max-h-[200px] object-contain" />
+                                                <video src={feature.media.url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-auto max-h-[160px] md:max-h-[200px] overflow-hidden flex items-center justify-center">
-                                                    <LazyImage src={feature.media.url} alt="" className="w-full h-auto max-h-[160px] md:max-h-[200px] object-contain" />
-                                                </div>
+                                                <LazyImage src={feature.media.url} alt="" className="w-full h-full object-cover" />
                                             )}
                                         </div>
                                     </motion.div>
@@ -310,29 +310,18 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                         </AnimatePresence>
                     </div>
 
-                    {/* Quality Assurance Indicator */}
-                    <div className="bg-white/5 p-3.5 rounded-xl border border-white/10 backdrop-blur-md flex items-center justify-between">
-                         <span className="text-[8px] md:text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Cinematic Quality</span>
-                         <div className="flex items-center gap-1.5">
-                            <span className="text-[8px] md:text-[10px] text-red-500 font-black uppercase tracking-widest animate-pulse">Syncing</span>
-                            <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-red-600 rounded-full"></div>
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/10 backdrop-blur-md flex items-center justify-between">
+                         <span className="text-[10px] md:text-xs text-gray-400 font-black uppercase tracking-[0.2em]">Selected Legend • 2025</span>
+                         <div className="flex items-center gap-2">
+                            <span className="text-[9px] md:text-[11px] text-red-500 font-black uppercase tracking-widest animate-pulse">Live Edit</span>
+                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-red-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,1)]"></div>
                          </div>
                     </div>
                 </div>
             </div>
 
-            {/* Sub-label Branding Footer */}
-            <div className="relative mt-auto pb-10 flex flex-col items-center gap-2.5 opacity-30 pointer-events-none z-10 px-4 text-center flex-shrink-0">
-                <span className="text-[8px] md:text-[10px] text-white uppercase tracking-[0.6em] font-black">Official Presentation • Fuad Ahmed • 2025</span>
-                <div className="flex gap-3">
-                    <div className="w-1 h-1 bg-white rounded-full"></div>
-                    <div className="w-1 h-1 bg-white rounded-full"></div>
-                    <div className="w-1 h-1 bg-white rounded-full"></div>
-                </div>
-            </div>
-
             {/* Subtle Glitch Overlay */}
-            <div className="absolute inset-0 pointer-events-none opacity-[0.015] mix-blend-overlay bg-[url('https://media.giphy.com/media/oEI9uWUicKgZRL28No/giphy.gif')]"></div>
+            <div className="absolute inset-0 pointer-events-none opacity-[0.02] mix-blend-overlay bg-[url('https://media.giphy.com/media/oEI9uWUicKgZRL28No/giphy.gif')]"></div>
         </motion.div>
     );
 };

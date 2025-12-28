@@ -1,12 +1,27 @@
 import React from 'react';
 import { siteConfig } from '../config';
 import { IntroCard } from './IntroCard';
+import { PlayIcon } from './Icons';
 
-export const AboutAndFooter: React.FC = () => {
+interface AboutAndFooterProps {
+    onReplayIntro?: () => void;
+}
+
+export const AboutAndFooter: React.FC<AboutAndFooterProps> = ({ onReplayIntro }) => {
     return (
         <div className="relative z-10 select-none">
             
             <IntroCard />
+            
+            <div className="container mx-auto px-6 flex justify-center pb-20">
+                <button 
+                    onClick={onReplayIntro}
+                    className="flex items-center gap-3 bg-white/5 hover:bg-red-600 border border-white/10 hover:border-red-500 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-all duration-300 group"
+                >
+                    <PlayIcon className="w-4 h-4 text-red-500 group-hover:text-white" />
+                    Watch Cinematic Intro
+                </button>
+            </div>
             
             <footer id="footer" className="bg-black/30">
                 <div className="container mx-auto px-6 text-center text-gray-400 py-16">
