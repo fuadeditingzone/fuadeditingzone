@@ -56,8 +56,18 @@ export const Home: React.FC<HomeProps> = ({
     const [parallaxEnabled, setParallaxEnabled] = useState(false);
     const [isImageLoaded, setIsImageLoaded] = useState(false);
     
-    const animatedSubs = useAnimatedCounter(stats.subscribers, 5000);
-    const animatedViews = useAnimatedCounter(stats.views, 5000);
+    // Refresh trigger to restart the counter animation periodically
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setRefreshTrigger(prev => prev + 1);
+        }, 30000);
+        return () => clearInterval(interval);
+    }, []);
+    
+    const animatedSubs = useAnimatedCounter(stats.subscribers, 5000, refreshTrigger);
+    const animatedViews = useAnimatedCounter(stats.views, 5000, refreshTrigger);
     
     useEffect(() => {
         const timer = setTimeout(() => setParallaxEnabled(true), 1500);

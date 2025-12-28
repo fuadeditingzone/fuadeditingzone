@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export const useAnimatedCounter = (end: number, duration: number = 2000) => {
+export const useAnimatedCounter = (end: number, duration: number = 2000, trigger?: any) => {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export const useAnimatedCounter = (end: number, duration: number = 2000) => {
     animationFrame = requestAnimationFrame(step);
 
     return () => cancelAnimationFrame(animationFrame);
-  }, [end, duration]);
+  }, [end, duration, trigger]);
 
   return count;
 };
