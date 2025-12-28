@@ -24,11 +24,8 @@ import { IntroPresentation } from './components/IntroPresentation';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 
 export default function App() {
-  // --- UI State ---
   const [showIntro, setShowIntro] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return !sessionStorage.getItem('fez_intro_seen');
-    }
+    if (typeof window !== 'undefined') return !sessionStorage.getItem('fez_intro_seen');
     return true;
   });
   
@@ -41,13 +38,9 @@ export default function App() {
   const [isServicesPopupOpen, setIsServicesPopupOpen] = useState(false);
   const [selectionTarget, setSelectionTarget] = useState<'whatsapp' | 'email' | null>(null);
   const [isYouTubeRedirectOpen, setIsYouTubeRedirectOpen] = useState(false);
-  
-  // --- Navigation Idle Visibility ---
   const [isNavVisible, setIsNavVisible] = useState(true);
   const idleTimeoutRef = useRef<number | null>(null);
-
-  // --- Global Video State ---
-  const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.api.channelId ? '' : '');
+  const [activeYouTubeId, setActiveYouTubeId] = useState<string>('');
   const [isYtPlaying, setIsYtPlaying] = useState(false);
   const [playingVfxVideo, setPlayingVfxVideo] = useState<VideoWork | null>(null);
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
@@ -58,9 +51,7 @@ export default function App() {
   const handleInactivity = useCallback(() => {
     setIsNavVisible(true);
     if (idleTimeoutRef.current) window.clearTimeout(idleTimeoutRef.current);
-    if (!isAnyOverlayActive) {
-      idleTimeoutRef.current = window.setTimeout(() => { setIsNavVisible(false); }, 40000); 
-    }
+    if (!isAnyOverlayActive) idleTimeoutRef.current = window.setTimeout(() => { setIsNavVisible(false); }, 40000); 
   }, [isAnyOverlayActive]);
 
   useEffect(() => {
@@ -80,73 +71,45 @@ export default function App() {
     return [...graphics, ...vfx, ...anime];
   }, []);
 
-  // --- ENHANCED SEO ENGINE (Meta Tags & Social Previews) ---
+  // --- EXACT RAW PREVIEW ENGINE ---
   useEffect(() => {
-    const updateMeta = (title: string, desc: string, image: string, item?: any) => {
+    const updateMeta = (title: string, desc: string, imageUrl: string) => {
         document.title = title;
-        
-        const metaConfig: Record<string, string> = {
+        const mapping: Record<string, string> = {
             'meta[property="og:title"]': title,
             'meta[name="twitter:title"]': title,
-            'meta[name="title"]': title,
-            'meta[itemprop="name"]': title,
             'meta[property="og:description"]': desc,
             'meta[name="description"]': desc,
             'meta[name="twitter:description"]': desc,
-            'meta[itemprop="description"]': desc,
-            'meta[property="og:image"]': image,
-            'meta[property="og:image:secure_url"]': image,
-            'meta[name="twitter:image"]': image,
-            'meta[itemprop="image"]': image,
+            'meta[property="og:image"]': imageUrl,
+            'meta[property="og:image:secure_url"]': imageUrl,
+            'meta[name="twitter:image"]': imageUrl,
+            'meta[itemprop="image"]': imageUrl,
             'meta[property="og:url"]': window.location.href,
-            'link[rel="canonical"]': window.location.href
         };
-
-        Object.entries(metaConfig).forEach(([selector, value]) => {
-            const el = document.querySelector(selector);
-            if (el) {
-                if (el.tagName === 'LINK') el.setAttribute('href', value);
-                else el.setAttribute('content', value);
-            }
-        });
-
-        // Forced Dimensions for Social Bots
-        ['meta[property="og:image:width"]', 'meta[property="og:image:height"]'].forEach(sel => {
+        Object.entries(mapping).forEach(([sel, val]) => {
             const el = document.querySelector(sel);
-            if (el) el.setAttribute('content', sel.includes('width') ? '1200' : '630');
+            if (el) el.setAttribute('content', val);
         });
     };
 
     if (modalState) {
         const item = modalState.items[modalState.currentIndex] as any;
-        const itemTitle = item.title || 'Official Portfolio Work';
-        const itemDesc = item.description || siteConfig.seo.description;
-        
-        // Ensure we prioritize the RAW image URL for sharing
-        let itemImage = siteConfig.branding.profilePicUrl;
-        if (item.imageUrl) {
-            itemImage = item.imageUrl;
-        } else if (item.videoId) {
-            // High-res YouTube thumbnail as raw preview
-            itemImage = `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg`;
-        } else if (item.thumbnailUrl) {
-            itemImage = item.thumbnailUrl;
-        }
-
-        updateMeta(`${itemTitle} | Fuad Editing Zone`, itemDesc, itemImage, item);
+        const itemImage = item.imageUrl || (item.videoId ? `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg` : siteConfig.branding.profilePicUrl);
+        updateMeta(
+            `${item.title || 'Selected Legend Art'} | FEZ Portfolio`, 
+            item.description || siteConfig.seo.description, 
+            itemImage
+        );
     } else {
-        const defaultImage = "https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1";
-        updateMeta(siteConfig.seo.title, siteConfig.seo.description, defaultImage);
+        updateMeta(siteConfig.seo.title, siteConfig.seo.description, "https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1");
     }
   }, [modalState]);
 
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      if (!hash) {
-        if (!isAnyOverlayActive) setModalState(null);
-        return;
-      }
+      if (!hash) return;
       const foundIndex = combinedPortfolio.findIndex(item => (item as any).slug === hash);
       if (foundIndex !== -1 && !modalState) {
         setModalState({ items: combinedPortfolio, currentIndex: foundIndex });
@@ -169,12 +132,10 @@ export default function App() {
 
   useEffect(() => {
       window.onYouTubeIframeAPIReady = () => setIsYouTubeApiReady(true);
-      if (window.YT && window.YT.Player) setIsYouTubeApiReady(true);
-      else {
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
+      if (!(window.YT && window.YT.Player)) {
+        const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api";
         document.head.appendChild(tag);
-      }
+      } else setIsYouTubeApiReady(true);
     }, []);
 
   const handleOpenModal = (items: (GraphicWork | VideoWork)[], startIndex: number) => {
@@ -189,8 +150,7 @@ export default function App() {
   };
 
   const handleScrollTo = (target: 'home' | 'portfolio' | 'contact' | 'video-editing' | 'about') => {
-    const element = document.getElementById(target);
-    element?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById(target)?.scrollIntoView({ behavior: 'smooth' });
   };
   
   const handleModalNext = useCallback(() => { setModalState(s => s ? { ...s, currentIndex: (s.currentIndex + 1) % s.items.length } : null); }, []);
@@ -200,28 +160,16 @@ export default function App() {
     <ParallaxProvider>
       <div className="text-white min-h-screen bg-black" onContextMenu={e => { e.preventDefault(); if(!isAnyOverlayActive) setContextMenu({ x: e.clientX, y: e.clientY }); }}>
           <AnimatePresence>
-            {showIntro && (
-                <IntroPresentation 
-                    onFinished={() => { 
-                        sessionStorage.setItem('fez_intro_seen', 'true'); 
-                        setShowIntro(false); 
-                    }} 
-                />
-            )}
+            {showIntro && <IntroPresentation onFinished={() => { sessionStorage.setItem('fez_intro_seen', 'true'); setShowIntro(false); }} />}
           </AnimatePresence>
-          
           <VFXBackground /><MediaGridBackground />
-          
           <div className={`transition-all fixed top-0 left-0 right-0 z-50 ${(isNavVisible && !showIntro) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
             <DesktopHeader onScrollTo={handleScrollTo} /><MobileHeader onScrollTo={handleScrollTo} />
           </div>
-          
           <MediaSidebar isOpen={isMediaSidebarOpen} onClose={() => setIsMediaSidebarOpen(false)} activeYouTubeId={activeYouTubeId} onSelectYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
-          
           {!isMediaSidebarOpen && !isAnyOverlayActive && (
               <button onClick={() => setIsMediaSidebarOpen(true)} className={`fixed top-24 right-0 z-40 bg-black/40 backdrop-blur-xl border-l border-t border-b border-white/10 text-white p-3 rounded-l-xl transition-all ${(isNavVisible && !showIntro) ? 'opacity-100' : 'opacity-0 translate-x-full'}`}><YouTubeIcon className="w-6 h-6 text-red-500" /></button>
           )}
-          
           <AnimatePresence>
               {!showIntro && (
                   <motion.main initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="main-content relative z-10 pb-20 md:pb-0">
@@ -232,7 +180,6 @@ export default function App() {
                   </motion.main>
               )}
           </AnimatePresence>
-          
           {modalState && <ModalViewer state={modalState} onClose={() => setModalState(null)} onNext={handleModalNext} onPrev={handleModalPrev} />}
           {isGalleryGridOpen && <GalleryGridModal items={combinedPortfolio} onClose={() => setIsGalleryGridOpen(false)} onItemClick={index => { setIsGalleryGridOpen(false); handleOpenModal(combinedPortfolio, index); }} />}
           {isServicesPopupOpen && <ServicesListPopup onClose={() => setIsServicesPopupOpen(false)} />}
@@ -241,7 +188,6 @@ export default function App() {
           {pipVideo && <VideoPipPlayer video={pipVideo} onClose={() => setPipVideo(null)} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />}
           {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} onClose={() => setContextMenu(null)} onGalleryOpen={() => { setContextMenu(null); setIsGalleryGridOpen(true); }} />}
           <PwaInstallPrompt />
-          
           <div className={`transition-all fixed bottom-0 left-0 right-0 z-40 ${(isNavVisible && !showIntro) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
             <MobileFooterNav onScrollTo={handleScrollTo} />
           </div>
