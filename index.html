@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v8.1.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v9.2.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -10,7 +10,7 @@
     <meta name="title" content="Fuad Ahmed | Selected Legend | Fuad Editing Zone Portfolio" />
     <meta name="description" content="Official portfolio of Fuad Ahmed (Selected Legend). Specialized in cinematic VFX, premium photo manipulation, and high-impact design." />
     
-    <!-- 2. SOCIAL PREVIEW (Base Tags - Dynamic tags are injected via App.tsx) -->
+    <!-- 2. SOCIAL PREVIEW (Initial Static Tags) -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://fuadeditingzone.pages.dev/" />
     <meta property="og:title" content="Fuad Ahmed | Selected Legend | Fuad Editing Zone" />
@@ -19,7 +19,6 @@
     <meta property="og:image:secure_url" content="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:type" content="image/png" />
     <meta property="og:site_name" content="Fuad Editing Zone" />
 
     <!-- 3. TWITTER / X -->
@@ -28,14 +27,20 @@
     <meta name="twitter:description" content="Premium VFX and Photo Manipulation by Fuad Ahmed." />
     <meta name="twitter:image" content="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1" />
 
-    <!-- 4. STRUCTURED DATA -->
+    <!-- 4. STRUCTURED DATA (Schema.org JSON-LD) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "Fuad Editing Zone",
+      "alternateName": "FEZ Zone",
       "url": "https://fuadeditingzone.pages.dev/",
       "logo": "https://dl.dropboxusercontent.com/scl/fi/vvk2qlo8i0mer2n4sip1h/faeez-logo.png?rlkey=xiahu40vwixf0uf96wwnvqlw2&raw=1",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "fuadeditingzone@gmail.com",
+        "contactType": "customer service"
+      },
       "sameAs": [
         "https://facebook.com/fuadeditingzone",
         "https://www.instagram.com/fuadeditingzone",
@@ -100,10 +105,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800;900&family=Teko:wght@600;700&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div style="display:none;" aria-hidden="true">
-        <!-- Hidden crawlable image gallery for better link sharing previews -->
-        <img src="https://www.dropbox.com/scl/fi/ot4xvfzucr57b817xsbpx/Justice-For-Osman-Hadi.jpg?rlkey=14bocvhbrbcpg7pgiim7ziv35&raw=1" alt="Justice For Osman Hadi Portfolio Piece">
-    </div>
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
   </body>

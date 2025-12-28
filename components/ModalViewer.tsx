@@ -154,7 +154,13 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
         const slug = (currentItem as any).slug || `${isImage(currentItem) ? 'g' : 'v'}-${currentItem.id}`;
         const shareUrl = `${window.location.origin}${window.location.pathname}#${slug}`;
         if (navigator.share) {
-            try { await navigator.share({ title: 'Selected Legend Portfolio', url: shareUrl }); } catch (err) {}
+            try { 
+                await navigator.share({ 
+                    title: `${currentItem.title || 'Selected Legend Art'} | FEZ`, 
+                    text: 'Explore premium cinematic visuals and VFX by Selected Legend.',
+                    url: shareUrl 
+                }); 
+            } catch (err) {}
         } else {
             navigator.clipboard.writeText(shareUrl);
             setShowShareToast(true);
@@ -174,11 +180,11 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                     (useMockup && isManipulation) ? <InstagramMockup imageUrl={currentItem.imageUrl} /> :
                     <div className="w-full h-full flex items-center justify-center">
                         <motion.img 
-                            initial={{ scale: 0.9, opacity: 0 }}
+                            initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             src={currentItem.imageUrl} 
                             alt="Raw Portfolio Piece" 
-                            className="max-w-full max-h-full object-contain rounded-sm shadow-2xl" 
+                            className="max-w-full max-h-full object-contain rounded-sm shadow-2xl border border-white/5" 
                         />
                     </div>
                 ) : isVideo(currentItem) ? (
@@ -189,7 +195,8 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 ) : null}
             </div>
 
-            <div className="absolute top-4 right-4 flex gap-2 z-[100]">
+            {/* Stop propagation on this container to prevent closing modal when clicking toggle/share */}
+            <div className="absolute top-4 right-4 flex gap-2 z-[100]" onClick={e => e.stopPropagation()}>
                  {(isYTThumbnail || isManipulation) && (
                     <button 
                         onClick={() => setUseMockup(!useMockup)} 
@@ -201,14 +208,14 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                         </span>
                     </button>
                  )}
-                 <button onClick={handleShare} className="text-white/70 hover:text-white p-2.5 rounded-full bg-black/50 border border-white/10 backdrop-blur-xl"><ShareIcon className="h-6 w-6" /></button>
-                 <button onClick={onClose} className="text-white/70 hover:text-white p-2.5 rounded-full bg-black/50 border border-white/10 backdrop-blur-xl"><CloseIcon className="h-6 w-6" /></button>
+                 <button onClick={handleShare} className="text-white/70 hover:text-white p-2.5 rounded-full bg-black/50 border border-white/10 backdrop-blur-xl transition-all hover:scale-110"><ShareIcon className="h-6 w-6" /></button>
+                 <button onClick={onClose} className="text-white/70 hover:text-white p-2.5 rounded-full bg-black/50 border border-white/10 backdrop-blur-xl transition-all hover:scale-110"><CloseIcon className="h-6 w-6" /></button>
             </div>
 
             <AnimatePresence>
                 {showShareToast && (
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl z-[120]">
-                        Direct link copied
+                        Link copied to clipboard
                     </motion.div>
                 )}
             </AnimatePresence>
