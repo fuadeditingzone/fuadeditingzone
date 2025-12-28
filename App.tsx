@@ -21,6 +21,7 @@ import { VideoPipPlayer } from './components/VideoPipPlayer';
 import { ServiceSelectionModal } from './components/ServiceSelectionModal';
 import { YouTubeRedirectPopup } from './components/YouTubeRedirectPopup';
 import { IntroPresentation } from './components/IntroPresentation';
+import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 
 export default function App() {
   // --- UI State ---
@@ -355,6 +356,8 @@ export default function App() {
               />
           )}
           
+          <PwaInstallPrompt />
+
           <div className={`transition-all ease-out fixed bottom-0 left-0 right-0 z-40 ${footerTransitionClass}`}>
             <MobileFooterNav onScrollTo={handleScrollTo} />
           </div>

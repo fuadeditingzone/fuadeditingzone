@@ -285,7 +285,8 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                                     >
                                         <div className="flex items-center gap-2.5">
                                             <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-red-600/20 rounded-xl border border-red-600/30">
-                                                {React.cloneElement(feature.icon as React.ReactElement, { className: 'w-4 h-4 md:w-5 md:h-5 text-red-500' })}
+                                                {/* FIX: Explicitly cast feature.icon to React.ReactElement<any> to allow className prop injection without TypeScript errors. */}
+                                                {React.cloneElement(feature.icon as React.ReactElement<any>, { className: 'w-4 h-4 md:w-5 md:h-5 text-red-500' })}
                                             </div>
                                             <div>
                                                 <h4 className="text-[10px] md:text-sm font-black text-white uppercase tracking-tight leading-none">{feature.title}</h4>
