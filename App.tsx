@@ -122,10 +122,16 @@ export default function App() {
         const itemTitle = item.title || 'Official Portfolio Work';
         const itemDesc = item.description || siteConfig.seo.description;
         
+        // Ensure we prioritize the RAW image URL for sharing
         let itemImage = siteConfig.branding.profilePicUrl;
-        if (item.imageUrl) itemImage = item.imageUrl;
-        else if (item.videoId) itemImage = `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg`;
-        else if (item.thumbnailUrl) itemImage = item.thumbnailUrl;
+        if (item.imageUrl) {
+            itemImage = item.imageUrl;
+        } else if (item.videoId) {
+            // High-res YouTube thumbnail as raw preview
+            itemImage = `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg`;
+        } else if (item.thumbnailUrl) {
+            itemImage = item.thumbnailUrl;
+        }
 
         updateMeta(`${itemTitle} | Fuad Editing Zone`, itemDesc, itemImage, item);
     } else {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import type { GraphicWork, VideoWork, ModalItem } from '../hooks/types';
 import { LazyImage } from './LazyImage';
@@ -268,7 +267,11 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                     (useMockup && isYouTubeThumbnail) ? <YouTubeMockup imageUrl={currentItem.imageUrl} /> :
                     (useMockup && isInstagramMockup) ? <InstagramMockup imageUrl={currentItem.imageUrl} /> :
                     <div className={`w-full h-full flex items-center justify-center ${isZoomed ? 'overflow-auto' : 'overflow-hidden'}`}>
-                        <img src={currentItem.imageUrl} alt="Portfolio Work" className={`rounded-lg drop-shadow-2xl transition-all ${isZoomed ? 'max-w-none' : 'max-w-full max-h-full object-contain'}`} />
+                        <img 
+                            src={currentItem.imageUrl} 
+                            alt="Portfolio Work" 
+                            className={`rounded-lg drop-shadow-2xl transition-all duration-300 ${isZoomed ? 'max-w-none' : 'max-w-full max-h-full object-contain'}`} 
+                        />
                     </div>
                 ) : isVideo(currentItem) ? (
                     <div className="w-full max-w-5xl aspect-video bg-black rounded-lg shadow-2xl overflow-hidden">
@@ -280,9 +283,14 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
 
             <div className="absolute top-4 right-4 flex gap-2 z-[100]">
                  {(isYouTubeThumbnail || isInstagramMockup) && (
-                    <button onClick={() => setUseMockup(!useMockup)} className={`text-white/70 hover:text-white transition-colors p-2.5 rounded-full bg-black/50 border border-white/10 backdrop-blur-sm flex items-center gap-2 px-4 ${!useMockup ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.5)]' : ''}`}>
+                    <button 
+                        onClick={() => setUseMockup(!useMockup)} 
+                        className={`text-white/70 hover:text-white transition-all p-2.5 rounded-full bg-black/50 border border-white/10 backdrop-blur-sm flex items-center gap-2 px-4 ${!useMockup ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.5)]' : ''}`}
+                    >
                         <EyeIcon className="h-5 w-5" />
-                        <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">{useMockup ? 'View Raw' : 'Mockup Active'}</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">
+                            {useMockup ? 'View Raw' : 'Mockup Active'}
+                        </span>
                     </button>
                  )}
                  <button onClick={handleShare} className="text-white/70 hover:text-white transition-colors p-2.5 rounded-full bg-black/50 border border-white/10 backdrop-blur-sm"><ShareIcon className="h-6 w-6" /></button>
@@ -303,7 +311,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
     );
 };
 
-// FIX: Added GalleryGridModal to provide the missing export for index-based browsing.
 export const GalleryGridModal: React.FC<{
   items: ModalItem[];
   onClose: () => void;
