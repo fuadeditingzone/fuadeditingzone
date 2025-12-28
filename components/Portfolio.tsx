@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { GraphicWork, VideoWork } from '../hooks/types';
 import { LazyImage } from './LazyImage';
 import { siteConfig } from '../config';
-import { PlayIcon, VolumeOnIcon, VolumeOffIcon, HandThumbUpIcon, GlobeAltIcon, SparklesIcon } from './Icons';
+import { PlayIcon, VolumeOnIcon, VolumeOffIcon, HandThumbUpIcon, GlobeAltIcon, SparklesIcon, CloseIcon } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { InteractiveCard } from './InteractiveCard';
 import { useParallax } from '../contexts/ParallaxContext';
@@ -145,18 +146,20 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     const [currentVideoStats, setCurrentVideoStats] = useState<{ title: string; views: string; likes: string } | null>(null);
     const { y } = useParallax();
     const playerRef = useRef<any>(null);
+    const [isFloating, setIsFloating] = useState(false);
 
+    // YouTube Iframe API Initialization
     useEffect(() => {
         if (!isYouTubeApiReady || !activeYouTubeId) return;
 
-        const container = document.getElementById('youtube-portfolio-player');
+        const container = document.getElementById('youtube-portfolio-player-inner');
         if (!container) return;
 
         if (playerRef.current) {
             playerRef.current.destroy();
         }
 
-        playerRef.current = new window.YT.Player('youtube-portfolio-player', {
+        playerRef.current = new window.YT.Player('youtube-portfolio-player-inner', {
             videoId: activeYouTubeId,
             playerVars: {
                 autoplay: isYtPlaying ? 1 : 0,
@@ -185,56 +188,27 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         };
     }, [isYouTubeApiReady, activeYouTubeId]);
 
+    // Handle Floating Logic via IntersectionObserver + Scroll behavior
     useEffect(() => {
-        if (!isYtPlaying || pipVideo?.id === 'yt-pip') return;
+        // Floating only happens if video is playing and not visible
+        const shouldFloat = !isYtVisible && isYtPlaying && activeYouTubeId !== '';
+        setIsFloating(shouldFloat);
+    }, [isYtVisible, isYtPlaying, activeYouTubeId]);
+
+    // Sync current time
+    useEffect(() => {
+        if (!isYtPlaying) return;
         const interval = setInterval(() => {
             if (playerRef.current && playerRef.current.getCurrentTime) {
                 setCurrentTime(playerRef.current.getCurrentTime());
             }
         }, 1000);
         return () => clearInterval(interval);
-    }, [isYtPlaying, pipVideo]);
+    }, [isYtPlaying]);
 
-    useEffect(() => {
-        if (playerRef.current && playerRef.current.getPlayerState) {
-            const state = playerRef.current.getPlayerState();
-            const isPipActive = pipVideo?.id === 'yt-pip';
-
-            if (isPipActive) {
-                if (state === window.YT.PlayerState.PLAYING) {
-                    playerRef.current.pauseVideo();
-                }
-                return;
-            }
-
-            if (isYtPlaying && state !== window.YT.PlayerState.PLAYING) {
-                playerRef.current.playVideo();
-            } else if (!isYtPlaying && state === window.YT.PlayerState.PLAYING) {
-                playerRef.current.pauseVideo();
-            }
-        }
-    }, [isYtPlaying, pipVideo]);
-
-    useEffect(() => {
-        if (!isYtVisible && isYtPlaying && activeYouTubeId) {
-            if (!pipVideo || pipVideo.id !== 'yt-pip' || pipVideo.videoId !== activeYouTubeId) {
-                if (playerRef.current && playerRef.current.getCurrentTime) {
-                    setCurrentTime(playerRef.current.getCurrentTime());
-                }
-                setPipVideo({ id: 'yt-pip', videoId: activeYouTubeId });
-            }
-        } 
-        else if (isYtVisible && pipVideo?.id === 'yt-pip') {
-            setPipVideo(null);
-            if (isYtPlaying && playerRef.current && playerRef.current.seekTo) {
-                playerRef.current.seekTo(currentTime);
-                playerRef.current.playVideo();
-            }
-        }
-    }, [isYtVisible, activeYouTubeId, isYtPlaying, pipVideo, setPipVideo]);
-
+    // Apply Parallax unless something is floating to avoid fixed position glitches in transformed parents
     const parallaxStyle = {
-      transform: `translateY(${y * -5}px)`,
+      transform: isFloating ? 'none' : `translateY(${y * -5}px)`,
       transition: 'transform 0.1s ease-out',
       willChange: 'transform' as const
     };
@@ -298,53 +272,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         fetchVideoStats();
     }, [activeYouTubeId]);
 
-    const GraphicDesignContent = useMemo(() => {
-        const categories: GraphicWork['category'][] = ['Photo Manipulation', 'YouTube Thumbnails', 'Banner Designs'];
-        
-        return (
-            <div className="space-y-16 animate-fade-in">
-                {categories.map(category => {
-                    const worksForCategory = dynamicGraphicWorks.filter(w => w.category === category);
-                    if (worksForCategory.length === 0) return null;
-
-                    return (
-                        <div key={category} className="space-y-6">
-                            <h3 className="text-2xl font-bold text-gray-300">{category}</h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
-                                {worksForCategory.map((work, index) => {
-                                    const originalIndex = dynamicGraphicWorks.findIndex(item => item.id === work.id);
-                                    return (
-                                        <div
-                                            key={`${work.id}-${index}`}
-                                            onClick={() => openModal(dynamicGraphicWorks, originalIndex)}
-                                        >
-                                            <InteractiveCard className="relative group rounded-xl sm:rounded-2xl overflow-hidden bg-black cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/10 aspect-[4/3]">
-                                                <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
-                                                  <img 
-                                                      src={work.imageUrl} 
-                                                      alt="" 
-                                                      className="absolute inset-0 w-full h-full object-cover filter blur-lg brightness-50 scale-110"
-                                                      aria-hidden="true"
-                                                  />
-                                                  <LazyImage
-                                                      src={work.imageUrl}
-                                                      alt={work.category}
-                                                      className="relative w-full h-full object-contain"
-                                                  />
-                                                </div>
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                            </InteractiveCard>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    }, [dynamicGraphicWorks, openModal]);
-    
     const handleVfxPlayRequest = (video: VideoWork | null) => {
         if (video && pipVideo && video.id === pipVideo.id) {
             setPipVideo(null);
@@ -396,43 +323,82 @@ export const Portfolio: React.FC<PortfolioProps> = ({
 
         return (
             <div className="lg:flex lg:gap-12 lg:items-start max-w-[1700px] mx-auto animate-fade-in" ref={ytContainerRef}>
+                {/* Desktop Left Sidebar */}
                 <div className="hidden lg:flex flex-col gap-6 w-[300px] flex-shrink-0 h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/50 px-4 pt-2">
                         <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black mb-1 px-1">Playlist A</div>
                         {leftAnimeEdits.map((video, idx) => <ThumbnailButton key={video.id} video={video} index={idx} />)}
                 </div>
 
+                {/* Main Player Center */}
                 <div className="flex-1 space-y-6 md:space-y-8">
-                    <InteractiveCard className={`w-full mx-auto rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10 transition-opacity duration-500`}>
-                            <div className="aspect-video w-full relative">
-                            <div id="youtube-portfolio-player" className="w-full h-full"></div>
+                    <div className="relative aspect-video w-full mx-auto rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10">
+                        {/* THE ACTUAL PLAYER - This container is the one that floats */}
+                        <motion.div 
+                            layout
+                            data-floating={isFloating}
+                            className={`w-full h-full relative z-30 transition-shadow duration-500 ${isFloating ? 'fixed bottom-6 right-6 w-64 md:w-80 shadow-red-600/20 shadow-[0_20px_60px_-15px_rgba(220,38,38,0.4)] z-[200] rounded-xl border border-white/20' : ''}`}
+                            initial={false}
+                        >
+                            <div id="youtube-portfolio-player-inner" className="w-full h-full bg-black"></div>
                             
-                            {pipVideo?.id === 'yt-pip' && (
-                                <div className="absolute inset-0 z-20 bg-black/40 backdrop-blur-[12px] flex flex-col items-center justify-center text-center p-4 md:p-6 transition-all duration-500">
-                                    <div className="flex items-end gap-1 md:gap-1.5 h-12 md:h-16 mb-6 md:mb-8">
-                                        <div className="w-1 md:w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.1s]" style={{ height: '40%' }}></div>
-                                        <div className="w-1 md:w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.3s]" style={{ height: '70%' }}></div>
-                                        <div className="w-1 md:w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.2s]" style={{ height: '100%' }}></div>
-                                        <div className="w-1 md:w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.4s]" style={{ height: '60%' }}></div>
-                                        <div className="w-1 md:w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.1s]" style={{ height: '80%' }}></div>
+                            {/* Floating Controls Overlay */}
+                            <AnimatePresence>
+                                {isFloating && (
+                                    <motion.div 
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="absolute top-2 right-2 flex gap-2 z-10"
+                                    >
+                                        <button 
+                                            onClick={() => setIsYtPlaying(false)}
+                                            className="p-1.5 bg-black/60 hover:bg-red-600 text-white rounded-full transition-colors border border-white/10"
+                                        >
+                                            <CloseIcon className="w-3.5 h-3.5" />
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
+
+                        {/* HOLE REPLACEMENT - Blurred Preview */}
+                        {isFloating && (
+                            <div className="absolute inset-0 z-10 bg-black flex flex-col items-center justify-center text-center p-6 transition-all duration-500 overflow-hidden">
+                                <img 
+                                    src={`https://i.ytimg.com/vi/${activeYouTubeId}/hqdefault.jpg`} 
+                                    alt="" 
+                                    className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-110"
+                                />
+                                <div className="relative z-20 space-y-4">
+                                    <div className="flex items-end gap-1.5 h-12 justify-center">
+                                        <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.1s]" style={{ height: '40%' }}></div>
+                                        <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.3s]" style={{ height: '70%' }}></div>
+                                        <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.2s]" style={{ height: '100%' }}></div>
+                                        <div className="w-1.5 bg-red-600 rounded-full animate-[pulse_1s_infinite_0.4s]" style={{ height: '60%' }}></div>
                                     </div>
-                                    <div className="space-y-1 md:space-y-2">
+                                    <div className="space-y-1">
                                         <div className="flex items-center justify-center gap-2 text-white">
-                                            <SparklesIcon className="w-3.5 h-3.5 md:w-4 h-4 text-red-500 animate-spin-slow" />
-                                            <h4 className="font-bold text-[11px] md:text-lg uppercase tracking-[0.2em]">Live Sync Active</h4>
+                                            <SparklesIcon className="w-4 h-4 text-red-500 animate-spin-slow" />
+                                            <h4 className="font-bold text-[10px] md:text-sm uppercase tracking-[0.2em]">Cinematic Playback Active</h4>
                                         </div>
-                                        <p className="text-gray-400 text-[9px] md:text-xs font-medium uppercase tracking-widest opacity-80">Playing on Mini-Player</p>
+                                        <p className="text-gray-400 text-[8px] md:text-[10px] font-medium uppercase tracking-widest opacity-80">Check the floating window</p>
                                     </div>
                                     <button 
-                                        onClick={() => setPipVideo(null)}
-                                        className="mt-6 md:mt-8 bg-white/5 hover:bg-red-600 border border-white/10 hover:border-red-600 text-white px-5 md:px-6 py-1.5 md:py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all duration-300 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                                        onClick={() => {
+                                            const element = document.getElementById('video-editing');
+                                            element?.scrollIntoView({ behavior: 'smooth' });
+                                        }}
+                                        className="bg-white/5 hover:bg-red-600 border border-white/10 hover:border-red-600 text-white px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all"
                                     >
-                                        Restore Main Screen
+                                        Scroll Back to Center
                                     </button>
                                 </div>
-                            )}
                             </div>
-                            
-                            <div className="bg-[#0f0f0f] p-4 md:p-10 border-t border-white/5 flex flex-col md:flex-row gap-4 md:gap-6 justify-between items-start md:items-center min-h-[90px] md:min-h-[120px] select-none">
+                        )}
+                    </div>
+                    
+                    {/* Metadata Section */}
+                    <div className="bg-[#0f0f0f] p-4 md:p-10 border-t border-white/5 flex flex-col md:flex-row gap-4 md:gap-6 justify-between items-start md:items-center min-h-[90px] md:min-h-[120px] select-none">
                             <div className="flex items-center gap-3 md:gap-5 w-full md:w-auto">
                                 {isYtPlaying && <div className="w-2 h-2 md:w-3 md:h-3 bg-red-600 rounded-full animate-pulse shadow-[0_0_15px_rgba(220,38,38,1)] flex-shrink-0"></div>}
                                 <h3 className="text-white font-bold text-lg md:text-4xl break-words tracking-tight leading-tight line-clamp-2">
@@ -454,21 +420,68 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                     </div>
                                 </div>
                             )}
-                            </div>
-                    </InteractiveCard>
+                    </div>
 
                     <div className="lg:hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-4 max-w-5xl mx-auto pt-2 px-1">
                         {animeEdits.map((video, idx) => <ThumbnailButton key={video.id} video={video} index={idx} />)}
                     </div>
                 </div>
 
+                {/* Desktop Right Sidebar */}
                 <div className="hidden lg:flex flex-col gap-6 w-[300px] flex-shrink-0 h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/50 px-4 pt-2">
                         <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black mb-1 px-1 text-right">Playlist B</div>
                         {rightAnimeEdits.map((video, idx) => <ThumbnailButton key={video.id} video={video} index={idx} />)}
                 </div>
             </div>
         );
-    }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, pipVideo, setPipVideo, setActiveYouTubeId, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime]);
+    }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, isFloating, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime]);
+
+    const GraphicDesignContent = useMemo(() => {
+        const categories: GraphicWork['category'][] = ['Photo Manipulation', 'YouTube Thumbnails', 'Banner Designs'];
+        
+        return (
+            <div className="space-y-16 animate-fade-in">
+                {categories.map(category => {
+                    const worksForCategory = dynamicGraphicWorks.filter(w => w.category === category);
+                    if (worksForCategory.length === 0) return null;
+
+                    return (
+                        <div key={category} className="space-y-6">
+                            <h3 className="text-2xl font-bold text-gray-300">{category}</h3>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
+                                {worksForCategory.map((work, index) => {
+                                    const originalIndex = dynamicGraphicWorks.findIndex(item => item.id === work.id);
+                                    return (
+                                        <div
+                                            key={`${work.id}-${index}`}
+                                            onClick={() => openModal(dynamicGraphicWorks, originalIndex)}
+                                        >
+                                            <InteractiveCard className="relative group rounded-xl sm:rounded-2xl overflow-hidden bg-black cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/10 aspect-[4/3]">
+                                                <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
+                                                  <img 
+                                                      src={work.imageUrl} 
+                                                      alt="" 
+                                                      className="absolute inset-0 w-full h-full object-cover filter blur-lg brightness-50 scale-110"
+                                                      aria-hidden="true"
+                                                  />
+                                                  <LazyImage
+                                                      src={work.imageUrl}
+                                                      alt={work.category}
+                                                      className="relative w-full h-full object-contain"
+                                                  />
+                                                </div>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            </InteractiveCard>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    }, [dynamicGraphicWorks, openModal]);
 
     const CinematicVfxSection = useMemo(() => {
         return (
@@ -508,7 +521,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                     </div>
                 </div>
 
-                {/* Video Editing Section - Now vertically stacked */}
+                {/* Video Editing Section - Vertically stacked */}
                 <div id="video-editing" className="pt-8 md:pt-16 relative space-y-16 md:space-y-24">
                     <div 
                         className="absolute -inset-y-2 md:-inset-y-4 -inset-x-0 sm:-inset-6 md:-inset-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl md:rounded-3xl"
@@ -525,7 +538,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                         {YoutubeEditsSection}
                     </div>
 
-                    {/* Cinematic VFX Sub-Section - Positioned below YouTube Edits */}
+                    {/* Cinematic VFX Sub-Section */}
                     <div className="relative p-3 md:p-8">
                         <div className="text-center mb-10 md:mb-16">
                              <h2 className="text-2xl md:text-4xl font-bold text-white uppercase tracking-tight">Cinematic VFX</h2>
