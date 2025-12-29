@@ -26,75 +26,64 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[50000] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[50000] flex items-center justify-center p-6">
                     <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-black/90 backdrop-blur-lg"
+                        className="absolute inset-0 bg-black/40 backdrop-blur-md"
                     />
                     
                     <motion.div
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.95, opacity: 0 }}
-                        className="relative w-full max-w-md bg-[#0d0d0d] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl"
+                        initial={{ scale: 0.98, opacity: 0, y: 10 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.98, opacity: 0, y: 10 }}
+                        className="relative w-full max-w-[340px] bg-zinc-950/60 backdrop-blur-2xl border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl"
                     >
-                        {/* Header */}
-                        <div className="p-6 flex justify-between items-center border-b border-white/5">
-                            <div className="flex items-center gap-3">
-                                <UserCircleIcon className="w-5 h-5 text-red-600" />
-                                <span className="text-xs font-black uppercase tracking-[0.2em] text-white">Profile Hub</span>
-                            </div>
-                            <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5 text-zinc-500 hover:text-white transition-colors">
-                                <CloseIcon className="w-5 h-5" />
+                        {/* Compact Header */}
+                        <div className="p-5 flex justify-between items-center border-b border-white/5">
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Identity</span>
+                            <button onClick={onClose} className="p-1.5 rounded-full hover:bg-white/10 text-zinc-500 hover:text-white transition-colors">
+                                <CloseIcon className="w-4 h-4" />
                             </button>
                         </div>
 
-                        {/* Content */}
-                        <div className="p-8 flex flex-col items-center text-center">
-                            <div className="relative mb-6">
+                        {/* Minimalist Content */}
+                        <div className="p-8 flex flex-col items-center">
+                            <div className="relative mb-5">
                                 <img 
                                     src={user.imageUrl} 
                                     alt="Profile" 
-                                    className="w-24 h-24 rounded-2xl object-cover border-2 border-red-600 shadow-xl" 
+                                    className="w-20 h-20 rounded-2xl object-cover border border-red-600 shadow-xl" 
                                 />
-                                <div className="absolute -bottom-2 -right-2 bg-red-600 text-white p-1 rounded-lg">
-                                    <CheckCircleIcon className="w-4 h-4" />
+                                <div className="absolute -bottom-1 -right-1 bg-red-600 text-white p-1 rounded-lg">
+                                    <CheckCircleIcon className="w-3 h-3" />
                                 </div>
                             </div>
 
-                            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-1">{user.fullName || 'Legend Member'}</h3>
-                            <p className="text-xs text-red-500 font-bold uppercase tracking-widest mb-6">@{user.username || 'user'}</p>
+                            <div className="text-center mb-8">
+                                <h3 className="text-xl font-black text-white uppercase tracking-tight">{user.fullName || 'Legend'}</h3>
+                                <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest mt-1">@{user.username || 'fez_user'}</p>
+                            </div>
 
-                            <div className="w-full space-y-3 mb-8">
+                            <div className="w-full space-y-2 mb-8">
                                 <div className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-xl border border-white/5">
-                                    <div className="flex items-center gap-2">
-                                        <EmailIcon className="w-3.5 h-3.5 text-zinc-500" />
-                                        <span className="text-[11px] text-zinc-400 uppercase font-bold tracking-wider">Email</span>
-                                    </div>
-                                    <span className="text-[11px] text-white font-medium truncate max-w-[150px]">{user.primaryEmailAddress?.emailAddress}</span>
+                                    <span className="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Email</span>
+                                    <span className="text-[10px] text-white font-bold truncate max-w-[120px]">{user.primaryEmailAddress?.emailAddress}</span>
                                 </div>
                                 <div className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-xl border border-white/5">
-                                    <div className="flex items-center gap-2">
-                                        <GlobeAltIcon className="w-3.5 h-3.5 text-zinc-500" />
-                                        <span className="text-[11px] text-zinc-400 uppercase font-bold tracking-wider">Joined</span>
-                                    </div>
-                                    <span className="text-[11px] text-white font-medium">{memberSince}</span>
+                                    <span className="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Join Date</span>
+                                    <span className="text-[10px] text-white font-bold">{memberSince}</span>
                                 </div>
                             </div>
 
                             <button 
                                 onClick={handleManageAccount}
-                                className="w-full py-4 bg-white text-black font-black uppercase tracking-[0.2em] text-[10px] rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-lg active:scale-95"
+                                className="w-full py-3.5 bg-white text-black font-black uppercase tracking-[0.2em] text-[9px] rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-xl active:scale-95"
                             >
-                                Manage Account
+                                Settings Terminal
                             </button>
-                        </div>
-
-                        <div className="p-4 bg-white/5 border-t border-white/5 text-center">
-                            <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-[0.3em]">Fuad Editing Zone Terminal</p>
                         </div>
                     </motion.div>
                 </div>
