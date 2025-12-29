@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUser, SignInButton } from '@clerk/clerk-react';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { siteConfig } from '../config';
 import { EmailIcon, WhatsAppIcon, CheckCircleIcon, SparklesIcon } from './Icons';
@@ -10,16 +11,19 @@ interface ContactProps {
 }
 
 export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
+    const { isSignedIn, user } = useUser();
     const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
     const [formData, setFormData] = useState({
-        name: '',
-        email: '',
+        name: user?.fullName || '',
+        email: user?.primaryEmailAddress?.emailAddress || '',
         message: ''
     });
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!isSignedIn) return;
+
         setStatus('submitting');
         
         try {
@@ -32,13 +36,15 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                 body: JSON.stringify({
                     ...formData,
                     _subject: `FEZ Mission Brief: ${formData.name}`,
-                    _source: "Fuad Editing Zone Portfolio Terminal"
+                    _source: "Fuad Editing Zone Portfolio Terminal",
+                    userId: user?.id,
+                    clerk_email: user?.primaryEmailAddress?.emailAddress
                 })
             });
 
             if (response.ok) {
                 setStatus('success');
-                setFormData({ name: '', email: '', message: '' });
+                setFormData({ name: user?.fullName || '', email: user?.primaryEmailAddress?.emailAddress || '', message: '' });
             } else {
                 throw new Error('Transmission Failed');
             }
@@ -90,7 +96,28 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
 
                     <div className="relative z-10">
                         <AnimatePresence mode="wait">
-                            {status === 'success' ? (
+                            {!isSignedIn ? (
+                                <motion.div 
+                                    key="auth-required"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="py-16 text-center space-y-8"
+                                >
+                                    <div className="w-20 h-20 bg-red-600/10 rounded-full flex items-center justify-center mx-auto border border-red-600/20">
+                                        <SparklesIcon className="w-10 h-10 text-red-600" />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <h3 className="text-2xl font-black text-white uppercase tracking-tight">Identity Required</h3>
+                                        <p className="text-gray-400 text-xs max-w-xs mx-auto font-medium">Please sign in with your email or phone number to transmit your project brief to the Zone.</p>
+                                    </div>
+                                    <SignInButton mode="modal">
+                                        <button className="btn-angular bg-red-600 hover:bg-red-700 text-white font-black py-4 px-12 uppercase tracking-[0.4em] text-[11px] transition-all shadow-[0_15px_30px_rgba(220,38,38,0.3)]">
+                                            Authenticate Now
+                                        </button>
+                                    </SignInButton>
+                                </motion.div>
+                            ) : status === 'success' ? (
                                 <motion.div 
                                     key="success-state"
                                     initial={{ opacity: 0, scale: 0.95 }}
@@ -101,7 +128,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                         <CheckCircleIcon className="w-10 h-10 text-green-500" />
                                     </div>
                                     <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">Signal Received</h3>
-                                    <p className="text-gray-400 text-sm max-w-xs mx-auto mb-10 font-medium">Your project brief has been encrypted and sent. Fuad Ahmed will review the frequency and contact you shortly.</p>
+                                    <p className="text-gray-400 text-sm max-w-xs mx-auto mb-10 font-medium">Mission acknowledged, {user?.firstName}. Your brief has been encrypted and sent. Fuad will contact you shortly.</p>
                                     <button 
                                         onClick={() => setStatus('idle')} 
                                         className="text-red-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all"

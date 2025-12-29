@@ -1,5 +1,11 @@
 
 import React, { useState } from 'react';
+import { 
+  SignedIn, 
+  SignedOut, 
+  SignInButton, 
+  UserButton 
+} from '@clerk/clerk-react';
 import { siteConfig } from '../config';
 import { HomeIcon, BriefcaseIcon, VfxIcon, UserCircleIcon, ChatBubbleIcon } from './Icons';
 
@@ -51,12 +57,28 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
         </nav>
         
         <div className="flex items-center gap-6">
-            <button 
-                onClick={() => onScrollTo('contact')}
-                className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2 uppercase tracking-[0.3em] transition-all shadow-[0_10px_20px_rgba(220,38,38,0.2)] hover:shadow-[0_15px_30px_rgba(220,38,38,0.4)]"
-            >
-                Get Started
-            </button>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.3em] transition-all">
+                  Sign In
+                </button>
+              </SignInButton>
+              <button 
+                  onClick={() => onScrollTo('contact')}
+                  className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2 uppercase tracking-[0.3em] transition-all shadow-[0_10px_20px_rgba(220,38,38,0.2)] hover:shadow-[0_15px_30px_rgba(220,38,38,0.4)]"
+              >
+                  Join Zone
+              </button>
+            </SignedOut>
+            <SignedIn>
+              <UserButton 
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "w-9 h-9 border-2 border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.3)]"
+                  }
+                }}
+              />
+            </SignedIn>
         </div>
     </header>
   );
@@ -85,12 +107,24 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                 <span className="font-black text-white tracking-widest text-[10px] uppercase">FEZ ZONE</span>
             </div>
             
-            <button 
-                onClick={() => onScrollTo('contact')}
-                className="text-[10px] font-black text-red-500 uppercase tracking-widest"
-            >
-                Contact
-            </button>
+            <div className="flex items-center gap-4">
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="text-[10px] font-black text-red-500 uppercase tracking-widest">
+                      Login
+                  </button>
+                </SignInButton>
+              </SignedOut>
+              <SignedIn>
+                <UserButton 
+                   appearance={{
+                    elements: {
+                      userButtonAvatarBox: "w-8 h-8 border border-red-600"
+                    }
+                  }}
+                />
+              </SignedIn>
+            </div>
         </header>
     );
 };
