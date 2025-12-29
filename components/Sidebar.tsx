@@ -7,7 +7,8 @@ import {
   UserButton 
 } from '@clerk/clerk-react';
 import { siteConfig } from '../config';
-import { HomeIcon, BriefcaseIcon, VfxIcon, UserCircleIcon, ChatBubbleIcon } from './Icons';
+import { HomeIcon, BriefcaseIcon, VfxIcon, UserCircleIcon, ChatBubbleIcon, SparklesIcon } from './Icons';
+import { ProfileModal } from './ProfileModal';
 
 interface NavProps {
   onScrollTo: (section: 'home' | 'portfolio' | 'contact' | 'video-editing' | 'about') => void;
@@ -24,6 +25,7 @@ const NavLink: React.FC<{ onClick: () => void; children: React.ReactNode }> = ({
 
 export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
   const [isSpinning, setIsSpinning] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const handleLogoClick = () => {
       setIsSpinning(true);
@@ -32,60 +34,73 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
   };
 
   return (
-    <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-16 px-10 bg-black/40 backdrop-blur-xl border-b border-white/5">
-        <div 
-            onClick={handleLogoClick}
-            className="cursor-pointer group flex items-center gap-4"
-        >
-            <div className="relative">
-                <div className="absolute -inset-1 bg-red-600/20 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <img 
-                    src={siteConfig.branding.logoUrl} 
-                    alt="Logo" 
-                    className={`h-9 w-9 rounded-full relative z-10 ${isSpinning ? 'logo-3d-spin' : ''}`}
-                />
-            </div>
-             <h1 className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</h1>
-        </div>
+    <>
+      <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-16 px-10 bg-black/40 backdrop-blur-xl border-b border-white/5">
+          <div 
+              onClick={handleLogoClick}
+              className="cursor-pointer group flex items-center gap-4"
+          >
+              <div className="relative">
+                  <div className="absolute -inset-1 bg-red-600/20 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <img 
+                      src={siteConfig.branding.logoUrl} 
+                      alt="Logo" 
+                      className={`h-9 w-9 rounded-full relative z-10 ${isSpinning ? 'logo-3d-spin' : ''}`}
+                  />
+              </div>
+               <h1 className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</h1>
+          </div>
 
-        <nav className="flex items-center gap-4">
-            <NavLink onClick={() => onScrollTo('home')}>Terminal</NavLink>
-            <NavLink onClick={() => onScrollTo('portfolio')}>Graphics</NavLink>
-            <NavLink onClick={() => onScrollTo('video-editing')}>VFX Edits</NavLink>
-            <NavLink onClick={() => onScrollTo('about')}>About</NavLink>
-            <NavLink onClick={() => onScrollTo('contact')}>Contact</NavLink>
-        </nav>
-        
-        <div className="flex items-center gap-6">
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.3em] transition-all">
-                  Sign In
+          <nav className="flex items-center gap-4">
+              <NavLink onClick={() => onScrollTo('home')}>Home</NavLink>
+              <NavLink onClick={() => onScrollTo('portfolio')}>Graphics</NavLink>
+              <NavLink onClick={() => onScrollTo('video-editing')}>Video Editing</NavLink>
+              <NavLink onClick={() => onScrollTo('about')}>About</NavLink>
+              <NavLink onClick={() => onScrollTo('contact')}>Contact</NavLink>
+          </nav>
+          
+          <div className="flex items-center gap-6">
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.3em] transition-all">
+                    Sign In
+                  </button>
+                </SignInButton>
+                <button 
+                    onClick={() => onScrollTo('contact')}
+                    className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2 uppercase tracking-[0.3em] transition-all shadow-[0_10px_20px_rgba(220,38,38,0.2)] hover:shadow-[0_15px_30px_rgba(220,38,38,0.4)]"
+                >
+                    Join Zone
                 </button>
-              </SignInButton>
-              <button 
-                  onClick={() => onScrollTo('contact')}
-                  className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2 uppercase tracking-[0.3em] transition-all shadow-[0_10px_20px_rgba(220,38,38,0.2)] hover:shadow-[0_15px_30px_rgba(220,38,38,0.4)]"
-              >
-                  Join Zone
-              </button>
-            </SignedOut>
-            <SignedIn>
-              <UserButton 
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "w-9 h-9 border-2 border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.3)]"
-                  }
-                }}
-              />
-            </SignedIn>
-        </div>
-    </header>
+              </SignedOut>
+              <SignedIn>
+                <div className="flex items-center gap-4">
+                    <button 
+                        onClick={() => setIsProfileOpen(true)}
+                        className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-4 py-1.5 transition-all group"
+                    >
+                        <SparklesIcon className="w-3.5 h-3.5 text-red-500 group-hover:rotate-12 transition-transform" />
+                        <span className="text-[9px] font-black text-gray-400 group-hover:text-white uppercase tracking-widest">Settings</span>
+                    </button>
+                    <UserButton 
+                        appearance={{
+                        elements: {
+                            userButtonAvatarBox: "w-9 h-9 border-2 border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.3)]"
+                        }
+                        }}
+                    />
+                </div>
+              </SignedIn>
+          </div>
+      </header>
+      <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
+    </>
   );
 };
 
 export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
     const [isSpinning, setIsSpinning] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const handleLogoClick = () => {
         setIsSpinning(true);
@@ -94,38 +109,49 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
     };
 
     return (
-        <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-16 px-6 select-none bg-black/60 backdrop-blur-md border-b border-white/5">
-            <div 
-                onClick={handleLogoClick} 
-                className="flex items-center gap-3"
-            >
-                <img 
-                    src={siteConfig.branding.logoUrl} 
-                    alt="Logo" 
-                    className={`h-8 w-8 rounded-full ${isSpinning ? 'logo-3d-spin' : ''}`}
-                />
-                <span className="font-black text-white tracking-widest text-[10px] uppercase">FEZ ZONE</span>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <button className="text-[10px] font-black text-red-500 uppercase tracking-widest">
-                      Login
-                  </button>
-                </SignInButton>
-              </SignedOut>
-              <SignedIn>
-                <UserButton 
-                   appearance={{
-                    elements: {
-                      userButtonAvatarBox: "w-8 h-8 border border-red-600"
-                    }
-                  }}
-                />
-              </SignedIn>
-            </div>
-        </header>
+        <>
+            <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-16 px-6 select-none bg-black/60 backdrop-blur-md border-b border-white/5">
+                <div 
+                    onClick={handleLogoClick} 
+                    className="flex items-center gap-3"
+                >
+                    <img 
+                        src={siteConfig.branding.logoUrl} 
+                        alt="Logo" 
+                        className={`h-8 w-8 rounded-full ${isSpinning ? 'logo-3d-spin' : ''}`}
+                    />
+                    <span className="font-black text-white tracking-widest text-[10px] uppercase">FEZ ZONE</span>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                <SignedOut>
+                    <SignInButton mode="modal">
+                    <button className="text-[10px] font-black text-red-500 uppercase tracking-widest">
+                        Login
+                    </button>
+                    </SignInButton>
+                </SignedOut>
+                <SignedIn>
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={() => setIsProfileOpen(true)}
+                            className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 rounded-full"
+                        >
+                            <SparklesIcon className="w-4 h-4 text-red-500" />
+                        </button>
+                        <UserButton 
+                        appearance={{
+                            elements: {
+                            userButtonAvatarBox: "w-8 h-8 border border-red-600"
+                            }
+                        }}
+                        />
+                    </div>
+                </SignedIn>
+                </div>
+            </header>
+            <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
+        </>
     );
 };
 

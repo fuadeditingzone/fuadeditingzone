@@ -4,19 +4,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { siteConfig } from '../config';
-import { EmailIcon, WhatsAppIcon, CheckCircleIcon, SparklesIcon } from './Icons';
+import { EmailIcon, WhatsAppIcon, CheckCircleIcon, SparklesIcon, ChevronRightIcon } from './Icons';
 
 interface ContactProps {
     onStartOrder: (platform: 'whatsapp' | 'email') => void;
 }
 
+const SERVICE_TEMPLATES: Record<string, string> = {
+    'VFX/Video Editing': "Hi Fuad Ahmed, I'm interested in a cinematic VFX/Video Editing project. I have footage that needs professional compositing and effects. Looking forward to your details!",
+    'YouTube Thumbnail': "Hi Selected Legend, I need a high-CTR YouTube thumbnail for my upcoming video. I want it to be eye-catching and consistent with my brand. What are the next steps?",
+    'Photo Manipulation': "Hello! I saw your Photo Manipulation work and it's incredible. I have a concept that needs your artistic touch to bring to life. Let's discuss the vision.",
+    'Banner/Design': "Hey FEZ Zone, I'm looking for a professional Banner/Graphic Design project for my social media. Can you help me create something premium?",
+    'Custom Request': "Hello Fuad, I have a specific custom project in mind that combines multiple services. I'd love to share the details with you and get a quote."
+};
+
+const ABUSIVE_WORDS = [
+    'fuck', 'shit', 'bitch', 'asshole', 'dick', 'pussy', 'slut', 'whore', 'bastard', 'cunt', 'faggot', 'nigger', 'retard'
+];
+
 export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
     const { isSignedIn, user } = useUser();
     const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
-    const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+    const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = useState('');
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        service: '',
         message: ''
     });
 
@@ -31,9 +45,21 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
         }
     }, [isSignedIn, user]);
 
+    const isAbusive = (text: string) => {
+        const lowerText = text.toLowerCase();
+        return ABUSIVE_WORDS.some(word => lowerText.includes(word));
+    };
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!isSignedIn) return;
+
+        if (isAbusive(formData.message) || isAbusive(formData.name)) {
+            setErrorMessage("Your message contains prohibited language. Please keep it professional.");
+            setStatus('error');
+            setTimeout(() => setStatus('idle'), 3000);
+            return;
+        }
 
         setStatus('submitting');
         
@@ -46,7 +72,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                 },
                 body: JSON.stringify({
                     ...formData,
-                    _subject: `FEZ Mission Brief: ${formData.name}`,
+                    _subject: `FEZ Order Request: ${formData.service || 'New Order'} from ${formData.name}`,
                     _source: "Fuad Editing Zone Portfolio Terminal",
                     userId: user?.id,
                     clerk_email: user?.primaryEmailAddress?.emailAddress
@@ -55,8 +81,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
 
             if (response.ok) {
                 setStatus('success');
-                // Keep the identity but clear the message
-                setFormData(prev => ({ ...prev, message: '' }));
+                setFormData(prev => ({ ...prev, message: '', service: '' }));
             } else {
                 throw new Error('Transmission Failed');
             }
@@ -67,9 +92,18 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        
+        if (name === 'service') {
+            setFormData(prev => ({ 
+                ...prev, 
+                service: value,
+                message: value ? SERVICE_TEMPLATES[value] || prev.message : prev.message 
+            }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const containerVariants = {
@@ -96,16 +130,13 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                 {/* Minimalist Section Header */}
                 <div className="mb-12 text-center">
                     <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Transmission Port</span>
-                    <h2 className="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter">Start Your Mission</h2>
+                    <h2 className="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter">Order Now</h2>
                     <div className="h-1 w-16 bg-red-600 mx-auto mt-6 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]"></div>
                 </div>
 
                 <div className="w-full bg-[#080808]/90 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-8 md:p-14 shadow-[0_50px_100px_rgba(0,0,0,1)] relative overflow-hidden group">
-                    {/* Inner Decorative Elements */}
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.03] pointer-events-none"></div>
-                    <div className="absolute top-0 right-0 w-1/2 h-px bg-gradient-to-l from-red-600/50 to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 w-1/2 h-px bg-gradient-to-r from-red-600/50 to-transparent"></div>
-
+                    
                     <div className="relative z-10">
                         <AnimatePresence mode="wait">
                             {!isSignedIn ? (
@@ -139,62 +170,93 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                     <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-green-500/20 shadow-[0_0_40px_rgba(34,197,94,0.15)]">
                                         <CheckCircleIcon className="w-10 h-10 text-green-500" />
                                     </div>
-                                    <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">Signal Received</h3>
-                                    <p className="text-gray-400 text-sm max-w-xs mx-auto mb-10 font-medium">Mission acknowledged, {user?.firstName}. Your brief has been encrypted and sent. Fuad will contact you shortly.</p>
+                                    <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">Order Received</h3>
+                                    <p className="text-gray-400 text-sm max-w-xs mx-auto mb-10 font-medium">Mission acknowledged, {user?.firstName}. Your request has been encrypted and sent. Fuad will contact you shortly.</p>
                                     <button 
                                         onClick={() => setStatus('idle')} 
                                         className="text-red-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all"
                                     >
-                                        Transmit New Data
+                                        Place Another Order
                                     </button>
                                 </motion.div>
                             ) : (
-                                <form id="contact-form" onSubmit={handleSubmit} className="space-y-10">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                        <div className="space-y-4">
+                                <form id="contact-form" onSubmit={handleSubmit} className="space-y-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="space-y-3">
                                             <div className="flex items-center justify-between ml-1">
-                                                <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em]">Identity Tag</label>
-                                                {isSignedIn && <span className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">Locked</span>}
+                                                <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em]">Name</label>
+                                                <span className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">Locked</span>
                                             </div>
                                             <input 
                                                 required 
                                                 name="name" 
-                                                readOnly={isSignedIn}
+                                                readOnly
+                                                tabIndex={-1}
                                                 value={formData.name} 
-                                                onChange={handleChange} 
-                                                className={`w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 focus:bg-black outline-none transition-all placeholder:text-gray-800 shadow-inner ${isSignedIn ? 'cursor-not-allowed opacity-60 grayscale' : ''}`} 
+                                                className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white outline-none cursor-not-allowed opacity-60 grayscale shadow-inner" 
                                                 placeholder="Full Name" 
                                             />
                                         </div>
-                                        <div className="space-y-4">
+                                        <div className="space-y-3">
                                             <div className="flex items-center justify-between ml-1">
-                                                <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em]">Return Frequency</label>
-                                                {isSignedIn && <span className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">Locked</span>}
+                                                <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em]">Email</label>
+                                                <span className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">Locked</span>
                                             </div>
                                             <input 
                                                 required 
                                                 type="email" 
                                                 name="email" 
-                                                readOnly={isSignedIn}
+                                                readOnly
+                                                tabIndex={-1}
                                                 value={formData.email} 
-                                                onChange={handleChange} 
-                                                className={`w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 focus:bg-black outline-none transition-all placeholder:text-gray-800 shadow-inner ${isSignedIn ? 'cursor-not-allowed opacity-60 grayscale' : ''}`} 
+                                                className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white outline-none cursor-not-allowed opacity-60 grayscale shadow-inner" 
                                                 placeholder="email@address.com" 
                                             />
                                         </div>
                                     </div>
-                                    <div className="space-y-4">
+
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Select Service</label>
+                                        <div className="relative group/select">
+                                            <select 
+                                                required
+                                                name="service"
+                                                value={formData.service}
+                                                onChange={handleChange}
+                                                className="w-full bg-black/60 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 outline-none transition-all appearance-none cursor-pointer"
+                                            >
+                                                <option value="" disabled>Choose a service category...</option>
+                                                <option value="VFX/Video Editing">Cinematic VFX & Video Editing</option>
+                                                <option value="YouTube Thumbnail">High-CTR YouTube Thumbnail</option>
+                                                <option value="Photo Manipulation">Creative Photo Manipulation</option>
+                                                <option value="Banner/Design">Banner & Social Media Design</option>
+                                                <option value="Custom Request">Custom Visual Project</option>
+                                            </select>
+                                            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-red-600 group-hover/select:translate-x-1 transition-transform">
+                                                <ChevronRightIcon className="w-4 h-4 rotate-90" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
                                         <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Mission Details</label>
                                         <textarea 
                                             required 
                                             name="message" 
-                                            rows={6} 
+                                            rows={5} 
                                             value={formData.message} 
                                             onChange={handleChange} 
                                             className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 focus:bg-black outline-none resize-none transition-all placeholder:text-gray-800 shadow-inner" 
                                             placeholder="Describe your VFX or design requirements..."
                                         ></textarea>
                                     </div>
+
+                                    {status === 'error' && (
+                                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-[10px] font-black uppercase tracking-widest text-center bg-red-500/10 py-3 rounded-lg border border-red-500/20">
+                                            {errorMessage}
+                                        </motion.p>
+                                    )}
+
                                     <button 
                                         type="submit" 
                                         disabled={status === 'submitting'} 
@@ -208,7 +270,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                         ) : (
                                             <>
                                                 <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform duration-500" />
-                                                <span>Transmit Brief</span>
+                                                <span>Place Order</span>
                                             </>
                                         )}
                                     </button>
