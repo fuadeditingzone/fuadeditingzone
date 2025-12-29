@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
@@ -15,10 +15,21 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
     const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
     const [formData, setFormData] = useState({
-        name: user?.fullName || '',
-        email: user?.primaryEmailAddress?.emailAddress || '',
+        name: '',
+        email: '',
         message: ''
     });
+
+    // Auto-sync form data with Clerk user info when signed in
+    useEffect(() => {
+        if (isSignedIn && user) {
+            setFormData(prev => ({
+                ...prev,
+                name: user.fullName || '',
+                email: user.primaryEmailAddress?.emailAddress || ''
+            }));
+        }
+    }, [isSignedIn, user]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -44,7 +55,8 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
 
             if (response.ok) {
                 setStatus('success');
-                setFormData({ name: user?.fullName || '', email: user?.primaryEmailAddress?.emailAddress || '', message: '' });
+                // Keep the identity but clear the message
+                setFormData(prev => ({ ...prev, message: '' }));
             } else {
                 throw new Error('Transmission Failed');
             }
@@ -140,25 +152,33 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                 <form id="contact-form" onSubmit={handleSubmit} className="space-y-10">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                         <div className="space-y-4">
-                                            <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Identity Tag</label>
+                                            <div className="flex items-center justify-between ml-1">
+                                                <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em]">Identity Tag</label>
+                                                {isSignedIn && <span className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">Locked</span>}
+                                            </div>
                                             <input 
                                                 required 
                                                 name="name" 
+                                                readOnly={isSignedIn}
                                                 value={formData.name} 
                                                 onChange={handleChange} 
-                                                className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 focus:bg-black outline-none transition-all placeholder:text-gray-800 shadow-inner" 
+                                                className={`w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 focus:bg-black outline-none transition-all placeholder:text-gray-800 shadow-inner ${isSignedIn ? 'cursor-not-allowed opacity-60 grayscale' : ''}`} 
                                                 placeholder="Full Name" 
                                             />
                                         </div>
                                         <div className="space-y-4">
-                                            <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Return Frequency</label>
+                                            <div className="flex items-center justify-between ml-1">
+                                                <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em]">Return Frequency</label>
+                                                {isSignedIn && <span className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">Locked</span>}
+                                            </div>
                                             <input 
                                                 required 
                                                 type="email" 
                                                 name="email" 
+                                                readOnly={isSignedIn}
                                                 value={formData.email} 
                                                 onChange={handleChange} 
-                                                className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 focus:bg-black outline-none transition-all placeholder:text-gray-800 shadow-inner" 
+                                                className={`w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 focus:bg-black outline-none transition-all placeholder:text-gray-800 shadow-inner ${isSignedIn ? 'cursor-not-allowed opacity-60 grayscale' : ''}`} 
                                                 placeholder="email@address.com" 
                                             />
                                         </div>
