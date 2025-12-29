@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { VideoWork } from '../hooks/types';
 import { useDraggable } from '../hooks/useDraggable';
-import { CloseIcon, PlayIcon, PauseIcon, VolumeOnIcon, VolumeOffIcon } from './Icons';
+import { CloseIcon, PlayIcon, PauseIcon, VolumeOnIcon, VolumeOffIcon, ChevronRightIcon } from './Icons';
 
 interface VideoPipPlayerProps {
   video: VideoWork;
@@ -37,7 +37,7 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose, 
                     rel: 0,
                     modestbranding: 1,
                     enablejsapi: 1,
-                    start: Math.floor(currentTime) // Seek on load
+                    start: Math.floor(currentTime) // Seamless seek on load
                 },
                 events: {
                     onReady: (event: any) => {
@@ -45,7 +45,7 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose, 
                     },
                     onStateChange: (event: any) => {
                         if (event.data === window.YT.PlayerState.PLAYING) setIsPlaying(true);
-                        else setIsPlaying(false);
+                        else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) setIsPlaying(false);
                     }
                 }
             });
@@ -75,7 +75,7 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose, 
             }
         }, 1000);
         return () => clearInterval(interval);
-    }, [isPlaying, isYouTube]);
+    }, [isPlaying, isYouTube, setCurrentTime]);
 
     const togglePlay = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -129,7 +129,7 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose, 
         <div 
             ref={dragRef}
             style={dragStyle}
-            className={`fixed bottom-4 right-4 z-[90] w-64 md:w-80 aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/20 bg-black transition-all duration-300 ${isDragging ? 'scale-105 shadow-red-500/30' : ''} animate-popup-scale-in`}
+            className={`fixed bottom-24 right-4 md:bottom-10 md:right-10 z-[150] w-[260px] md:w-[380px] aspect-video rounded-2xl overflow-hidden shadow-[0_20px_80px_rgba(0,0,0,0.8)] border border-white/20 bg-black transition-all duration-300 ${isDragging ? 'scale-105 shadow-red-600/40 ring-2 ring-red-600/30' : ''} animate-popup-scale-in`}
         >
             <div className="relative w-full h-full group">
                 {isYouTube ? (
@@ -148,22 +148,36 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose, 
                 )}
                 
                 {/* Controls Overlay */}
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between pointer-events-none">
-                    <div ref={handleRef} className="p-2 text-white text-xs cursor-move flex-grow pointer-events-auto">
-                        <p className="truncate bg-black/50 px-2 py-1 rounded">PiP: {isYouTube ? 'YouTube Video' : 'VFX Edit'}</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-between pointer-events-none">
+                    <div ref={handleRef} className="p-3 text-white text-[10px] font-black uppercase tracking-widest cursor-move flex items-center justify-between pointer-events-auto">
+                        <span className="truncate pr-4">{video.title || 'Playing Work'}</span>
+                        <div className="flex gap-1">
+                            <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse"></div>
+                            <span>PiP</span>
+                        </div>
                     </div>
 
-                    <div className="flex items-center justify-center gap-4 p-2 bg-gradient-to-t from-black/70 to-transparent pointer-events-auto">
-                        <button onClick={togglePlay} className="text-white p-2 rounded-full hover:bg-white/20 transition-colors">
+                    <div className="flex items-center justify-center gap-6 p-4 pointer-events-auto">
+                        <button onClick={togglePlay} className="text-white p-2.5 rounded-full bg-white/5 hover:bg-red-600 transition-all scale-90 md:scale-100">
                             {isPlaying ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
                         </button>
-                        <button onClick={toggleMute} className="text-white p-2 rounded-full hover:bg-white/20 transition-colors">
+                        <button onClick={toggleMute} className="text-white p-2.5 rounded-full bg-white/5 hover:bg-white/10 transition-all scale-90 md:scale-100">
                             {isMuted ? <VolumeOffIcon className="w-5 h-5" /> : <VolumeOnIcon className="w-5 h-5" />}
+                        </button>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); onClose(); }} 
+                            className="text-white p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all scale-90 md:scale-100 group/ret"
+                            title="Return to View"
+                        >
+                            <ChevronRightIcon className="w-5 h-5 -rotate-90 group-hover:-translate-y-1 transition-transform" />
                         </button>
                     </div>
                 </div>
                 
-                <button onClick={onClose} className="absolute top-2 right-2 text-white p-1.5 rounded-full bg-black/60 hover:bg-red-600 transition-colors z-10">
+                <button 
+                    onClick={(e) => { e.stopPropagation(); onClose(); }} 
+                    className="absolute top-2 right-2 text-white/50 hover:text-white p-1.5 rounded-full transition-colors z-10 md:hidden"
+                >
                     <CloseIcon className="w-4 h-4" />
                 </button>
             </div>

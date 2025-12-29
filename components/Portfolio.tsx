@@ -7,7 +7,7 @@ import {
     PlayIcon, VolumeOnIcon, VolumeOffIcon, HandThumbUpIcon, 
     GlobeAltIcon, SparklesIcon, CloseIcon, CheckCircleIcon,
     ShareIcon, DownloadIcon, ThreeDotsIcon, PhotoManipulationIcon,
-    ThumbnailIcon, BannerIcon, EyeIcon, YouTubeIcon
+    ThumbnailIcon, BannerIcon, EyeIcon, YouTubeIcon, ChevronRightIcon
 } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { InteractiveCard } from './InteractiveCard';
@@ -154,11 +154,9 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     const { videos: youtubeVideos, stats, loading, formatNumber } = useYouTubeChannelStats();
     
     const [currentVideoStats, setCurrentVideoStats] = useState<{ id: string; title: string; views: string; rawViews: number; likes: number } | null>(null);
-    const [showFloatingHandle, setShowFloatingHandle] = useState(false);
 
     const { y } = useParallax();
     const playerRef = useRef<any>(null);
-    const [isFloating, setIsFloating] = useState(false);
 
     // Synchronize stats from hook data immediately
     useEffect(() => {
@@ -207,8 +205,19 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     const animatedLikes = useAnimatedCounter(finalLikesCount, 2000, activeYouTubeId);
     const animatedViews = useAnimatedCounter(currentVideoStats?.rawViews || 0, 3000, activeYouTubeId);
 
+    // YouTube Player Initialization & Sync
     useEffect(() => {
         if (!isYouTubeApiReady || !activeYouTubeId) return;
+        
+        // If PiP is active, we don't render the player in the main section
+        if (pipVideo && pipVideo.videoId === activeYouTubeId) {
+            if (playerRef.current) {
+                playerRef.current.destroy();
+                playerRef.current = null;
+            }
+            return;
+        }
+
         const container = document.getElementById('youtube-portfolio-player-inner');
         if (!container) return;
         if (playerRef.current) playerRef.current.destroy();
@@ -234,11 +243,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
             }
         });
         return () => { if (playerRef.current) playerRef.current.destroy(); };
-    }, [isYouTubeApiReady, activeYouTubeId]);
-
-    useEffect(() => {
-        setIsFloating(!isYtVisible && isYtPlaying && activeYouTubeId !== '');
-    }, [isYtVisible, isYtPlaying, activeYouTubeId]);
+    }, [isYouTubeApiReady, activeYouTubeId, !!pipVideo]);
 
     useEffect(() => {
         if (!isYtPlaying) return;
@@ -250,23 +255,25 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         return () => clearInterval(interval);
     }, [isYtPlaying]);
 
-    // Floating handle logic: appears after 10s of play
+    // Professional PiP Logic: Automatically transition when scrolling away
     useEffect(() => {
-        let timeout: number;
-        if (isYtPlaying) {
-            timeout = window.setTimeout(() => {
-                setShowFloatingHandle(true);
-            }, 10000);
-        } else {
-            setShowFloatingHandle(false);
+        // Only trigger PiP if video is actually playing
+        if (isYtPlaying && !isYtVisible && activeYouTubeId) {
+            // Find current video work object
+            const currentVideo = animeEdits.find(v => v.videoId === activeYouTubeId);
+            if (currentVideo && !pipVideo) {
+                setPipVideo(currentVideo);
+            }
         }
-        return () => {
-            if (timeout) clearTimeout(timeout);
-        };
-    }, [isYtPlaying, activeYouTubeId]);
+        
+        // Remove PiP if we scroll back to the section
+        if (isYtVisible && pipVideo && pipVideo.videoId === activeYouTubeId) {
+            setPipVideo(null);
+        }
+    }, [isYtVisible, isYtPlaying, activeYouTubeId, pipVideo, animeEdits, setPipVideo]);
 
     const parallaxStyle = {
-      transform: isFloating ? 'none' : `translateY(${y * -5}px)`,
+      transform: `translateY(${y * -5}px)`,
       transition: 'transform 0.1s ease-out',
       willChange: 'transform' as const
     };
@@ -294,6 +301,8 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         const leftAnimeEdits = animeEdits.slice(0, middleIndex);
         const rightAnimeEdits = animeEdits.slice(middleIndex);
 
+        const isPipActiveForThisVideo = pipVideo && pipVideo.videoId === activeYouTubeId;
+
         const ThumbnailButton: React.FC<{ video: VideoWork }> = ({ video }) => (
             video.videoId ? (
                 <button
@@ -301,6 +310,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                         setActiveYouTubeId(video.videoId!);
                         setIsYtPlaying(true); 
                         setCurrentTime(0); 
+                        setPipVideo(null); // Reset PiP when manually picking a new video
                         if (onPortfolioPlay) onPortfolioPlay();
                     }}
                     className={`relative w-full aspect-video rounded-xl transition-all duration-300 border border-transparent select-none group/thumb bg-black/40 p-0.5 ${activeYouTubeId === video.videoId ? 'opacity-100 scale-105 z-10 shadow-xl border-white/20 ring-2 ring-red-600' : 'opacity-40 hover:opacity-100'}`}
@@ -319,35 +329,35 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 </div>
 
                 <div className="flex-1 space-y-6 md:space-y-4">
-                    <div className="relative aspect-video w-full mx-auto rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10">
-                        <motion.div layout className={`w-full h-full relative z-30 transition-shadow duration-500 ${isFloating ? 'fixed bottom-6 right-6 w-64 md:w-80 shadow-[0_20px_60px_-15px_rgba(220,38,38,0.4)] z-[200] rounded-xl border border-white/20' : ''}`}>
-                            <div id="youtube-portfolio-player-inner" className="w-full h-full bg-black"></div>
-                            
-                            {/* Floating Subscribe Handle - Appears top-left after 10s */}
-                            <AnimatePresence>
-                                {showFloatingHandle && !isFloating && (
-                                    <motion.a 
-                                        href={`https://www.youtube.com/channel/${siteConfig.api.channelId}?sub_confirmation=1`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        className="absolute top-4 left-4 z-50 flex items-center gap-3 bg-black/60 backdrop-blur-xl border border-white/10 p-2 rounded-full shadow-2xl group/float"
+                    <div className="relative aspect-video w-full mx-auto rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-black border border-white/10">
+                        {/* Persistent Player Container */}
+                        <div id="youtube-portfolio-player-inner" className={`w-full h-full transition-opacity duration-500 ${isPipActiveForThisVideo ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}></div>
+                        
+                        {/* Placeholder state when PiP is active */}
+                        <AnimatePresence>
+                            {isPipActiveForThisVideo && (
+                                <motion.div 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 z-20 bg-black flex flex-col items-center justify-center text-center p-6"
+                                >
+                                    <div className="w-16 h-16 md:w-20 md:h-20 bg-red-600/10 rounded-full flex items-center justify-center mb-6 animate-pulse border border-red-600/20">
+                                        <YouTubeIcon className="w-8 h-8 md:w-10 md:h-10 text-red-600" />
+                                    </div>
+                                    <h4 className="text-white font-black text-sm md:text-xl uppercase tracking-widest mb-2">Video playing in PiP mode</h4>
+                                    <p className="text-gray-500 text-[10px] md:text-xs font-medium max-w-xs mb-8">You can keep watching while exploring the rest of the portfolio.</p>
+                                    
+                                    <button 
+                                        onClick={() => setPipVideo(null)}
+                                        className="btn-angular bg-white text-black text-[9px] md:text-xs font-black px-8 py-3 uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center gap-2 group"
                                     >
-                                        <div className="w-8 h-8 rounded-full overflow-hidden border border-red-600/50">
-                                            <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} alt="" className="w-full h-full object-cover" />
-                                        </div>
-                                        <div className="flex flex-col pr-3">
-                                            <span className="text-[9px] font-black text-white uppercase tracking-tighter line-clamp-1">{stats.channelTitle || siteConfig.branding.name}</span>
-                                            <span className="text-[7px] font-bold text-red-500 uppercase tracking-widest">Subscribe</span>
-                                        </div>
-                                    </motion.a>
-                                )}
-                            </AnimatePresence>
-
-                            {isFloating && <button onClick={() => setIsYtPlaying(false)} className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-red-600 text-white rounded-full border border-white/10 z-10"><CloseIcon className="w-3.5 h-3.5" /></button>}
-                        </motion.div>
+                                        Return to View
+                                        <ChevronRightIcon className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform" />
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                     
                     <div className="bg-[#0f0f0f] p-4 md:p-6 border-t border-white/5 space-y-5 select-none animate-fade-in">
@@ -364,11 +374,10 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                         </div>
 
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            {/* Subscribe List (Channel Info) - Always Visible Below Video */}
                             <div className="flex items-center gap-3 md:gap-4 flex-wrap">
                                 <a href={`https://www.youtube.com/channel/${siteConfig.api.channelId}`} target="_blank" rel="noopener noreferrer" className="relative flex-shrink-0 group">
                                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border border-white/10 ring-2 ring-red-600/20 group-hover:ring-red-600 transition-all">
-                                        <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} alt={stats.channelTitle} className="w-full h-full object-cover object-top" />
+                                        <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} alt={stats.channelTitle} className="w-full h-full object-cover object-top bg-gray-800 ring-1 ring-white/10" />
                                     </div>
                                 </a>
                                 <div className="flex flex-col min-w-0">
@@ -403,7 +412,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 </div>
             </div>
         );
-    }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, isFloating, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime, stats, loading, formatNumber, animatedLikes, animatedViews, finalLikesCount, showFloatingHandle]);
+    }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime, stats, loading, formatNumber, animatedLikes, animatedViews, finalLikesCount, pipVideo, setPipVideo]);
 
     const GraphicDesignContent = useMemo(() => {
         const categories: GraphicWork['category'][] = ['Photo Manipulation', 'YouTube Thumbnails', 'Banner Designs'];

@@ -189,6 +189,77 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
         if (isImage(currentItem)) {
             fileUrl = currentItem.imageUrl;
             fileName = `FEZ_FuadEditingZone_${(currentItem.title || 'Art').replace(/\s+/g, '_')}.jpg`;
+            
+            try {
+                setDownloading(true);
+                // 1. Fetch original image
+                const response = await fetch(fileUrl);
+                const blob = await response.blob();
+                
+                // 2. Create image and canvas for watermarking
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                const imgUrl = URL.createObjectURL(blob);
+                
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                    img.src = imgUrl;
+                });
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                if (!ctx) throw new Error("Could not get canvas context");
+
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+
+                // 3. Load and draw logo watermark
+                const logo = new Image();
+                logo.crossOrigin = "anonymous";
+                await new Promise((resolve, reject) => {
+                    logo.onload = resolve;
+                    logo.onerror = reject;
+                    logo.src = siteConfig.branding.logoUrl;
+                });
+
+                // Calculate logo size (e.g., 10% of image height)
+                const logoHeight = Math.floor(img.height * 0.1);
+                const logoWidth = Math.floor(logo.width * (logoHeight / logo.height));
+                const padding = Math.floor(img.height * 0.05);
+
+                ctx.globalAlpha = 0.4; // 40% transparency
+                ctx.drawImage(
+                    logo, 
+                    padding, 
+                    img.height - logoHeight - padding, 
+                    logoWidth, 
+                    logoHeight
+                );
+
+                // 4. Trigger download
+                canvas.toBlob((finalBlob) => {
+                    if (finalBlob) {
+                        const finalUrl = URL.createObjectURL(finalBlob);
+                        const link = document.createElement('a');
+                        link.href = finalUrl;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(finalUrl);
+                    }
+                    URL.revokeObjectURL(imgUrl);
+                }, 'image/jpeg', 0.95);
+
+            } catch (err) {
+                console.error("Download failed, falling back", err);
+                window.open(fileUrl, '_blank');
+            } finally {
+                setDownloading(false);
+            }
+            return;
         } else if (isVideo(currentItem) && currentItem.url) {
             fileUrl = currentItem.url;
             fileName = `FEZ_FuadEditingZone_${(currentItem.title || 'VFX').replace(/\s+/g, '_')}.mp4`;
