@@ -32,7 +32,7 @@ const InstagramMockup: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
 
     if (isMobile) {
         return (
-            <div className="w-full max-w-[320px] bg-black rounded-[2.5rem] overflow-hidden border-[6px] border-[#1a1a1a] shadow-2xl flex flex-col aspect-[9/19.5] max-h-[85vh]">
+            <div className="w-full max-w-[320px] bg-black rounded-[2.5rem] overflow-hidden border-[6px] border-[#1a1a1a] shadow-2xl flex flex-col aspect-[9/19.5] max-h-[70vh]">
                 <div className="h-6 flex justify-between items-center px-6 pt-1">
                     <span className="text-[10px] font-bold text-white">12:00</span>
                     <div className="flex gap-1.5 items-center"><i className="fa-solid fa-signal text-[8px]"></i><i className="fa-solid fa-wifi text-[8px]"></i></div>
@@ -55,7 +55,7 @@ const InstagramMockup: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
         );
     }
     return (
-        <div className="w-full max-w-5xl mx-auto bg-black rounded-xl overflow-hidden shadow-2xl flex border border-white/10 max-h-[85vh]">
+        <div className="w-full max-w-5xl mx-auto bg-black rounded-xl overflow-hidden shadow-2xl flex border border-white/10 max-h-[75vh]">
             <div className="w-60 flex flex-col p-4 border-r border-white/10 bg-[#050505]">
                 <span className="font-serif text-2xl font-bold text-white px-2 py-4">Instagram</span>
                 <nav className="mt-8 space-y-4 opacity-40 px-2">
@@ -97,7 +97,7 @@ const YouTubeMockup: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
 
     if (isMobile) {
         return (
-            <div className="w-full max-w-[320px] bg-[#0f0f0f] rounded-[2.5rem] overflow-hidden border-[6px] border-[#1a1a1a] shadow-2xl flex flex-col aspect-[9/19.5] max-h-[85vh]">
+            <div className="w-full max-w-[320px] bg-[#0f0f0f] rounded-[2.5rem] overflow-hidden border-[6px] border-[#1a1a1a] shadow-2xl flex flex-col aspect-[9/19.5] max-h-[70vh]">
                 <div className="h-6 flex justify-between items-center px-6 pt-1"><span className="text-[10px] font-bold text-white">9:41</span><div className="w-10 h-3 bg-black rounded-full"></div></div>
                 <div className="px-4 py-2"><YouTubeIcon className="w-7 h-7 text-red-600" /></div>
                 <div className="flex-1 overflow-y-auto bg-[#0f0f0f]">
@@ -111,7 +111,7 @@ const YouTubeMockup: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
         );
     }
     return (
-        <div className="w-full max-w-5xl mx-auto bg-[#0f0f0f] rounded-xl overflow-hidden shadow-2xl flex flex-col border border-white/10 max-h-[85vh]">
+        <div className="w-full max-w-5xl mx-auto bg-[#0f0f0f] rounded-xl overflow-hidden shadow-2xl flex flex-col border border-white/10 max-h-[75vh]">
             <div className="h-14 flex items-center px-4 bg-[#0f0f0f] border-b border-white/5 gap-4">
                 <Bars3Icon className="w-6 h-6 text-white" /><YouTubeIcon className="w-8 h-8 text-red-600" /><span className="font-bold text-xl text-white">YouTube</span>
                 <div className="flex-1 max-w-xl mx-8 bg-white/5 border border-white/10 rounded-full h-10"></div>
@@ -155,18 +155,23 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
     const isYTThumbnail = isImage(currentItem) && currentItem.category === 'YouTube Thumbnails';
     const isManipulation = isImage(currentItem) && currentItem.category === 'Photo Manipulation';
 
-    const handleShare = async (e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleShare = async (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
         const slug = (currentItem as any).slug || `${isImage(currentItem) ? 'g' : 'v'}-${currentItem.id}`;
         const shareUrl = `${window.location.origin}${window.location.pathname}#${slug}`;
+        
+        const shareData = {
+            title: `${currentItem.title || 'Selected Legend Art'} | Fuad Editing Zone`,
+            text: `Check out this amazing work by Selected Legend: ${currentItem.description || 'Premium VFX & Design work.'}`,
+            url: shareUrl
+        };
+
         if (navigator.share) {
             try { 
-                await navigator.share({ 
-                    title: `${currentItem.title || 'Selected Legend Art'} | FEZ`, 
-                    text: 'Explore premium cinematic visuals and VFX by Selected Legend at FEZ.',
-                    url: shareUrl 
-                }); 
-            } catch (err) {}
+                await navigator.share(shareData); 
+            } catch (err) {
+                // User might have cancelled or browser blocked
+            }
         } else {
             navigator.clipboard.writeText(shareUrl);
             setShowShareToast(true);
@@ -188,7 +193,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
             fileUrl = currentItem.url;
             fileName = `FEZ_FuadEditingZone_${(currentItem.title || 'VFX').replace(/\s+/g, '_')}.mp4`;
         } else {
-            // If it's a YouTube video, we can't directly download, so open in new tab
             window.open(`https://www.youtube.com/watch?v=${currentItem.videoId}`, '_blank');
             return;
         }
@@ -206,7 +210,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
             document.body.removeChild(link);
             window.URL.revokeObjectURL(blobUrl);
         } catch (err) {
-            // Fallback: Open in new tab if download fails due to CORS
             window.open(fileUrl, '_blank');
         } finally {
             setDownloading(false);
@@ -214,70 +217,111 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
     };
 
     return (
-        <div className="fixed inset-0 bg-black z-[70] flex items-center justify-center animate-fade-in p-4 md:p-12 overflow-hidden" onClick={onClose}>
+        <div className="fixed inset-0 bg-black z-[70] flex flex-col animate-fade-in overflow-hidden" onClick={onClose}>
             {isImage(currentItem) && (
-                <div className="absolute inset-0 bg-cover bg-center filter blur-3xl brightness-[0.2] opacity-40 scale-110" style={{ backgroundImage: `url(${currentItem.imageUrl})` }} />
+                <div className="absolute inset-0 bg-cover bg-center filter blur-3xl brightness-[0.2] opacity-40 scale-110 pointer-events-none" style={{ backgroundImage: `url(${currentItem.imageUrl})` }} />
             )}
 
-            <div className="relative w-full h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
-                {isImage(currentItem) ? (
-                    (useMockup && isYTThumbnail) ? <YouTubeMockup imageUrl={currentItem.imageUrl} /> :
-                    (useMockup && isManipulation) ? <InstagramMockup imageUrl={currentItem.imageUrl} /> :
-                    <motion.div 
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="w-full h-full flex items-center justify-center p-2"
-                    >
-                        <img 
-                            src={currentItem.imageUrl} 
-                            alt={currentItem.title || "Raw FEZ Portfolio Piece"} 
-                            title={currentItem.title || "Raw FEZ Portfolio Piece"}
-                            className="max-w-full max-h-full object-contain rounded-sm shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/5" 
-                        />
-                    </motion.div>
-                ) : isVideo(currentItem) ? (
-                    <div className="w-full max-w-5xl aspect-video bg-black rounded-lg shadow-2xl overflow-hidden">
-                        {currentItem.url ? <video src={currentItem.url} controls autoPlay className="w-full h-full" /> : 
-                        <iframe src={`https://www.youtube.com/embed/${currentItem.videoId}?autoplay=1`} title="VFX Portfolio - FEZ Zone" frameBorder="0" allowFullScreen className="w-full h-full"></iframe>}
+            {/* Top Bar Navigation & Controls */}
+            <div className="relative z-[100] flex justify-between items-center p-4 bg-gradient-to-b from-black/80 to-transparent">
+                <div className="flex items-center gap-3">
+                    <img src={siteConfig.branding.logoUrl} className="w-8 h-8 rounded-full border border-white/20" alt="FEZ" />
+                    <div className="hidden sm:block">
+                        <span className="text-white font-black text-xs uppercase tracking-widest">{isImage(currentItem) ? currentItem.category : 'Cinematic Video'}</span>
                     </div>
-                ) : null}
-            </div>
+                </div>
 
-            <div className="absolute top-4 right-4 flex flex-col sm:flex-row gap-2 z-[100]" onClick={e => e.stopPropagation()}>
-                 {(isYTThumbnail || isManipulation) && (
-                    <button 
-                        onClick={() => setUseMockup(!useMockup)} 
-                        className={`text-white transition-all p-2.5 md:p-3 rounded-full backdrop-blur-xl flex items-center gap-2 px-5 border ${!useMockup ? 'bg-red-600 border-red-500 shadow-[0_0_30px_rgba(220,38,38,0.6)]' : 'bg-black/60 border-white/10 hover:bg-black/80 hover:scale-105'}`}
-                    >
-                        <EyeIcon className="h-5 w-5" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">
-                            {useMockup ? 'View Raw' : 'Back to Mockup'}
-                        </span>
-                    </button>
-                 )}
-                 <div className="flex gap-2 justify-end">
+                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                    {(isYTThumbnail || isManipulation) && (
+                        <button 
+                            onClick={() => setUseMockup(!useMockup)} 
+                            className={`text-white transition-all p-2 rounded-full border ${!useMockup ? 'bg-red-600 border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.5)]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                        >
+                            <EyeIcon className="h-5 w-5" />
+                        </button>
+                    )}
                     <button 
                         onClick={handleDownload} 
-                        className={`text-white/70 hover:text-white p-2.5 md:p-3 rounded-full bg-black/60 border border-white/10 backdrop-blur-xl transition-all hover:scale-110 hover:bg-black/80 ${downloading ? 'animate-pulse opacity-50' : ''}`}
-                        title="Download Artwork"
+                        className={`text-white/70 hover:text-white p-2 rounded-full bg-white/5 border border-white/10 transition-all ${downloading ? 'animate-pulse' : ''}`}
                     >
-                        <DownloadIcon className="h-6 w-6" />
+                        <DownloadIcon className="h-5 w-5" />
                     </button>
-                    <button onClick={handleShare} className="text-white/70 hover:text-white p-2.5 md:p-3 rounded-full bg-black/60 border border-white/10 backdrop-blur-xl transition-all hover:scale-110 hover:bg-black/80" title="Share Link"><ShareIcon className="h-6 w-6" /></button>
-                    <button onClick={onClose} className="text-white/70 hover:text-white p-2.5 md:p-3 rounded-full bg-black/60 border border-white/10 backdrop-blur-xl transition-all hover:scale-110 hover:bg-black/80"><CloseIcon className="h-6 w-6" /></button>
-                 </div>
+                    <button onClick={onClose} className="text-white/70 hover:text-white p-2 rounded-full bg-white/5 border border-white/10 transition-all">
+                        <CloseIcon className="h-5 w-5" />
+                    </button>
+                </div>
+            </div>
+
+            {/* Main Content Viewer */}
+            <div className="flex-1 relative w-full flex items-center justify-center p-2 sm:p-4 md:p-8" onClick={onClose}>
+                <div className="relative w-full h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
+                    {isImage(currentItem) ? (
+                        (useMockup && isYTThumbnail) ? <YouTubeMockup imageUrl={currentItem.imageUrl} /> :
+                        (useMockup && isManipulation) ? <InstagramMockup imageUrl={currentItem.imageUrl} /> :
+                        <motion.div 
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="w-full h-full flex items-center justify-center"
+                        >
+                            <img 
+                                src={currentItem.imageUrl} 
+                                alt={currentItem.title || "Portfolio Work"} 
+                                className="max-w-full max-h-full object-contain rounded-lg shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/5" 
+                            />
+                        </motion.div>
+                    ) : isVideo(currentItem) ? (
+                        <div className="w-full max-w-5xl aspect-video bg-black rounded-xl shadow-2xl overflow-hidden border border-white/10">
+                            {currentItem.url ? <video src={currentItem.url} controls autoPlay className="w-full h-full" /> : 
+                            <iframe src={`https://www.youtube.com/embed/${currentItem.videoId}?autoplay=1`} title="VFX Reel" frameBorder="0" allowFullScreen className="w-full h-full"></iframe>}
+                        </div>
+                    ) : null}
+
+                    {/* Nav Buttons */}
+                    <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className="absolute left-0 md:-left-16 top-1/2 -translate-y-1/2 text-white/30 hover:text-white p-4 rounded-full transition-all group">
+                        <ChevronLeftIcon className="w-10 h-10 group-hover:-translate-x-1 transition-transform" />
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); onNext(); }} className="absolute right-0 md:-right-16 top-1/2 -translate-y-1/2 text-white/30 hover:text-white p-4 rounded-full transition-all group">
+                        <ChevronRightIcon className="w-10 h-10 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                </div>
+            </div>
+
+            {/* Bottom Info & Share Bar */}
+            <div className="relative z-[100] bg-black/90 backdrop-blur-3xl border-t border-white/10 p-4 md:p-6" onClick={e => e.stopPropagation()}>
+                <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1 flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                             <h3 className="text-white font-black text-lg md:text-xl uppercase tracking-tight truncate">
+                                {currentItem.title || 'Untitled Masterpiece'}
+                             </h3>
+                             <span className="bg-red-600/10 text-red-500 border border-red-500/20 text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-widest whitespace-nowrap">
+                                {isImage(currentItem) ? currentItem.category : 'VFX Edit'}
+                             </span>
+                        </div>
+                        <p className="text-gray-400 text-[10px] md:text-xs font-medium leading-relaxed max-w-2xl line-clamp-2 sm:line-clamp-1">
+                            {currentItem.description || 'Exclusive creative project by Fuad Ahmed at Fuad Editing Zone.'}
+                        </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <button 
+                            onClick={() => handleShare()}
+                            className="flex-1 sm:flex-none btn-angular bg-red-600 hover:bg-red-700 text-white font-black py-3 px-8 flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 group"
+                        >
+                            <ShareIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                            <span className="uppercase tracking-[0.2em] text-[10px] md:text-xs">Share Project</span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <AnimatePresence>
                 {showShareToast && (
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute bottom-24 md:bottom-12 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl z-[120]">
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed bottom-28 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl z-[120]">
                         Link copied to clipboard
                     </motion.div>
                 )}
             </AnimatePresence>
-
-            <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white p-3 rounded-full bg-black/20 hover:bg-black/50 backdrop-blur-sm transition-all"><ChevronLeftIcon className="w-8 h-8" /></button>
-            <button onClick={(e) => { e.stopPropagation(); onNext(); }} className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white p-3 rounded-full bg-black/20 hover:bg-black/50 backdrop-blur-sm transition-all"><ChevronRightIcon className="w-8 h-8" /></button>
         </div>
     );
 };
