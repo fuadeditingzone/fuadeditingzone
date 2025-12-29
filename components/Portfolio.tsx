@@ -7,7 +7,7 @@ import {
     PlayIcon, VolumeOnIcon, VolumeOffIcon, HandThumbUpIcon, 
     GlobeAltIcon, SparklesIcon, CloseIcon, CheckCircleIcon,
     ShareIcon, DownloadIcon, ThreeDotsIcon, PhotoManipulationIcon,
-    ThumbnailIcon, BannerIcon, EyeIcon
+    ThumbnailIcon, BannerIcon, EyeIcon, YouTubeIcon
 } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { InteractiveCard } from './InteractiveCard';
@@ -154,8 +154,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     const { videos: youtubeVideos, stats, loading, formatNumber } = useYouTubeChannelStats();
     
     const [currentVideoStats, setCurrentVideoStats] = useState<{ id: string; title: string; views: string; rawViews: number; likes: number } | null>(null);
-    const [userLikes, setUserLikes] = useState<Record<string, boolean>>({});
-    const [likeOverrides, setLikeOverrides] = useState<Record<string, number>>({});
+    const [showFloatingHandle, setShowFloatingHandle] = useState(false);
 
     const { y } = useParallax();
     const playerRef = useRef<any>(null);
@@ -204,21 +203,9 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     }, [activeYouTubeId]);
 
     // Counters for "Live" counting effect
-    const finalLikesCount = currentVideoStats ? (likeOverrides[activeYouTubeId] || currentVideoStats.likes) : 0;
+    const finalLikesCount = currentVideoStats ? currentVideoStats.likes : 0;
     const animatedLikes = useAnimatedCounter(finalLikesCount, 2000, activeYouTubeId);
     const animatedViews = useAnimatedCounter(currentVideoStats?.rawViews || 0, 3000, activeYouTubeId);
-
-    // GAPI initialization for the official Subscribe widget (Handles in-page subscription)
-    useEffect(() => {
-        const script = document.createElement('script');
-        script.src = 'https://apis.google.com/js/platform.js';
-        script.async = true;
-        document.body.appendChild(script);
-        return () => { 
-            const s = document.querySelector('script[src="https://apis.google.com/js/platform.js"]');
-            if (s) document.body.removeChild(s); 
-        };
-    }, []);
 
     useEffect(() => {
         if (!isYouTubeApiReady || !activeYouTubeId) return;
@@ -249,13 +236,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         return () => { if (playerRef.current) playerRef.current.destroy(); };
     }, [isYouTubeApiReady, activeYouTubeId]);
 
-    // Force refresh Google Subscribe widget when state changes to ensure it renders correctly
-    useEffect(() => {
-        if (window.gapi && window.gapi.ytsubscribe) {
-            window.gapi.ytsubscribe.go();
-        }
-    }, [isYtVisible, activeYouTubeId]);
-
     useEffect(() => {
         setIsFloating(!isYtVisible && isYtPlaying && activeYouTubeId !== '');
     }, [isYtVisible, isYtPlaying, activeYouTubeId]);
@@ -269,6 +249,21 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         }, 1000);
         return () => clearInterval(interval);
     }, [isYtPlaying]);
+
+    // Floating handle logic: appears after 10s of play
+    useEffect(() => {
+        let timeout: number;
+        if (isYtPlaying) {
+            timeout = window.setTimeout(() => {
+                setShowFloatingHandle(true);
+            }, 10000);
+        } else {
+            setShowFloatingHandle(false);
+        }
+        return () => {
+            if (timeout) clearTimeout(timeout);
+        };
+    }, [isYtPlaying, activeYouTubeId]);
 
     const parallaxStyle = {
       transform: isFloating ? 'none' : `translateY(${y * -5}px)`,
@@ -293,16 +288,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
             description: `Professional YouTube thumbnail design for: ${v.title}`
         }))];
     }, [youtubeVideos]);
-
-    const handleLikeClick = () => {
-        if (!currentVideoStats) return;
-        const isLiked = !!userLikes[activeYouTubeId];
-        setUserLikes(prev => ({ ...prev, [activeYouTubeId]: !isLiked }));
-        setLikeOverrides(prev => ({ 
-            ...prev, 
-            [activeYouTubeId]: (prev[activeYouTubeId] || currentVideoStats.likes) + (isLiked ? -1 : 1) 
-        }));
-    };
 
     const YoutubeEditsSection = useMemo(() => {
         const middleIndex = Math.ceil(animeEdits.length / 2);
@@ -337,6 +322,30 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                     <div className="relative aspect-video w-full mx-auto rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10">
                         <motion.div layout className={`w-full h-full relative z-30 transition-shadow duration-500 ${isFloating ? 'fixed bottom-6 right-6 w-64 md:w-80 shadow-[0_20px_60px_-15px_rgba(220,38,38,0.4)] z-[200] rounded-xl border border-white/20' : ''}`}>
                             <div id="youtube-portfolio-player-inner" className="w-full h-full bg-black"></div>
+                            
+                            {/* Floating Subscribe Handle - Appears top-left after 10s */}
+                            <AnimatePresence>
+                                {showFloatingHandle && !isFloating && (
+                                    <motion.a 
+                                        href={`https://www.youtube.com/channel/${siteConfig.api.channelId}?sub_confirmation=1`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        className="absolute top-4 left-4 z-50 flex items-center gap-3 bg-black/60 backdrop-blur-xl border border-white/10 p-2 rounded-full shadow-2xl group/float"
+                                    >
+                                        <div className="w-8 h-8 rounded-full overflow-hidden border border-red-600/50">
+                                            <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} alt="" className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex flex-col pr-3">
+                                            <span className="text-[9px] font-black text-white uppercase tracking-tighter line-clamp-1">{stats.channelTitle || siteConfig.branding.name}</span>
+                                            <span className="text-[7px] font-bold text-red-500 uppercase tracking-widest">Subscribe</span>
+                                        </div>
+                                    </motion.a>
+                                )}
+                            </AnimatePresence>
+
                             {isFloating && <button onClick={() => setIsYtPlaying(false)} className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-red-600 text-white rounded-full border border-white/10 z-10"><CloseIcon className="w-3.5 h-3.5" /></button>}
                         </motion.div>
                     </div>
@@ -355,6 +364,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                         </div>
 
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            {/* Subscribe List (Channel Info) - Always Visible Below Video */}
                             <div className="flex items-center gap-3 md:gap-4 flex-wrap">
                                 <a href={`https://www.youtube.com/channel/${siteConfig.api.channelId}`} target="_blank" rel="noopener noreferrer" className="relative flex-shrink-0 group">
                                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border border-white/10 ring-2 ring-red-600/20 group-hover:ring-red-600 transition-all">
@@ -364,23 +374,19 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                 <div className="flex flex-col min-w-0">
                                     <span className="text-white font-bold text-sm md:text-base truncate">{stats.channelTitle || siteConfig.branding.name}</span>
                                     <span className="text-gray-400 text-[10px] md:text-xs font-medium mb-1">{loading ? '...' : formatNumber(stats.subscribers)} subscribers</span>
-                                    <div className="h-6">
-                                        <div className="g-ytsubscribe" data-channelid={siteConfig.api.channelId} data-layout="default" data-count="hidden" data-theme="dark"></div>
-                                    </div>
                                 </div>
                             </div>
 
                             <div className="flex flex-col gap-2 min-w-[140px]">
                                 <div className="flex items-center justify-end">
-                                     <button 
-                                        onClick={handleLikeClick} 
-                                        className={`flex items-center gap-2 px-6 py-2.5 transition-all rounded-full bg-white/5 border border-white/10 ${userLikes[activeYouTubeId] ? 'text-red-500 border-red-500/50 bg-red-600/10' : 'text-white hover:bg-white/10'}`}
+                                     <div 
+                                        className="flex items-center gap-2 px-6 py-2.5 transition-all rounded-full bg-white/5 border border-white/10 text-red-500 cursor-default"
                                      >
-                                        <HandThumbUpIcon className={`w-4 h-4 md:w-5 md:h-5 ${userLikes[activeYouTubeId] ? 'fill-red-500' : 'fill-none'}`} />
+                                        <HandThumbUpIcon className="w-4 h-4 md:w-5 md:h-5 fill-red-500" />
                                         <span className="text-xs md:text-sm font-black min-w-[3ch] text-center">
                                             {currentVideoStats ? formatNumber(animatedLikes) : '...'}
                                         </span>
-                                     </button>
+                                     </div>
                                 </div>
                                 <p className="text-[8px] text-right text-gray-500 uppercase tracking-widest font-black pr-2">Total Community Support</p>
                             </div>
@@ -397,7 +403,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 </div>
             </div>
         );
-    }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, isFloating, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime, stats, loading, formatNumber, userLikes, likeOverrides, animatedLikes, animatedViews, finalLikesCount]);
+    }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, isFloating, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime, stats, loading, formatNumber, animatedLikes, animatedViews, finalLikesCount, showFloatingHandle]);
 
     const GraphicDesignContent = useMemo(() => {
         const categories: GraphicWork['category'][] = ['Photo Manipulation', 'YouTube Thumbnails', 'Banner Designs'];
