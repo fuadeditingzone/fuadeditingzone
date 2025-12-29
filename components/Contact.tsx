@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { siteConfig } from '../config';
@@ -26,8 +27,8 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
-                    _subject: `New Inquiry from FEZ Portfolio: ${formData.name}`,
-                    _source: "Fuad Editing Zone Portfolio Terminal"
+                    _subject: `New Project Inquiry from ${formData.name}`,
+                    _source: "FEZ Portfolio Site"
                 })
             });
 
@@ -35,11 +36,11 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                 setStatus('success');
                 setFormData({ name: '', email: '', message: '' });
             } else {
-                throw new Error('Signal lost');
+                throw new Error('Submission failed');
             }
         } catch (error) {
             console.error("Formspree Error:", error);
-            alert("Transmission failed. Please use the WhatsApp line below for immediate contact.");
+            alert("Transmission failed. Please use WhatsApp or Email for direct contact.");
             setStatus('idle');
         }
     };
@@ -55,9 +56,10 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
         <section ref={ref} id="contact" className="py-24 bg-black relative z-10 select-none overflow-visible">
             <div className={`container mx-auto px-6 max-w-4xl transition-all duration-1000 ease-out ${animationClass} flex flex-col items-center`}>
                 
-                <div className="text-center mb-12">
-                    <h2 className="text-2xl md:text-4xl font-bold text-white uppercase tracking-tight neon-text">Inquiry Terminal</h2>
-                    <p className="text-gray-500 mt-2 uppercase tracking-widest text-[10px]">Fuad Editing Zone • Secure Access Point</p>
+                {/* Minimalist Section Label */}
+                <div className="mb-10 text-center">
+                    <span className="text-[10px] font-black uppercase tracking-[0.5em] text-red-600">Get in Touch</span>
+                    <h2 className="text-white text-xl font-bold uppercase mt-2 tracking-tight">Project Inquiry</h2>
                 </div>
 
                 <div className="w-full bg-[#0a0a0a]/90 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-8 md:p-12 shadow-[0_40px_80px_rgba(0,0,0,0.8)] relative overflow-hidden neon-border">
@@ -71,53 +73,53 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                 <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-10 border border-green-500/20 shadow-[0_0_40px_rgba(34,197,94,0.1)]">
                                     <CheckCircleIcon className="w-12 h-12 text-green-500" />
                                 </div>
-                                <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">Signal Received</h3>
-                                <p className="text-gray-400 text-sm max-w-xs mx-auto mb-12">Your mission brief has been encrypted and transmitted. Fuad Ahmed will review the details shortly.</p>
+                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-4">Message Sent</h3>
+                                <p className="text-gray-400 text-xs max-w-xs mx-auto mb-12">Your inquiry has been successfully transmitted. Fuad Ahmed will review your brief and respond shortly.</p>
                                 <button 
                                     onClick={() => setStatus('idle')} 
-                                    className="text-red-600 font-black text-[11px] uppercase tracking-[0.4em] hover:text-white transition-colors"
+                                    className="text-red-600 font-bold text-[10px] uppercase tracking-[0.3em] hover:text-white transition-colors"
                                 >
-                                    Compose New Brief
+                                    Send Another Message
                                 </button>
                             </div>
                         ) : (
                             <div className="space-y-12">
-                                <form id="contact-form" onSubmit={handleSubmit} className="space-y-10 text-left">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] uppercase font-black text-gray-600 tracking-[0.3em] ml-1">Identity Tag</label>
+                                <form id="contact-form" onSubmit={handleSubmit} className="space-y-8 text-left">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest ml-1">Your Name</label>
                                             <input 
                                                 required 
                                                 name="name" 
                                                 value={formData.name} 
                                                 onChange={handleChange} 
-                                                className="w-full bg-black border border-white/10 rounded-2xl px-6 py-5 text-sm text-white focus:border-red-600 outline-none transition-all placeholder:text-gray-800" 
-                                                placeholder="Your Name" 
+                                                className="w-full bg-black/50 border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-red-600 outline-none transition-all placeholder:text-gray-800" 
+                                                placeholder="John Doe" 
                                             />
                                         </div>
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] uppercase font-black text-gray-600 tracking-[0.3em] ml-1">Return Frequency (Email)</label>
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest ml-1">Email Address</label>
                                             <input 
                                                 required 
                                                 type="email" 
                                                 name="email" 
                                                 value={formData.email} 
                                                 onChange={handleChange} 
-                                                className="w-full bg-black border border-white/10 rounded-2xl px-6 py-5 text-sm text-white focus:border-red-600 outline-none transition-all placeholder:text-gray-800" 
-                                                placeholder="email@address.com" 
+                                                className="w-full bg-black/50 border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-red-600 outline-none transition-all placeholder:text-gray-800" 
+                                                placeholder="john@example.com" 
                                             />
                                         </div>
                                     </div>
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] uppercase font-black text-gray-600 tracking-[0.3em] ml-1">Project Specification</label>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest ml-1">Project Details</label>
                                         <textarea 
                                             required 
                                             name="message" 
-                                            rows={6} 
+                                            rows={5} 
                                             value={formData.message} 
                                             onChange={handleChange} 
-                                            className="w-full bg-black border border-white/10 rounded-2xl px-6 py-5 text-sm text-white focus:border-red-600 outline-none resize-none transition-all placeholder:text-gray-800" 
-                                            placeholder="Describe your VFX or graphic design requirements in professional detail..."
+                                            className="w-full bg-black/50 border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-red-600 outline-none resize-none transition-all placeholder:text-gray-800" 
+                                            placeholder="Tell me about your project, VFX needs, or graphic design requirements..."
                                         ></textarea>
                                     </div>
                                     <button 
@@ -126,7 +128,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                         className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl uppercase tracking-widest text-[11px] transition-all shadow-[0_10px_25px_rgba(220,38,38,0.2)] active:scale-[0.98] flex items-center justify-center gap-3 group"
                                     >
                                         <SparklesIcon className={`w-4 h-4 ${status === 'submitting' ? 'animate-spin' : 'group-hover:rotate-12'} transition-transform text-white`} />
-                                        {status === 'submitting' ? 'Encrypting...' : 'Send Message'}
+                                        {status === 'submitting' ? 'Transmitting...' : 'Send Message'}
                                     </button>
                                 </form>
                             </div>
