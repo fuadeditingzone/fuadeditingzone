@@ -57,18 +57,18 @@ if (rootElement) {
             formFieldLabel: "text-zinc-900 font-black uppercase text-[8px] tracking-widest mb-2 ml-1",
             formFieldInput: "bg-zinc-50 border-zinc-200 text-zinc-900 text-xs h-11 focus:border-red-600 transition-all placeholder:text-zinc-400 rounded-xl px-4",
             
-            userButtonAvatarBox: "border-2 border-red-600 w-8 h-8 shadow-md",
-            userButtonPopoverCard: "bg-white border border-zinc-200 shadow-2xl w-72 overflow-hidden rounded-2xl",
-            userButtonPopoverActionButtonText: "text-zinc-900 font-black uppercase tracking-widest text-[9px]",
-            userButtonPopoverActionButton: "hover:bg-zinc-50 transition-colors py-4 px-5",
+            userButtonAvatarBox: "border-2 border-red-600 w-9 h-9 shadow-md",
+            userButtonPopoverCard: "bg-white border border-zinc-200 shadow-2xl w-80 overflow-hidden rounded-2xl",
+            userButtonPopoverActionButtonText: "text-zinc-900 font-black uppercase tracking-widest text-[10px]",
+            userButtonPopoverActionButton: "hover:bg-zinc-50 transition-colors py-4 px-6",
             userButtonPopoverActionButtonIcon: "text-red-600",
             userButtonPopoverFooter: "hidden",
             
-            identityPreviewText: "text-zinc-900 font-bold text-xs",
+            identityPreviewText: "text-zinc-900 font-bold text-sm",
             identityPreviewEditButtonIcon: "text-red-600",
             dividerLine: "bg-zinc-200",
-            dividerText: "text-zinc-400 text-[8px] font-black uppercase tracking-widest",
-            formFieldErrorText: "text-red-600 text-[8px] font-bold uppercase",
+            dividerText: "text-zinc-400 text-[9px] font-black uppercase tracking-widest",
+            formFieldErrorText: "text-red-600 text-[9px] font-bold uppercase",
             alert: "bg-red-50 border border-red-100 text-red-700 rounded-xl text-[10px] font-bold p-3",
             scrollBox: "custom-scrollbar overflow-y-auto"
           }
