@@ -24,55 +24,57 @@ export const services: Service[] = [
     { name: 'Subtitles & Captions', description: 'Dynamic, accurately timed, and visually appealing subtitles to keep your audience engaged.', category: 'Video Editing' },
 ];
 
+const R2_BASE = "https://pub-c35a446ba9db4c89b71a674f0248f02a.r2.dev";
+
 export const graphicWorks: GraphicWork[] = [
     // Photo Manipulation / Social Media Posts
     { 
         id: 1, 
-        imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/8whz5z17ra4evztzr8tei/7cbe5e230085811.Y3JvcCwxOTk5LDE1NjQsMCwyMTc.jpg?rlkey=te4mefjp0q9xj39dzjh77swin&raw=1', 
+        imageUrl: `${R2_BASE}/portfolio/manipulation-1.jpg`, 
         category: 'Photo Manipulation',
         title: 'Cyberpunk Warrior Manipulation',
         description: 'Advanced character composition with neon lighting and high-end texture blending.'
     },
     { 
         id: 2, 
-        imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/p739xw6vwmuwpn6x9v2vh/557950765_122151707678645113_2255706365702883316_n.jpg?rlkey=ngt1ga9dnxos9rj52zmqp66f6&raw=1', 
+        imageUrl: `${R2_BASE}/portfolio/manipulation-2.jpg`, 
         category: 'Photo Manipulation',
         title: 'Ethereal Forest Concept',
         description: 'Atmospheric photo manipulation focusing on depth of field and magical lighting effects.'
     },
     { 
         id: 3, 
-        imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/llmz5fjru7u9xqd1dy6es/abdb99229320593.Y3JvcCwyMDQ4LDE2MDEsMCwyMjM.jpg?rlkey=1mjr7rc57esbkyptaok9ti6sr&raw=1', 
+        imageUrl: `${R2_BASE}/portfolio/manipulation-3.jpg`, 
         category: 'Photo Manipulation',
         title: 'Urban Legends Edit',
         description: 'Street-style character manipulation with gritty textures and cinematic color grading.'
     },
     { 
         id: 4, 
-        imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/bjyqnbbr0sqvd42n64yt1/518658030_122142975902645113_5365242024363925507_n.jpg?rlkey=l7pz1oflwh5gi53oljv6fygvq&raw=1', 
+        imageUrl: `${R2_BASE}/portfolio/manipulation-4.jpg`, 
         category: 'Photo Manipulation',
         title: 'Action Sequence Composite',
         description: 'Dynamic motion-blur focused manipulation for high-impact social media content.'
     },
     { 
         id: 5, 
-        imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/g2q7bt4e8vhlsp23we57u/694dea229321481.Y3JvcCwxMjAwLDkzOCwwLDEzMA.jpg?rlkey=fbaguh47ao4atffhlz0ya6f5w&raw=1', 
+        imageUrl: `${R2_BASE}/portfolio/manipulation-5.jpg`, 
         category: 'Photo Manipulation',
         title: 'Dark Fantasy Portrait',
         description: 'Complex portrait manipulation using advanced masking and custom light sources.'
     },
     { 
         id: 7, 
-        imageUrl: 'https://www.dropbox.com/scl/fi/ot4xvfzucr57b817xsbpx/Justice-For-Osman-Hadi.jpg?rlkey=14bocvhbrbcpg7pgiim7ziv35&st=72jhupwi&raw=1', 
+        imageUrl: `${R2_BASE}/portfolio/manipulation-6.jpg`, 
         category: 'Photo Manipulation',
         title: 'Justice For Osman Hadi',
         description: 'A powerful tribute manipulation dedicated to the memory of Osman Hadi.'
     },
 
-    // YouTube Thumbnails - EXACT Video Titles for SEO
+    // YouTube Thumbnails - Maintained on R2 for consistency
     { 
         id: 12, 
-        imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/0mc1y78tdg0qq2yrsm8lz/6434f9234092365.Y3JvcCwxMzgwLDEwODAsMjcwLDA.jpg?rlkey=qfhr7z9vwuquacnbcb2q5pv3u&raw=1', 
+        imageUrl: `${R2_BASE}/portfolio/thumbnail-1.jpg`, 
         category: 'YouTube Thumbnails',
         title: 'Anime VFX Masterclass | Edit Breakdown',
         description: 'Professional YouTube thumbnail design for: Anime VFX Masterclass'
@@ -81,15 +83,15 @@ export const graphicWorks: GraphicWork[] = [
     // Banner Designs
     { 
         id: 13, 
-        imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/bzhrxzvxv8mpv7ldad6o4/2025-09-16-7.jpg?rlkey=chpubk19uennb7yw4xnssr90f&raw=1', 
+        imageUrl: `${R2_BASE}/portfolio/banner-1.jpg`, 
         category: 'Banner Designs',
         title: 'Futuristic Twitch Banner | FEZ Zone',
         description: 'Modern, clean banner design for streamers with integrated social handles.'
     },
-    { id: 14, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/81jlduf6n6ih32b6yfpmg/2025-09-18.jpg?rlkey=f9qgajdy0wycg2araptlpqi2r&raw=1', category: 'Banner Designs', title: 'YouTube Channel Art | FEZ Branding', description: 'Professional brand banner for high-tier content creators.' },
-    { id: 15, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/m5o840ywi39vm56n2chlp/2025-09-16-8.jpg?rlkey=kjk0gt52gowqx1n52ts0t6p5m&raw=1', category: 'Banner Designs', title: 'Minimalist Branding Banner', description: 'Sleek and professional branding for social media profiles.' },
-    { id: 16, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/va1p1itvxjw4y5zw2mts3/2025-09-19.jpg?rlkey=ltkx333q2wiaehqp2mrtgq4e0&raw=1', category: 'Banner Designs', title: 'Gaming Community Header', description: 'Vibrant and engaging banner for gaming teams and communities.' },
-    { id: 18, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/gmjmfxpf9s8pohwhhl9bl/2025-09-16-9.jpg?rlkey=crkorp8t3wq2uhh84tiwv0r1z&raw=1', category: 'Banner Designs', title: 'Creative Artist Header', description: 'Artistic and clean banner showcasing design excellence.' },
+    { id: 14, imageUrl: `${R2_BASE}/portfolio/banner-2.jpg`, category: 'Banner Designs', title: 'YouTube Channel Art | FEZ Branding', description: 'Professional brand banner for high-tier content creators.' },
+    { id: 15, imageUrl: `${R2_BASE}/portfolio/banner-3.jpg`, category: 'Banner Designs', title: 'Minimalist Branding Banner', description: 'Sleek and professional branding for social media profiles.' },
+    { id: 16, imageUrl: `${R2_BASE}/portfolio/banner-4.jpg`, category: 'Banner Designs', title: 'Gaming Community Header', description: 'Vibrant and engaging banner for gaming teams and communities.' },
+    { id: 18, imageUrl: `${R2_BASE}/portfolio/banner-5.jpg`, category: 'Banner Designs', title: 'Creative Artist Header', description: 'Artistic and clean banner showcasing design excellence.' },
 ];
 
 export const animeEdits: VideoWork[] = [

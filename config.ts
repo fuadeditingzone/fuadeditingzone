@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { SocialLink, Service } from './hooks/types';
 import { 
@@ -55,8 +54,9 @@ export const siteConfig = {
     branding: {
         name: "Fuad Editing Zone",
         author: "Fuad Ahmed",
-        logoUrl: 'https://dl.dropboxusercontent.com/scl/fi/vvk2qlo8i0mer2n4sip1h/faeez-logo.png?rlkey=xiahu40vwixf0uf96wwnvqlw2&raw=1',
-        profilePicUrl: 'https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1',
+        // Cloudflare R2 URLs
+        logoUrl: 'https://pub-c35a446ba9db4c89b71a674f0248f02a.r2.dev/logo.png',
+        profilePicUrl: 'https://pub-c35a446ba9db4c89b71a674f0248f02a.r2.dev/profile.png',
         email: 'fuadeditingzone@gmail.com',
         whatsAppNumber: '8801772723595',
         socials: [
