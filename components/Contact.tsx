@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { siteConfig } from '../config';
 import { EmailIcon, WhatsAppIcon, CheckCircleIcon, SparklesIcon } from './Icons';
@@ -24,11 +25,14 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
         try {
             const response = await fetch(siteConfig.api.formspreeEndpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json' 
+                },
                 body: JSON.stringify({
                     ...formData,
-                    _subject: `New Project Inquiry from ${formData.name}`,
-                    _source: "FEZ Portfolio Site"
+                    _subject: `FEZ Mission Brief: ${formData.name}`,
+                    _source: "Fuad Editing Zone Portfolio Terminal"
                 })
             });
 
@@ -36,11 +40,11 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                 setStatus('success');
                 setFormData({ name: '', email: '', message: '' });
             } else {
-                throw new Error('Submission failed');
+                throw new Error('Transmission Failed');
             }
         } catch (error) {
-            console.error("Formspree Error:", error);
-            alert("Transmission failed. Please use WhatsApp or Email for direct contact.");
+            console.error("Submission Error:", error);
+            alert("Signal transmission failed. Please use the WhatsApp line for immediate project inquiries.");
             setStatus('idle');
         }
     };
@@ -50,103 +54,134 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const animationClass = isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10';
+    const containerVariants = {
+        hidden: { opacity: 0, y: 30 },
+        visible: { 
+            opacity: 1, 
+            y: 0,
+            transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+        }
+    };
 
     return (
-        <section ref={ref} id="contact" className="py-24 bg-black relative z-10 select-none overflow-visible">
-            <div className={`container mx-auto px-6 max-w-4xl transition-all duration-1000 ease-out ${animationClass} flex flex-col items-center`}>
-                
-                {/* Minimalist Section Label */}
-                <div className="mb-10 text-center">
-                    <span className="text-[10px] font-black uppercase tracking-[0.5em] text-red-600">Get in Touch</span>
-                    <h2 className="text-white text-xl font-bold uppercase mt-2 tracking-tight">Project Inquiry</h2>
+        <section ref={ref} id="contact" className="py-24 bg-black relative z-10 select-none overflow-hidden">
+            {/* Atmospheric VFX Visuals */}
+            <div className="absolute top-1/4 left-0 w-96 h-96 bg-red-600/5 blur-[120px] pointer-events-none rounded-full"></div>
+            <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] bg-red-900/5 blur-[150px] pointer-events-none rounded-full"></div>
+
+            <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate={isVisible ? "visible" : "hidden"}
+                className="container mx-auto px-6 max-w-4xl flex flex-col items-center"
+            >
+                {/* Minimalist Section Header */}
+                <div className="mb-12 text-center">
+                    <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Transmission Port</span>
+                    <h2 className="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter">Start Your Mission</h2>
+                    <div className="h-1 w-16 bg-red-600 mx-auto mt-6 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]"></div>
                 </div>
 
-                <div className="w-full bg-[#0a0a0a]/90 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-8 md:p-12 shadow-[0_40px_80px_rgba(0,0,0,0.8)] relative overflow-hidden neon-border">
-                    {/* Atmospheric VFX elements */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-red-600/5 blur-[120px] pointer-events-none"></div>
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none"></div>
+                <div className="w-full bg-[#080808]/90 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-8 md:p-14 shadow-[0_50px_100px_rgba(0,0,0,1)] relative overflow-hidden group">
+                    {/* Inner Decorative Elements */}
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.03] pointer-events-none"></div>
+                    <div className="absolute top-0 right-0 w-1/2 h-px bg-gradient-to-l from-red-600/50 to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 w-1/2 h-px bg-gradient-to-r from-red-600/50 to-transparent"></div>
 
-                    <div className="animate-fade-in relative z-10">
-                        {status === 'success' ? (
-                            <div className="py-20 text-center">
-                                <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-10 border border-green-500/20 shadow-[0_0_40px_rgba(34,197,94,0.1)]">
-                                    <CheckCircleIcon className="w-12 h-12 text-green-500" />
-                                </div>
-                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-4">Message Sent</h3>
-                                <p className="text-gray-400 text-xs max-w-xs mx-auto mb-12">Your inquiry has been successfully transmitted. Fuad Ahmed will review your brief and respond shortly.</p>
-                                <button 
-                                    onClick={() => setStatus('idle')} 
-                                    className="text-red-600 font-bold text-[10px] uppercase tracking-[0.3em] hover:text-white transition-colors"
+                    <div className="relative z-10">
+                        <AnimatePresence mode="wait">
+                            {status === 'success' ? (
+                                <motion.div 
+                                    key="success-state"
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="py-16 text-center"
                                 >
-                                    Send Another Message
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="space-y-12">
-                                <form id="contact-form" onSubmit={handleSubmit} className="space-y-8 text-left">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest ml-1">Your Name</label>
+                                    <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-green-500/20 shadow-[0_0_40px_rgba(34,197,94,0.15)]">
+                                        <CheckCircleIcon className="w-10 h-10 text-green-500" />
+                                    </div>
+                                    <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">Signal Received</h3>
+                                    <p className="text-gray-400 text-sm max-w-xs mx-auto mb-10 font-medium">Your project brief has been encrypted and sent. Fuad Ahmed will review the frequency and contact you shortly.</p>
+                                    <button 
+                                        onClick={() => setStatus('idle')} 
+                                        className="text-red-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all"
+                                    >
+                                        Transmit New Data
+                                    </button>
+                                </motion.div>
+                            ) : (
+                                <form id="contact-form" onSubmit={handleSubmit} className="space-y-10">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Identity Tag</label>
                                             <input 
                                                 required 
                                                 name="name" 
                                                 value={formData.name} 
                                                 onChange={handleChange} 
-                                                className="w-full bg-black/50 border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-red-600 outline-none transition-all placeholder:text-gray-800" 
-                                                placeholder="John Doe" 
+                                                className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 focus:bg-black outline-none transition-all placeholder:text-gray-800 shadow-inner" 
+                                                placeholder="Full Name" 
                                             />
                                         </div>
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest ml-1">Email Address</label>
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Return Frequency</label>
                                             <input 
                                                 required 
                                                 type="email" 
                                                 name="email" 
                                                 value={formData.email} 
                                                 onChange={handleChange} 
-                                                className="w-full bg-black/50 border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-red-600 outline-none transition-all placeholder:text-gray-800" 
-                                                placeholder="john@example.com" 
+                                                className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 focus:bg-black outline-none transition-all placeholder:text-gray-800 shadow-inner" 
+                                                placeholder="email@address.com" 
                                             />
                                         </div>
                                     </div>
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest ml-1">Project Details</label>
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Mission Details</label>
                                         <textarea 
                                             required 
                                             name="message" 
-                                            rows={5} 
+                                            rows={6} 
                                             value={formData.message} 
                                             onChange={handleChange} 
-                                            className="w-full bg-black/50 border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-red-600 outline-none resize-none transition-all placeholder:text-gray-800" 
-                                            placeholder="Tell me about your project, VFX needs, or graphic design requirements..."
+                                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 focus:bg-black outline-none resize-none transition-all placeholder:text-gray-800 shadow-inner" 
+                                            placeholder="Describe your VFX or design requirements..."
                                         ></textarea>
                                     </div>
                                     <button 
                                         type="submit" 
                                         disabled={status === 'submitting'} 
-                                        className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl uppercase tracking-widest text-[11px] transition-all shadow-[0_10px_25px_rgba(220,38,38,0.2)] active:scale-[0.98] flex items-center justify-center gap-3 group"
+                                        className="w-full bg-red-600 hover:bg-red-700 text-white font-black py-5 rounded-2xl uppercase tracking-[0.5em] text-[11px] transition-all shadow-[0_20px_40px_rgba(220,38,38,0.3)] active:scale-[0.98] flex items-center justify-center gap-4 group"
                                     >
-                                        <SparklesIcon className={`w-4 h-4 ${status === 'submitting' ? 'animate-spin' : 'group-hover:rotate-12'} transition-transform text-white`} />
-                                        {status === 'submitting' ? 'Transmitting...' : 'Send Message'}
+                                        {status === 'submitting' ? (
+                                            <>
+                                                <SparklesIcon className="w-5 h-5 animate-spin" />
+                                                <span>Transmitting...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform duration-500" />
+                                                <span>Transmit Brief</span>
+                                            </>
+                                        )}
                                     </button>
                                 </form>
-                            </div>
-                        )}
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
 
-                {/* Secondary Actions */}
-                <div className="mt-20 flex flex-col md:flex-row items-center justify-center gap-10 opacity-50 hover:opacity-100 transition-opacity duration-700">
-                    <button onClick={() => onStartOrder('whatsapp')} className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-green-500 hover:text-green-400 group">
+                {/* Direct Connect Options */}
+                <div className="mt-20 flex flex-col md:flex-row items-center justify-center gap-10 opacity-60 hover:opacity-100 transition-opacity duration-700">
+                    <button onClick={() => onStartOrder('whatsapp')} className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-green-500 hover:text-green-400 transition-colors group">
                         <WhatsAppIcon className="w-5 h-5 transition-transform group-hover:-translate-y-1" /> WhatsApp Line
                     </button>
                     <div className="w-1.5 h-1.5 bg-white/20 rounded-full hidden md:block"></div>
-                    <button onClick={() => onStartOrder('email')} className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 hover:text-white group">
+                    <button onClick={() => onStartOrder('email')} className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 hover:text-white transition-colors group">
                         <EmailIcon className="w-5 h-5 transition-transform group-hover:-translate-y-1" /> Direct Mail
                     </button>
                 </div>
-            </div>
+            </motion.div>
         </section>
     );
 };
