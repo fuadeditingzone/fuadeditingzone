@@ -52,13 +52,14 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                     </div>
                 </div>
 
-                {/* Social Media Section - Minimalist Style with No Background */}
-                <div className="mt-16 pt-12 border-t border-white/5 w-full max-w-xl flex flex-col items-center">
-                    <div className="mb-8 text-center">
-                        <p className="text-[9px] text-gray-500 font-black tracking-[0.4em] uppercase mb-2 opacity-50">Find me on social media</p>
+                {/* Social Media Section - High Contrast Minimalist Icons */}
+                <div className="mt-20 pt-12 border-t border-white/5 w-full max-w-xl flex flex-col items-center">
+                    <div className="mb-10 text-center">
+                        <p className="text-[9px] text-gray-400 font-black tracking-[0.4em] uppercase mb-2">Connect with Fuad</p>
+                        <div className="h-0.5 w-6 bg-red-600 mx-auto opacity-50"></div>
                     </div>
                     
-                    <div className="flex justify-center items-center gap-8 md:gap-10">
+                    <div className="flex justify-center items-center gap-8 md:gap-12">
                         {siteConfig.branding.socials.map(social => (
                             <a
                                 key={social.name}
@@ -68,24 +69,24 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                 aria-label={`Follow Fuad on ${social.name}`}
                                 className="group relative flex items-center justify-center p-2"
                             >
-                                {/* Subtle Hover Aura */}
-                                <div className="absolute inset-0 bg-red-600/0 group-hover:bg-red-600/5 rounded-full blur-xl transition-all duration-500 scale-125"></div>
+                                {/* Subtle Hover Aura - Larger for better feedback */}
+                                <div className="absolute inset-0 bg-red-600/0 group-hover:bg-red-600/10 rounded-full blur-2xl transition-all duration-500 scale-150"></div>
                                 
-                                {/* Small Simple Icon */}
-                                <social.icon className="text-xl md:text-2xl text-gray-400 transition-all duration-300 group-hover:text-red-600 group-hover:-translate-y-1 relative z-10" />
+                                {/* High Contrast Icon - Using text-white for maximum visibility */}
+                                <social.icon className="text-2xl md:text-3xl text-white/90 drop-shadow-[0_0_8px_rgba(0,0,0,0.5)] transition-all duration-300 group-hover:text-red-500 group-hover:-translate-y-2 group-hover:scale-110 relative z-10" />
                                 
                                 {/* Tooltip Label */}
-                                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-black text-[9px] font-black uppercase tracking-widest py-1 px-2.5 rounded opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap pointer-events-none z-30 translate-y-1 group-hover:translate-y-0 shadow-xl">
+                                <span className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white text-black text-[9px] font-black uppercase tracking-widest py-1.5 px-3 rounded opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap pointer-events-none z-30 translate-y-1 group-hover:translate-y-0 shadow-2xl border border-white/10">
                                     {social.name}
                                 </span>
                             </a>
                         ))}
                     </div>
 
-                    <div className="mt-12 flex items-center gap-4 text-gray-800">
-                        <span className="h-px w-6 bg-current opacity-10"></span>
-                        <span className="text-[8px] font-black uppercase tracking-[0.3em] whitespace-nowrap">FEZ • Selected Legend</span>
-                        <span className="h-px w-6 bg-current opacity-10"></span>
+                    <div className="mt-16 flex items-center gap-4 text-gray-800">
+                        <span className="h-px w-8 bg-current opacity-10"></span>
+                        <span className="text-[8px] font-black uppercase tracking-[0.4em] whitespace-nowrap">FEZ • Selected Legend</span>
+                        <span className="h-px w-8 bg-current opacity-10"></span>
                     </div>
                 </div>
             </div>

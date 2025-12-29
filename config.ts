@@ -71,7 +71,7 @@ export const siteConfig = {
         channelId: 'UCFhqRIXlw0XGh3NOOvbhl6A',
     },
     seo: {
-        title: "Fuad Ahmed | FEZ | Selected Legend | Fuad Editing Zone | Professional VFX & Design",
+        title: "Fuad Editing Zone | Graphic Designer & VFX Editor | From Sylhet",
         description: "Official portfolio of Fuad Ahmed (Selected Legend). Premium FEZ VFX editing, high-impact photo manipulation, and professional design for creators globally.",
         keywords: "FEZ, Fuad Editing Zone, Selected Legend, VFX, Photo Manipulation, YouTube Thumbnails, Fuad Ahmed, fuadeditingzone"
     },

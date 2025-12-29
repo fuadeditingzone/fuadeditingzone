@@ -162,6 +162,18 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     const playerRef = useRef<any>(null);
     const [isFloating, setIsFloating] = useState(false);
 
+    // Load Google Platform JS for Subscribe Widget
+    useEffect(() => {
+        const script = document.createElement('script');
+        script.src = 'https://apis.google.com/js/platform.js';
+        script.async = true;
+        document.body.appendChild(script);
+        return () => { 
+            const s = document.querySelector('script[src="https://apis.google.com/js/platform.js"]');
+            if (s) document.body.removeChild(s); 
+        };
+    }, []);
+
     useEffect(() => {
         if (!isYouTubeApiReady || !activeYouTubeId) return;
         const container = document.getElementById('youtube-portfolio-player-inner');
@@ -191,8 +203,11 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         return () => { if (playerRef.current) playerRef.current.destroy(); };
     }, [isYouTubeApiReady, activeYouTubeId]);
 
+    // Force refresh the Google Subscribe widget when video or visibility changes
     useEffect(() => {
-        if (window.gapi && window.gapi.ytsubscribe) window.gapi.ytsubscribe.go();
+        if (window.gapi && window.gapi.ytsubscribe) {
+            window.gapi.ytsubscribe.go();
+        }
     }, [isYtVisible, activeYouTubeId]);
 
     useEffect(() => {
@@ -233,16 +248,17 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         }))];
     }, [youtubeVideos]);
 
+    // Live Stats Engine
     useEffect(() => {
         if (!activeYouTubeId) return;
         const fetchStats = async () => {
             try {
-                // Official YT Stats (Likes)
+                // Official YT Stats (Likes, Views)
                 const apiKey = siteConfig.api.youtubeApiKey;
                 const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${activeYouTubeId}&key=${apiKey}`);
                 const ytData = await ytRes.json();
                 
-                // Community Dislikes (Return YouTube Dislike API)
+                // Return YouTube Dislike API
                 const rydRes = await fetch(`https://returnyoutubedislikeapi.com/votes?videoId=${activeYouTubeId}`);
                 const rydData = await rydRes.json();
 
@@ -254,10 +270,12 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                         title: item.snippet.title,
                         views: new Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(parseInt(stats.viewCount)),
                         likes: parseInt(stats.likeCount) || 0,
-                        dislikes: rydData.dislikes || Math.floor((parseInt(stats.likeCount) || 0) * 0.05) 
+                        dislikes: rydData.dislikes || Math.floor((parseInt(stats.likeCount) || 0) * 0.04) 
                     });
                 }
-            } catch (error) {}
+            } catch (error) {
+                console.error("Live stats fetch failed", error);
+            }
         };
         fetchStats();
     }, [activeYouTubeId]);
@@ -268,6 +286,9 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         setUserLikes(prev => ({ ...prev, [activeYouTubeId]: !isLiked }));
         setLikeOverrides(prev => ({ ...prev, [activeYouTubeId]: (prev[activeYouTubeId] || currentVideoStats.likes) + (isLiked ? -1 : 1) }));
         if (userDislikes[activeYouTubeId]) handleDislikeClick();
+
+        // Optional: Open official video to ensure real count contribution if they wish
+        // window.open(`https://www.youtube.com/watch?v=${activeYouTubeId}`, '_blank');
     };
 
     const handleDislikeClick = () => {
@@ -288,7 +309,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         const totalVotes = currentLikes + currentDislikes;
         const likeRatio = totalVotes > 0 ? (currentLikes / totalVotes) * 100 : 100;
 
-        const ThumbnailButton = ({ video }: { video: VideoWork }) => (
+        const ThumbnailButton: React.FC<{ video: VideoWork }> = ({ video }) => (
             video.videoId ? (
                 <button
                     onClick={() => {
@@ -308,10 +329,12 @@ export const Portfolio: React.FC<PortfolioProps> = ({
 
         return (
             <div className="lg:flex lg:gap-12 lg:items-start max-w-[1700px] mx-auto animate-fade-in" ref={ytContainerRef}>
+                {/* Left Desktop Gallery Column */}
                 <div className="hidden lg:flex flex-col gap-6 w-[300px] flex-shrink-0 h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/50 px-4 pt-2">
                         {leftAnimeEdits.map((video) => <ThumbnailButton key={video.id} video={video} />)}
                 </div>
 
+                {/* Integrated YouTube Player UI */}
                 <div className="flex-1 space-y-6 md:space-y-4">
                     <div className="relative aspect-video w-full mx-auto rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-[#0f0f0f] border border-white/10">
                         <motion.div layout className={`w-full h-full relative z-30 transition-shadow duration-500 ${isFloating ? 'fixed bottom-6 right-6 w-64 md:w-80 shadow-[0_20px_60px_-15px_rgba(220,38,38,0.4)] z-[200] rounded-xl border border-white/20' : ''}`}>
@@ -320,17 +343,19 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                         </motion.div>
                     </div>
                     
+                    {/* Immersive YouTube Experience Metadata */}
                     <div className="bg-[#0f0f0f] p-4 md:p-6 border-t border-white/5 space-y-5 select-none animate-fade-in">
                         <div className="flex flex-col gap-1">
-                            <h3 className="text-white font-bold text-base md:text-2xl break-words tracking-tight leading-tight line-clamp-2">{currentVideoStats?.title || 'Syncing cinematic data...'}</h3>
+                            <h3 className="text-white font-bold text-base md:text-2xl break-words tracking-tight leading-tight line-clamp-2">{currentVideoStats?.title || 'Syncing data...'}</h3>
                             <div className="flex items-center gap-2 text-gray-500 text-[10px] md:text-xs">
                                 <span>{currentVideoStats?.views || '...'} views</span>
                                 <span>•</span>
-                                <span>Premiered on YouTube</span>
+                                <span>Uploaded to YouTube</span>
                             </div>
                         </div>
 
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            {/* Channel Profile & Official Subscribe Button */}
                             <div className="flex items-center gap-3 md:gap-4 flex-wrap">
                                 <a href={`https://www.youtube.com/channel/${siteConfig.api.channelId}`} target="_blank" rel="noopener noreferrer" className="relative flex-shrink-0 group">
                                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border border-white/10 ring-2 ring-red-600/20 group-hover:ring-red-600 transition-all">
@@ -339,43 +364,60 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                 </a>
                                 <div className="flex flex-col min-w-0">
                                     <span className="text-white font-bold text-sm md:text-base truncate">{stats.channelTitle || siteConfig.branding.name}</span>
-                                    <span className="text-gray-400 text-[10px] md:text-xs font-medium">{loading ? '...' : formatNumber(stats.subscribers)} subscribers</span>
+                                    <span className="text-gray-400 text-[10px] md:text-xs font-medium mb-1">{loading ? '...' : formatNumber(stats.subscribers)} subscribers</span>
+                                    {/* Google Subscribe Widget - Native Integration */}
+                                    <div className="h-6">
+                                        <div 
+                                            className="g-ytsubscribe" 
+                                            data-channelid={siteConfig.api.channelId} 
+                                            data-layout="default" 
+                                            data-count="hidden"
+                                            data-theme="dark"
+                                        ></div>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Live Likes & Dislikes Bar */}
-                            <div className="flex flex-col gap-2 min-w-[160px]">
+                            {/* Community Interaction Row */}
+                            <div className="flex flex-col gap-3 min-w-[180px]">
                                 <div className="flex items-center justify-between px-1">
-                                     <div className="flex items-center gap-2">
-                                         <button onClick={handleLikeClick} className={`flex items-center gap-1.5 transition-colors ${userLikes[activeYouTubeId] ? 'text-red-500' : 'text-white hover:text-red-400'}`}>
-                                            <HandThumbUpIcon className="w-4 h-4" />
-                                            <span className="text-xs font-black">{currentLikes > 0 ? formatNumber(currentLikes) : (currentVideoStats ? '0' : '...')}</span>
-                                         </button>
-                                     </div>
-                                     <div className="flex items-center gap-2">
-                                         <button onClick={handleDislikeClick} className={`flex items-center gap-1.5 transition-colors ${userDislikes[activeYouTubeId] ? 'text-red-500' : 'text-white hover:text-red-400'}`}>
-                                            <span className="text-xs font-black">{currentDislikes > 0 ? formatNumber(currentDislikes) : (currentVideoStats ? '0' : '...')}</span>
-                                            <HandThumbDownIcon className="w-4 h-4" />
-                                         </button>
-                                     </div>
+                                     <button 
+                                        onClick={handleLikeClick}
+                                        className={`flex items-center gap-2 group/btn transition-colors ${userLikes[activeYouTubeId] ? 'text-red-500' : 'text-white hover:text-red-400'}`}
+                                     >
+                                        <HandThumbUpIcon className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover/btn:scale-110" />
+                                        <span className="text-xs md:text-sm font-black">{currentLikes > 0 ? formatNumber(currentLikes) : (currentVideoStats ? '0' : '...')}</span>
+                                     </button>
+
+                                     <button 
+                                        onClick={handleDislikeClick}
+                                        className={`flex items-center gap-2 group/btn transition-colors ${userDislikes[activeYouTubeId] ? 'text-red-500' : 'text-white hover:text-red-400'}`}
+                                     >
+                                        <span className="text-xs md:text-sm font-black">{currentDislikes > 0 ? formatNumber(currentDislikes) : (currentVideoStats ? '0' : '...')}</span>
+                                        <HandThumbDownIcon className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover/btn:scale-110" />
+                                     </button>
                                 </div>
+                                {/* Like/Dislike Ratio Bar */}
                                 <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
                                     <motion.div 
-                                        initial={{ width: 0 }}
+                                        initial={{ width: '50%' }}
                                         animate={{ width: `${likeRatio}%` }}
-                                        className="h-full bg-red-600"
+                                        transition={{ duration: 1, ease: 'easeOut' }}
+                                        className="h-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]"
                                     />
                                 </div>
-                                <p className="text-[8px] text-center text-gray-500 uppercase tracking-widest font-bold">Community Ratio</p>
+                                <p className="text-[8px] text-center text-gray-500 uppercase tracking-widest font-bold">Community Approval Ratio</p>
                             </div>
                         </div>
                     </div>
 
+                    {/* Mobile Quick Switch Gallery */}
                     <div className="lg:hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-4 max-w-5xl mx-auto pt-2 px-1">
                         {animeEdits.map((video) => <ThumbnailButton key={video.id} video={video} />)}
                     </div>
                 </div>
 
+                {/* Right Desktop Gallery Column */}
                 <div className="hidden lg:flex flex-col gap-6 w-[300px] flex-shrink-0 h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/50 px-4 pt-2">
                         {rightAnimeEdits.map((video) => <ThumbnailButton key={video.id} video={video} />)}
                 </div>
