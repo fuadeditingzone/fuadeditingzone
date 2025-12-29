@@ -103,10 +103,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                 </div>
                                 <div>
                                     <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">Profile Hub</h2>
-                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-black mt-1">Fuad Editing Zone</p>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black mt-1">Fuad Editing Zone</p>
                                 </div>
                             </div>
-                            <button onClick={onClose} className="p-2.5 rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all border border-transparent hover:border-white/10">
+                            <button onClick={onClose} className="p-2.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-all border border-transparent hover:border-white/10">
                                 <CloseIcon className="w-6 h-6" />
                             </button>
                         </div>
@@ -141,14 +141,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                                     <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 mt-1">
                                                         <span className="text-red-500 text-[10px] font-black uppercase tracking-widest">@{user.username || 'unidentified'}</span>
                                                         <span className="w-1 h-1 bg-white/20 rounded-full"></span>
-                                                        <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest truncate">Member since {memberSince}</span>
+                                                        <span className="text-gray-400 text-[10px] font-black uppercase tracking-widest truncate">Member since {memberSince}</span>
                                                     </div>
                                                 </div>
                                                 
                                                 <div className="flex flex-wrap justify-center md:justify-start gap-3">
                                                     <div className="flex items-center gap-2 px-4 py-2.5 bg-black/60 rounded-xl border border-white/10">
                                                         <EmailIcon className="w-3.5 h-3.5 text-gray-500" />
-                                                        <span className="text-[11px] text-gray-300 font-bold truncate max-w-[200px]">{user.primaryEmailAddress?.emailAddress}</span>
+                                                        <span className="text-[11px] text-white font-bold truncate max-w-[200px]">{user.primaryEmailAddress?.emailAddress}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -161,7 +161,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                             >
                                                 <SparklesIcon className="w-6 h-6 text-red-600 mb-4 group-hover:rotate-12 transition-transform" />
                                                 <h4 className="text-white font-black text-sm uppercase tracking-wider">Change Alias</h4>
-                                                <p className="text-gray-500 text-[10px] mt-1 font-medium">Update your terminal username and identifier.</p>
+                                                <p className="text-gray-300 text-[10px] mt-1 font-medium">Update your terminal username and identifier.</p>
                                             </button>
                                             
                                             <button 
@@ -176,7 +176,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                             >
                                                 <GlobeAltIcon className="w-6 h-6 text-gray-400 mb-4 group-hover:scale-110 transition-transform" />
                                                 <h4 className="text-white font-black text-sm uppercase tracking-wider">Account Security</h4>
-                                                <p className="text-gray-500 text-[10px] mt-1 font-medium">Manage emails, passwords, and active sessions.</p>
+                                                <p className="text-gray-300 text-[10px] mt-1 font-medium">Manage emails, passwords, and active sessions.</p>
                                             </button>
                                         </div>
                                     </motion.div>
@@ -189,7 +189,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                         className="space-y-8"
                                     >
                                         <div className="space-y-3">
-                                            <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Terminal Alias (Username)</label>
+                                            <label className="text-[10px] uppercase font-black text-gray-300 tracking-[0.3em] ml-1">Terminal Alias (Username)</label>
                                             <div className="relative">
                                                 <input 
                                                     type="text"
@@ -205,7 +205,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                                     </div>
                                                 )}
                                             </div>
-                                            <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest px-1 leading-relaxed">
+                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest px-1 leading-relaxed">
                                                 {!!cooldownRemaining 
                                                     ? "IDENTITY SECURE: ALIAS CHANGES ARE LOCKED FOR 7 DAYS AFTER THE LAST UPDATE."
                                                     : "CHOOSE YOUR UNIQUE TERMINAL TAG. UPDATES ARE RATE-LIMITED TO ONCE PER WEEK."}
@@ -221,7 +221,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                         <div className="flex gap-4 pb-4">
                                             <button 
                                                 onClick={() => setView('overview')}
-                                                className="flex-1 py-4 text-gray-500 font-black uppercase tracking-widest text-[10px] hover:text-white transition-colors"
+                                                className="flex-1 py-4 text-gray-300 font-black uppercase tracking-widest text-[10px] hover:text-white transition-colors"
                                             >
                                                 Back to Profile
                                             </button>
@@ -241,7 +241,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                         
                         {/* Footer - Fixed */}
                         <div className="p-6 bg-black/80 backdrop-blur-md border-t border-white/10 text-center shrink-0">
-                            <p className="text-[8px] text-gray-600 font-black uppercase tracking-[0.5em]">Identity verification provided by Clerk.dev • FEZ Core</p>
+                            <p className="text-[8px] text-gray-400 font-black uppercase tracking-[0.5em]">Identity verification provided by Clerk.dev • FEZ Core</p>
                         </div>
                     </motion.div>
                 </div>
