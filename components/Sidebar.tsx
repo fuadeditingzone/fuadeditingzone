@@ -74,14 +74,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                 </button>
               </SignedOut>
               <SignedIn>
-                <div className="flex items-center gap-4">
-                    <button 
-                        onClick={() => setIsProfileOpen(true)}
-                        className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all group shadow-[0_0_15px_rgba(0,0,0,0.5)]"
-                        title="Profile Hub"
-                    >
-                        <SparklesIcon className="w-4 h-4 text-red-500 group-hover:rotate-12 transition-transform" />
-                    </button>
+                <div className="flex items-center">
                     <UserButton 
                         appearance={{
                         elements: {
@@ -132,13 +125,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                     </SignInButton>
                 </SignedOut>
                 <SignedIn>
-                    <div className="flex items-center gap-3">
-                        <button 
-                            onClick={() => setIsProfileOpen(true)}
-                            className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 rounded-full active:scale-95 transition-all"
-                        >
-                            <SparklesIcon className="w-4 h-4 text-red-500" />
-                        </button>
+                    <div className="flex items-center">
                         <UserButton 
                         appearance={{
                             elements: {
