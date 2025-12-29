@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -23,7 +22,6 @@ import { ServiceSelectionModal } from './components/ServiceSelectionModal';
 import { YouTubeRedirectPopup } from './components/YouTubeRedirectPopup';
 import { IntroPresentation } from './components/IntroPresentation';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
-import { FuadAssistant } from './components/FuadAssistant';
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(() => {
@@ -195,7 +193,6 @@ export default function App() {
           {pipVideo && <VideoPipPlayer video={pipVideo} onClose={() => setPipVideo(null)} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />}
           {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} onClose={() => setContextMenu(null)} onGalleryOpen={() => { setContextMenu(null); setIsGalleryGridOpen(true); }} />}
           <PwaInstallPrompt />
-          <FuadAssistant />
           <div className={`transition-all fixed bottom-0 left-0 right-0 z-40 ${(isNavVisible && !showIntro) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
             <MobileFooterNav onScrollTo={handleScrollTo} />
           </div>
