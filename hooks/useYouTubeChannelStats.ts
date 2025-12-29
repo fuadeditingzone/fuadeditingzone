@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { siteConfig } from '../config';
 
@@ -10,6 +11,7 @@ interface VideoItem {
     channelTitle?: string;
     durationSeconds: number;
     rawViewCount?: number;
+    likeCount?: number; // Added to store pre-fetched likes
 }
 
 interface ChannelStats {
@@ -56,11 +58,9 @@ export const useYouTubeChannelStats = () => {
                 ]);
                 
                 if (!statsRes.ok) throw new Error(`YouTube API Error: ${statsRes.status}`);
-                // FIX: Added check for contentRes.ok to ensure both requests were successful.
                 if (!contentRes.ok) throw new Error(`YouTube Content API Error: ${contentRes.status}`);
                 
                 const statsData = await statsRes.json();
-                // FIX: Defined contentData by parsing the contentRes JSON response to resolve "Cannot find name 'contentData'" error.
                 const contentData = await contentRes.json();
 
                 if (statsData.items && statsData.items.length > 0) {
@@ -106,6 +106,7 @@ export const useYouTubeChannelStats = () => {
                                 publishedAt: item.snippet.publishedAt,
                                 viewCount: formatNumber(parseInt(item.statistics.viewCount || '0')),
                                 rawViewCount: parseInt(item.statistics.viewCount || '0'),
+                                likeCount: parseInt(item.statistics.likeCount || '0'), // Populate likes
                                 channelTitle: item.snippet.channelTitle,
                                 durationSeconds: parseDuration(item.contentDetails.duration)
                             }));
@@ -141,7 +142,8 @@ export const useYouTubeChannelStats = () => {
                      publishedAt: new Date().toISOString(),
                      viewCount: v.mostViewed ? "50K" : "10K",
                      durationSeconds: 120,
-                     rawViewCount: v.mostViewed ? 50000 : 10000
+                     rawViewCount: v.mostViewed ? 50000 : 10000,
+                     likeCount: v.mostViewed ? 5000 : 1000
                  })).filter(v => v.id);
                  setVideos(fallbackVideos);
              }
