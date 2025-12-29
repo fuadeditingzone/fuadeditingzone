@@ -109,7 +109,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                     </div>
                                     <div className="space-y-3">
                                         <h3 className="text-2xl font-black text-white uppercase tracking-tight">Identity Required</h3>
-                                        <p className="text-gray-400 text-xs max-w-xs mx-auto font-medium">Please sign in with your email or phone number to transmit your project brief to the Zone.</p>
+                                        <p className="text-gray-400 text-xs max-w-xs mx-auto font-medium">Please sign in to your account to transmit your project brief to the Zone.</p>
                                     </div>
                                     <SignInButton mode="modal">
                                         <button className="btn-angular bg-red-600 hover:bg-red-700 text-white font-black py-4 px-12 uppercase tracking-[0.4em] text-[11px] transition-all shadow-[0_15px_30px_rgba(220,38,38,0.3)]">
