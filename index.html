@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v9.6.7 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v9.6.8 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -77,36 +77,50 @@
       .neon-border { border: 1px solid rgba(220, 38, 38, 0.3); box-shadow: 0 0 15px rgba(220, 38, 38, 0.1); }
       .neon-text { text-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
 
-      /* Robust Clerk Modal Styling */
+      /* Robust Clerk Modal Styling - Strict Centering */
       .cl-modalBackdrop {
+        position: fixed !important;
+        inset: 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        background: rgba(0,0,0,0.8) !important;
-        backdrop-filter: blur(12px) !important;
+        background: rgba(0,0,0,0.85) !important;
+        backdrop-filter: blur(16px) !important;
         padding: 1rem !important;
+        z-index: 999999 !important;
       }
       .cl-modalContent {
-        max-width: 900px !important; /* Allow wider content for profile */
+        max-width: 900px !important;
         width: 100% !important;
-        max-height: calc(100vh - 2rem) !important;
+        max-height: calc(100vh - 4rem) !important;
         margin: auto !important;
         display: flex !important;
-        border-radius: 2rem !important;
-        box-shadow: 0 50px 100px rgba(0,0,0,0.6) !important;
+        border-radius: 2.5rem !important;
+        box-shadow: 0 50px 150px rgba(0,0,0,0.8) !important;
+        background: white !important;
+        overflow: hidden !important;
       }
-      /* Ensure the user profile takes full available width in its modal */
+      
+      /* Ensure confirmation dialogs (like Delete Account) are centered over the main profile modal */
+      .cl-modalBackdrop > div {
+        margin: auto !important;
+      }
+      
+      /* Specific targeting for Delete Account and internal view components */
       .cl-userProfile-root {
         width: 100% !important;
         height: 100% !important;
+        display: flex !important;
       }
+      
       /* Fix for mobile screens */
-      @media (max-width: 640px) {
+      @media (max-width: 768px) {
         .cl-modalContent {
-          border-radius: 1.5rem !important;
+          border-radius: 2rem !important;
+          max-height: 90vh !important;
         }
         .cl-userProfile-navbar {
-          display: none !important; /* Hide side nav on mobile profile if it causes clipping */
+          display: none !important;
         }
       }
       

@@ -35,7 +35,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
 
   return (
     <>
-      <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-16 px-10 bg-black/40 backdrop-blur-xl border-b border-white/5">
+      <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-16 px-10 bg-transparent">
           <div 
               onClick={handleLogoClick}
               className="cursor-pointer group flex items-center gap-4"
@@ -103,7 +103,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
 
     return (
         <>
-            <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-16 px-6 select-none bg-black/60 backdrop-blur-md border-b border-white/5">
+            <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-16 px-6 select-none bg-transparent">
                 <div 
                     onClick={handleLogoClick} 
                     className="flex items-center gap-3"
@@ -113,7 +113,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                         alt="Logo" 
                         className={`h-8 w-8 rounded-full ${isSpinning ? 'logo-3d-spin' : ''}`}
                     />
-                    <span className="font-black text-white tracking-widest text-[10px] uppercase">FEZ ZONE</span>
+                    <span className="font-black text-white tracking-widest text-[8px] uppercase">FUAD EDITING ZONE</span>
                 </div>
                 
                 <div className="flex items-center gap-4">
