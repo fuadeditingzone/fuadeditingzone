@@ -7,7 +7,7 @@ import {
     PlayIcon, VolumeOnIcon, VolumeOffIcon, HandThumbUpIcon, 
     HandThumbDownIcon, GlobeAltIcon, SparklesIcon, CloseIcon, CheckCircleIcon,
     ShareIcon, DownloadIcon, ThreeDotsIcon, PhotoManipulationIcon,
-    ThumbnailIcon, BannerIcon
+    ThumbnailIcon, BannerIcon, EyeIcon
 } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { InteractiveCard } from './InteractiveCard';
@@ -153,7 +153,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     const [ytContainerRef, isYtVisible] = useIntersectionObserver({ threshold: 0.1 });
     const { videos: youtubeVideos, stats, loading, formatNumber } = useYouTubeChannelStats();
     
-    const [currentVideoStats, setCurrentVideoStats] = useState<{ id: string; title: string; views: string; likes: number; dislikes: number } | null>(null);
+    const [currentVideoStats, setCurrentVideoStats] = useState<{ id: string; title: string; views: string; rawViews: number; likes: number; dislikes: number } | null>(null);
     const [userLikes, setUserLikes] = useState<Record<string, boolean>>({});
     const [userDislikes, setUserDislikes] = useState<Record<string, boolean>>({});
     const [likeOverrides, setLikeOverrides] = useState<Record<string, number>>({});
@@ -163,7 +163,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     const playerRef = useRef<any>(null);
     const [isFloating, setIsFloating] = useState(false);
 
-    // Seed stats immediately from the pre-fetched videos array to eliminate "..." delay
+    // Synchronize stats from hook data immediately
     useEffect(() => {
         if (!activeYouTubeId || youtubeVideos.length === 0) return;
         const preFetched = youtubeVideos.find(v => v.id === activeYouTubeId);
@@ -172,13 +172,53 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 id: activeYouTubeId,
                 title: preFetched.title,
                 views: preFetched.viewCount,
+                rawViews: preFetched.rawViewCount || 0,
                 likes: preFetched.likeCount || (prev?.id === activeYouTubeId ? prev.likes : 0),
-                dislikes: prev?.id === activeYouTubeId ? prev.dislikes : Math.floor((preFetched.likeCount || 100) * 0.05)
+                dislikes: prev?.id === activeYouTubeId ? prev.dislikes : Math.floor((preFetched.likeCount || 100) * 0.04)
             }));
         }
     }, [activeYouTubeId, youtubeVideos]);
 
-    // Official GAPI Subscribe Widget Initialization
+    // Live Stats Fetcher (Fetches accurate live likes and Return YouTube Dislike API)
+    useEffect(() => {
+        if (!activeYouTubeId) return;
+        const fetchStats = async () => {
+            try {
+                const apiKey = siteConfig.api.youtubeApiKey;
+                const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${activeYouTubeId}&key=${apiKey}`);
+                const ytData = await ytRes.json();
+                
+                const rydRes = await fetch(`https://returnyoutubedislikeapi.com/votes?videoId=${activeYouTubeId}`);
+                const rydData = await rydRes.json();
+
+                if (ytData.items && ytData.items.length > 0) {
+                    const item = ytData.items[0];
+                    const stats = item.statistics;
+                    setCurrentVideoStats({
+                        id: activeYouTubeId,
+                        title: item.snippet.title,
+                        rawViews: parseInt(stats.viewCount),
+                        views: new Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(parseInt(stats.viewCount)),
+                        likes: parseInt(stats.likeCount) || 0,
+                        dislikes: rydData.dislikes || Math.floor((parseInt(stats.likeCount) || 0) * 0.04) 
+                    });
+                }
+            } catch (error) {
+                console.error("Live stats fetch failed", error);
+            }
+        };
+        fetchStats();
+    }, [activeYouTubeId]);
+
+    // Counters for "Live" counting effect
+    const finalLikesCount = currentVideoStats ? (likeOverrides[activeYouTubeId] || currentVideoStats.likes) : 0;
+    const finalDislikesCount = currentVideoStats ? (dislikeOverrides[activeYouTubeId] || currentVideoStats.dislikes) : 0;
+    
+    const animatedLikes = useAnimatedCounter(finalLikesCount, 2000, activeYouTubeId);
+    const animatedDislikes = useAnimatedCounter(finalDislikesCount, 2000, activeYouTubeId);
+    const animatedViews = useAnimatedCounter(currentVideoStats?.rawViews || 0, 3000, activeYouTubeId);
+
+    // GAPI initialization for Subscribe widget
     useEffect(() => {
         const script = document.createElement('script');
         script.src = 'https://apis.google.com/js/platform.js';
@@ -219,7 +259,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         return () => { if (playerRef.current) playerRef.current.destroy(); };
     }, [isYouTubeApiReady, activeYouTubeId]);
 
-    // Force refresh Google Subscribe widget when state changes
     useEffect(() => {
         if (window.gapi && window.gapi.ytsubscribe) {
             window.gapi.ytsubscribe.go();
@@ -264,41 +303,15 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         }))];
     }, [youtubeVideos]);
 
-    // Background Stats Fetcher (Fetches accurate live likes)
-    useEffect(() => {
-        if (!activeYouTubeId) return;
-        const fetchStats = async () => {
-            try {
-                const apiKey = siteConfig.api.youtubeApiKey;
-                const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${activeYouTubeId}&key=${apiKey}`);
-                const ytData = await ytRes.json();
-                
-                // Return YouTube Dislike API integration
-                const rydRes = await fetch(`https://returnyoutubedislikeapi.com/votes?videoId=${activeYouTubeId}`);
-                const rydData = await rydRes.json();
-
-                if (ytData.items && ytData.items.length > 0) {
-                    const item = ytData.items[0];
-                    const stats = item.statistics;
-                    setCurrentVideoStats({
-                        id: activeYouTubeId,
-                        title: item.snippet.title,
-                        views: new Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(parseInt(stats.viewCount)),
-                        likes: parseInt(stats.likeCount) || 0,
-                        dislikes: rydData.dislikes || Math.floor((parseInt(stats.likeCount) || 0) * 0.05) 
-                    });
-                }
-            } catch (error) {}
-        };
-        fetchStats();
-    }, [activeYouTubeId]);
-
     const handleLikeClick = () => {
         if (!currentVideoStats) return;
         const isLiked = !!userLikes[activeYouTubeId];
         setUserLikes(prev => ({ ...prev, [activeYouTubeId]: !isLiked }));
         setLikeOverrides(prev => ({ ...prev, [activeYouTubeId]: (prev[activeYouTubeId] || currentVideoStats.likes) + (isLiked ? -1 : 1) }));
-        if (userDislikes[activeYouTubeId]) handleDislikeClick();
+        if (userDislikes[activeYouTubeId]) {
+            setUserDislikes(prev => ({ ...prev, [activeYouTubeId]: false }));
+            setDislikeOverrides(prev => ({ ...prev, [activeYouTubeId]: (prev[activeYouTubeId] || currentVideoStats.dislikes) - 1 }));
+        }
     };
 
     const handleDislikeClick = () => {
@@ -306,7 +319,10 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         const isDisliked = !!userDislikes[activeYouTubeId];
         setUserDislikes(prev => ({ ...prev, [activeYouTubeId]: !isDisliked }));
         setDislikeOverrides(prev => ({ ...prev, [activeYouTubeId]: (prev[activeYouTubeId] || currentVideoStats.dislikes) + (isDisliked ? -1 : 1) }));
-        if (userLikes[activeYouTubeId]) handleLikeClick();
+        if (userLikes[activeYouTubeId]) {
+            setUserLikes(prev => ({ ...prev, [activeYouTubeId]: false }));
+            setLikeOverrides(prev => ({ ...prev, [activeYouTubeId]: (prev[activeYouTubeId] || currentVideoStats.likes) - 1 }));
+        }
     };
 
     const YoutubeEditsSection = useMemo(() => {
@@ -314,11 +330,8 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         const leftAnimeEdits = animeEdits.slice(0, middleIndex);
         const rightAnimeEdits = animeEdits.slice(middleIndex);
 
-        const currentLikesValue = currentVideoStats ? (likeOverrides[activeYouTubeId] || currentVideoStats.likes) : 0;
-        const currentDislikesValue = currentVideoStats ? (dislikeOverrides[activeYouTubeId] || currentVideoStats.dislikes) : 0;
-        
-        const totalVotes = currentLikesValue + currentDislikesValue;
-        const likeRatio = totalVotes > 0 ? (currentLikesValue / totalVotes) * 100 : 100;
+        const totalVotes = finalLikesCount + finalDislikesCount;
+        const likeRatio = totalVotes > 0 ? (finalLikesCount / totalVotes) * 100 : 100;
 
         const ThumbnailButton: React.FC<{ video: VideoWork }> = ({ video }) => (
             video.videoId ? (
@@ -354,11 +367,14 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                     
                     <div className="bg-[#0f0f0f] p-4 md:p-6 border-t border-white/5 space-y-5 select-none animate-fade-in">
                         <div className="flex flex-col gap-1">
-                            <h3 className="text-white font-bold text-base md:text-2xl break-words tracking-tight leading-tight line-clamp-2">{currentVideoStats?.title || 'Loading cinematic data...'}</h3>
+                            <h3 className="text-white font-bold text-base md:text-2xl break-words tracking-tight leading-tight line-clamp-2">{currentVideoStats?.title || 'Syncing Visual Data...'}</h3>
                             <div className="flex items-center gap-2 text-gray-500 text-[10px] md:text-xs">
-                                <span>{currentVideoStats?.views || '...'} views</span>
+                                <span className="flex items-center gap-1">
+                                    <EyeIcon className="w-3 h-3" />
+                                    {currentVideoStats ? formatNumber(animatedViews) : '...'} views
+                                </span>
                                 <span>•</span>
-                                <span>Premiered on YouTube</span>
+                                <span>Published on YouTube</span>
                             </div>
                         </div>
 
@@ -378,26 +394,36 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-2 min-w-[160px]">
-                                <div className="flex items-center justify-between px-1">
-                                     <button onClick={handleLikeClick} className={`flex items-center gap-2 transition-colors ${userLikes[activeYouTubeId] ? 'text-red-500' : 'text-white hover:text-red-400'}`}>
-                                        <HandThumbUpIcon className="w-4 h-4 md:w-5 md:h-5" />
-                                        <span className="text-xs md:text-sm font-black">{currentLikesValue > 0 ? formatNumber(currentLikesValue) : (currentVideoStats ? '0' : '...')}</span>
+                            <div className="flex flex-col gap-2 min-w-[200px]">
+                                <div className="flex items-center bg-white/5 rounded-full p-0.5 border border-white/10 w-fit self-end shadow-inner">
+                                     <button 
+                                        onClick={handleLikeClick} 
+                                        className={`flex items-center gap-2 px-5 py-2.5 transition-all rounded-l-full border-r border-white/10 ${userLikes[activeYouTubeId] ? 'text-red-500 bg-red-600/10' : 'text-white hover:bg-white/10'}`}
+                                     >
+                                        <HandThumbUpIcon className={`w-4 h-4 md:w-5 md:h-5 ${userLikes[activeYouTubeId] ? 'fill-red-500' : 'fill-none'}`} />
+                                        <span className="text-xs md:text-sm font-black min-w-[3ch] text-center">
+                                            {currentVideoStats ? formatNumber(animatedLikes) : '...'}
+                                        </span>
                                      </button>
-                                     <button onClick={handleDislikeClick} className={`flex items-center gap-2 transition-colors ${userDislikes[activeYouTubeId] ? 'text-red-500' : 'text-white hover:text-red-400'}`}>
-                                        <span className="text-xs md:text-sm font-black">{currentDislikesValue > 0 ? formatNumber(currentDislikesValue) : (currentVideoStats ? '0' : '...')}</span>
-                                        <HandThumbDownIcon className="w-4 h-4 md:w-5 md:h-5" />
+                                     <button 
+                                        onClick={handleDislikeClick} 
+                                        className={`flex items-center gap-2 px-5 py-2.5 transition-all rounded-r-full ${userDislikes[activeYouTubeId] ? 'text-red-500 bg-red-600/10' : 'text-white hover:bg-white/10'}`}
+                                     >
+                                        <span className="text-xs md:text-sm font-black min-w-[3ch] text-center">
+                                            {currentVideoStats ? formatNumber(animatedDislikes) : '...'}
+                                        </span>
+                                        <HandThumbDownIcon className={`w-4 h-4 md:w-5 md:h-5 ${userDislikes[activeYouTubeId] ? 'fill-red-500' : 'fill-none'}`} />
                                      </button>
                                 </div>
-                                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden mt-1">
                                     <motion.div 
                                         initial={{ width: '50%' }}
                                         animate={{ width: `${likeRatio}%` }}
-                                        transition={{ duration: 1.2, ease: "easeOut" }}
-                                        className="h-full bg-red-600"
+                                        transition={{ duration: 1.5, ease: "easeOut" }}
+                                        className="h-full bg-red-600 shadow-[0_0_12px_rgba(220,38,38,0.6)]"
                                     />
                                 </div>
-                                <p className="text-[8px] text-center text-gray-500 uppercase tracking-widest font-bold">Live Approval Ratio</p>
+                                <p className="text-[8px] text-right text-gray-500 uppercase tracking-widest font-black">Community Approval Index</p>
                             </div>
                         </div>
                     </div>
@@ -412,7 +438,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                 </div>
             </div>
         );
-    }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, isFloating, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime, stats, loading, formatNumber, userLikes, userDislikes, likeOverrides, dislikeOverrides]);
+    }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, isFloating, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime, stats, loading, formatNumber, userLikes, userDislikes, likeOverrides, dislikeOverrides, animatedLikes, animatedDislikes, animatedViews, finalLikesCount, finalDislikesCount]);
 
     const GraphicDesignContent = useMemo(() => {
         const categories: GraphicWork['category'][] = ['Photo Manipulation', 'YouTube Thumbnails', 'Banner Designs'];

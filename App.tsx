@@ -40,7 +40,9 @@ export default function App() {
   const [isYouTubeRedirectOpen, setIsYouTubeRedirectOpen] = useState(false);
   const [isNavVisible, setIsNavVisible] = useState(true);
   const idleTimeoutRef = useRef<number | null>(null);
-  const [activeYouTubeId, setActiveYouTubeId] = useState<string>('');
+  
+  // Set default YouTube ID to Lokiverse (from data.ts first entry)
+  const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.content.portfolio.animeEdits[0].videoId || 'oAEDU-nycsE');
   const [isYtPlaying, setIsYtPlaying] = useState(false);
   const [playingVfxVideo, setPlayingVfxVideo] = useState<VideoWork | null>(null);
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
