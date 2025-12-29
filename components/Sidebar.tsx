@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   SignedIn, 
@@ -77,15 +76,15 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                 <div className="flex items-center gap-4">
                     <button 
                         onClick={() => setIsProfileOpen(true)}
-                        className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-4 py-1.5 transition-all group"
+                        className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-4 py-1.5 transition-all group shadow-[0_0_15px_rgba(0,0,0,0.5)]"
                     >
                         <SparklesIcon className="w-3.5 h-3.5 text-red-500 group-hover:rotate-12 transition-transform" />
-                        <span className="text-[9px] font-black text-gray-400 group-hover:text-white uppercase tracking-widest">Settings</span>
+                        <span className="text-[9px] font-black text-gray-400 group-hover:text-white uppercase tracking-widest">My Profile</span>
                     </button>
                     <UserButton 
                         appearance={{
                         elements: {
-                            userButtonAvatarBox: "w-9 h-9 border-2 border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.3)]"
+                            userButtonAvatarBox: "w-9 h-9 border-2 border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.3)] hover:scale-105 transition-transform"
                         }
                         }}
                     />
@@ -135,7 +134,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                     <div className="flex items-center gap-3">
                         <button 
                             onClick={() => setIsProfileOpen(true)}
-                            className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 rounded-full"
+                            className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 rounded-full active:scale-95 transition-all"
                         >
                             <SparklesIcon className="w-4 h-4 text-red-500" />
                         </button>
