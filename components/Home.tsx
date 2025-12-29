@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { siteConfig } from '../config';
@@ -92,12 +93,13 @@ export const Home: React.FC<HomeProps> = ({
         backfaceVisibility: 'hidden' as const
     };
 
-    const heroVideoUrl = "https://www.dropbox.com/scl/fi/xws98dvbnab85r8a5dquk/generated_video-18.mp4?rlkey=k7yme2xh4i57730ahee4aw4x6&raw=1";
+    // Updated Video URL
+    const heroVideoUrl = "https://www.dropbox.com/scl/fi/zplr4l4lbjdxjglkn3vag/grok-video-0d92d9b5-1afa-4b13-bd25-4d0f5f28662e-1.mp4?rlkey=dvwkliat11sxkxklf7cdo5qlr&raw=1";
 
     return (
         <section 
             id="home" 
-            className="h-[100dvh] min-h-[600px] flex flex-col items-center justify-center relative select-none overflow-hidden p-0 bg-black"
+            className="h-[100dvh] w-full flex flex-col items-center justify-center relative select-none overflow-hidden p-0 bg-black"
         >
             {/* HERO BACKGROUND VIDEO */}
             <div className="absolute inset-0 z-0 overflow-hidden">
@@ -106,15 +108,17 @@ export const Home: React.FC<HomeProps> = ({
                     muted 
                     loop 
                     playsInline 
-                    className="w-full h-full object-cover object-center scale-105"
+                    // object-cover ensures it fills horizontally on desktop and vertically on mobile 
+                    // without stretching, providing the requested orientation-specific experience.
+                    className="w-full h-full object-cover object-center scale-100"
                     poster="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1"
                 >
                     <source src={heroVideoUrl} type="video/mp4" />
                 </video>
                 {/* Cinematic Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-black/90"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/10 to-black/90"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.5)_100%)]"></div>
             </div>
 
             <motion.div 
@@ -162,8 +166,8 @@ export const Home: React.FC<HomeProps> = ({
                             className="font-black text-white tracking-tighter uppercase m-0 p-0" 
                             style={{ fontFamily: '"Montserrat", sans-serif' }}
                         >
-                            <span className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl block -mb-[0.1em] relative leading-[0.7] opacity-90 whitespace-nowrap drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">FUAD</span>
-                            <span className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl block text-red-600 relative leading-[0.7] opacity-100 whitespace-nowrap">AHMED</span>
+                            <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl block -mb-[0.1em] relative leading-[0.7] opacity-90 whitespace-nowrap drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">FUAD</span>
+                            <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl block text-red-600 relative leading-[0.7] opacity-100 whitespace-nowrap">AHMED</span>
                         </motion.h1>
                     </div>
                 </div>
