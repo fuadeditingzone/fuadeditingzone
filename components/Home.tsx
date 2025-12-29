@@ -92,11 +92,31 @@ export const Home: React.FC<HomeProps> = ({
         backfaceVisibility: 'hidden' as const
     };
 
+    const heroVideoUrl = "https://www.dropbox.com/scl/fi/xws98dvbnab85r8a5dquk/generated_video-18.mp4?rlkey=k7yme2xh4i57730ahee4aw4x6&raw=1";
+
     return (
         <section 
             id="home" 
-            className="h-[100dvh] min-h-[600px] flex flex-col items-center justify-center relative select-none overflow-hidden p-0"
+            className="h-[100dvh] min-h-[600px] flex flex-col items-center justify-center relative select-none overflow-hidden p-0 bg-black"
         >
+            {/* HERO BACKGROUND VIDEO */}
+            <div className="absolute inset-0 z-0 overflow-hidden">
+                <video 
+                    autoPlay 
+                    muted 
+                    loop 
+                    playsInline 
+                    className="w-full h-full object-cover object-center scale-105"
+                    poster="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1"
+                >
+                    <source src={heroVideoUrl} type="video/mp4" />
+                </video>
+                {/* Cinematic Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-black/90"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]"></div>
+            </div>
+
             <motion.div 
                 initial={{ opacity: 0, y: 15 }}
                 animate={isImageLoaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
@@ -160,7 +180,7 @@ export const Home: React.FC<HomeProps> = ({
                         >
                             {skill}
                             {proSkills.includes(skill) && (
-                                <span className="ml-1.5 bg-red-600 text-white text-[5px] md:text-[7px] px-1 py-0 rounded-sm font-black ring-1 ring-white/20">PRO</span>
+                                <span className="ml-1.5 bg-red-600 text-white text-[7px] md:text-[9px] px-1 py-0 rounded-sm font-black ring-1 ring-white/20">PRO</span>
                             )}
                         </motion.span>
                     ))}
@@ -196,22 +216,22 @@ export const Home: React.FC<HomeProps> = ({
                     >
                         <div className="text-left cursor-pointer group/stat flex-shrink-0" onClick={onYouTubeClick}>
                             <div className="flex items-center gap-2 md:gap-3 mb-1">
-                                <div className="text-2xl sm:text-3xl md:text-5xl font-black text-white leading-none group-hover/stat:text-red-600 transition-colors" style={{ fontFamily: '"Montserrat", sans-serif' }}>
+                                <div className="text-2xl sm:text-3xl md:text-5xl font-black text-white leading-none group-hover:text-red-600 transition-colors" style={{ fontFamily: '"Montserrat", sans-serif' }}>
                                     {loading ? '---' : <StretchyCounter value={animatedSubs} />}
                                 </div>
                                 <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-red-600 rounded-full animate-pulse"></div>
                             </div>
-                            <span className="text-[8px] md:text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em] group-hover/stat:text-red-600 transition-colors whitespace-nowrap">Subs</span>
+                            <span className="text-[8px] md:text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em] group-hover:text-red-600 transition-colors whitespace-nowrap">Subs</span>
                         </div>
 
                         <div className="text-left border-l border-white/10 pl-6 sm:pl-10 md:pl-12 cursor-pointer group/stat flex-shrink-0" onClick={onYouTubeClick}>
                             <div className="flex items-center gap-2 md:gap-3 mb-1">
-                                <div className="text-2xl sm:text-3xl md:text-5xl font-black text-white leading-none group-hover/stat:text-red-600 transition-colors" style={{ fontFamily: '"Montserrat", sans-serif' }}>
+                                <div className="text-2xl sm:text-3xl md:text-5xl font-black text-white leading-none group-hover:text-red-600 transition-colors" style={{ fontFamily: '"Montserrat", sans-serif' }}>
                                     {loading ? '---' : <StretchyCounter value={animatedViews} />}
                                 </div>
-                                <YouTubeIcon className="w-4 h-4 md:w-6 md:h-6 text-red-600 opacity-60 group-hover/stat:opacity-100 transition-all" />
+                                <YouTubeIcon className="w-4 h-4 md:w-6 md:h-6 text-red-600 opacity-60 group-hover:opacity-100 transition-all" />
                             </div>
-                            <span className="text-[8px] md:text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em] group-hover/stat:text-red-600 transition-colors whitespace-nowrap">Views</span>
+                            <span className="text-[8px] md:text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em] group-hover:text-red-600 transition-colors whitespace-nowrap">Views</span>
                         </div>
                     </motion.div>
                 </div>
