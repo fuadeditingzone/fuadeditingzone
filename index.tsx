@@ -29,12 +29,17 @@ root.render(
           colorTextSecondary: '#9ca3af',
           colorInputBackground: '#111111',
           colorInputText: '#ffffff',
-          borderRadius: '1.25rem',
+          borderRadius: '1.5rem',
         },
         elements: {
-          modalBackdrop: "flex items-center justify-center bg-black/85 backdrop-blur-md z-[20000]",
-          modalContent: "mx-auto shadow-[0_0_100px_rgba(220,38,38,0.3)] border border-white/10",
-          card: "bg-[#0a0a0a] border border-white/10 shadow-2xl",
+          modalBackdrop: "fixed inset-0 flex items-center justify-center bg-black/95 backdrop-blur-xl z-[99999] p-4",
+          modalContent: "mx-auto shadow-[0_0_100px_rgba(220,38,38,0.3)] border border-white/10 max-h-[90vh] overflow-y-auto",
+          userProfile: {
+            root: "mx-auto w-full max-w-[800px] shadow-2xl",
+            navbar: "hidden", // Simplify mobile view
+            scrollBox: "custom-scrollbar",
+          },
+          card: "bg-[#0a0a0a] border border-white/10 shadow-2xl rounded-[2rem]",
           headerTitle: "text-white font-black uppercase tracking-tighter text-2xl",
           headerSubtitle: "text-gray-400 font-medium text-sm",
           socialButtonsBlockButton: "bg-white/5 border-white/10 hover:bg-white/10 text-white transition-all",
@@ -43,7 +48,7 @@ root.render(
           identityPreviewText: "text-white font-bold",
           identityPreviewEditButtonIcon: "text-red-500",
           userButtonAvatarBox: "border-2 border-red-600",
-          userButtonPopoverCard: "bg-black border border-white/10",
+          userButtonPopoverCard: "bg-black border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)]",
           userButtonPopoverActionButtonText: "text-white font-bold",
           userButtonPopoverFooter: "hidden"
         }

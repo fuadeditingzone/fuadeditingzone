@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useUser, UserProfile } from '@clerk/clerk-react';
-import { CloseIcon, CheckCircleIcon, UserCircleIcon, SparklesIcon, EmailIcon, GlobeAltIcon, ChevronRightIcon } from './Icons';
+import { useUser } from '@clerk/clerk-react';
+import { CloseIcon, CheckCircleIcon, UserCircleIcon, SparklesIcon, EmailIcon, GlobeAltIcon } from './Icons';
 
 interface ProfileModalProps {
     isOpen: boolean;
@@ -78,39 +78,41 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[500] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[50000] flex items-center justify-center p-4">
                     <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-black/95 backdrop-blur-xl"
+                        className="absolute inset-0 bg-black/95 backdrop-blur-2xl"
                     />
                     
                     <motion.div
                         initial={{ scale: 0.9, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                        className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-[0_0_100px_rgba(220,38,38,0.2)]"
+                        className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-[0_0_120px_rgba(220,38,38,0.25)] flex flex-col max-h-[calc(100dvh-40px)]"
                     >
-                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-red-600 to-transparent opacity-50"></div>
+                        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-red-600 to-transparent opacity-60"></div>
                         
-                        <div className="p-8 md:p-12">
-                            <div className="flex justify-between items-center mb-10">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-red-600/10 rounded-2xl flex items-center justify-center border border-red-600/20">
-                                        <UserCircleIcon className="w-7 h-7 text-red-600" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">Profile Hub</h2>
-                                        <p className="text-[10px] text-gray-500 uppercase tracking-widest font-black mt-1">Fuad Editing Zone Authentication</p>
-                                    </div>
+                        {/* Header - Fixed */}
+                        <div className="p-8 md:p-10 flex justify-between items-center border-b border-white/5 bg-black/40 backdrop-blur-md shrink-0">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-red-600/10 rounded-2xl flex items-center justify-center border border-red-600/20">
+                                    <UserCircleIcon className="w-7 h-7 text-red-600" />
                                 </div>
-                                <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5 text-gray-500 hover:text-white transition-all border border-transparent hover:border-white/10">
-                                    <CloseIcon className="w-6 h-6" />
-                                </button>
+                                <div>
+                                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">Profile Hub</h2>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-black mt-1">Fuad Editing Zone</p>
+                                </div>
                             </div>
+                            <button onClick={onClose} className="p-2.5 rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all border border-transparent hover:border-white/10">
+                                <CloseIcon className="w-6 h-6" />
+                            </button>
+                        </div>
 
+                        {/* Scrollable Content */}
+                        <div className="flex-1 overflow-y-auto p-8 md:p-12 custom-scrollbar space-y-10">
                             <AnimatePresence mode="wait">
                                 {view === 'overview' ? (
                                     <motion.div 
@@ -120,42 +122,42 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                         exit={{ opacity: 0, x: 10 }}
                                         className="space-y-10"
                                     >
-                                        <div className="flex flex-col md:flex-row items-center gap-8 bg-white/5 p-8 rounded-[2rem] border border-white/5">
-                                            <div className="relative group">
-                                                <div className="absolute -inset-2 bg-red-600/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <div className="flex flex-col md:flex-row items-center gap-8 bg-white/5 p-8 rounded-[2rem] border border-white/5 shadow-inner">
+                                            <div className="relative group shrink-0">
+                                                <div className="absolute -inset-2 bg-red-600/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                                 <img 
                                                     src={user.imageUrl} 
                                                     alt="User Profile" 
-                                                    className="w-24 h-24 md:w-32 md:h-32 rounded-3xl object-cover relative z-10 border-2 border-red-600 shadow-2xl" 
+                                                    className="w-28 h-28 md:w-36 md:h-36 rounded-[2rem] object-cover relative z-10 border-2 border-red-600 shadow-2xl" 
                                                 />
-                                                <div className="absolute -bottom-2 -right-2 bg-red-600 text-white p-1.5 rounded-lg shadow-lg z-20 border border-white/20">
+                                                <div className="absolute -bottom-2 -right-2 bg-red-600 text-white p-2 rounded-xl shadow-lg z-20 border border-white/20">
                                                     <CheckCircleIcon className="w-4 h-4" />
                                                 </div>
                                             </div>
                                             
-                                            <div className="text-center md:text-left flex-1 space-y-4">
+                                            <div className="text-center md:text-left flex-1 space-y-4 min-w-0">
                                                 <div>
-                                                    <h3 className="text-3xl font-black text-white uppercase tracking-tight">{user.fullName || 'Legend Guest'}</h3>
+                                                    <h3 className="text-3xl font-black text-white uppercase tracking-tight truncate">{user.fullName || 'Legend Guest'}</h3>
                                                     <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 mt-1">
                                                         <span className="text-red-500 text-[10px] font-black uppercase tracking-widest">@{user.username || 'unidentified'}</span>
                                                         <span className="w-1 h-1 bg-white/20 rounded-full"></span>
-                                                        <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Zone Member since {memberSince}</span>
+                                                        <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest truncate">Member since {memberSince}</span>
                                                     </div>
                                                 </div>
                                                 
                                                 <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                                                    <div className="flex items-center gap-2 px-4 py-2 bg-black/40 rounded-xl border border-white/5">
+                                                    <div className="flex items-center gap-2 px-4 py-2.5 bg-black/60 rounded-xl border border-white/10">
                                                         <EmailIcon className="w-3.5 h-3.5 text-gray-500" />
-                                                        <span className="text-[11px] text-gray-300 font-medium">{user.primaryEmailAddress?.emailAddress}</span>
+                                                        <span className="text-[11px] text-gray-300 font-bold truncate max-w-[200px]">{user.primaryEmailAddress?.emailAddress}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
                                             <button 
                                                 onClick={() => setView('settings')}
-                                                className="group p-6 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-red-600/30 rounded-2xl text-left transition-all"
+                                                className="group p-6 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-red-600/30 rounded-2xl text-left transition-all shadow-lg"
                                             >
                                                 <SparklesIcon className="w-6 h-6 text-red-600 mb-4 group-hover:rotate-12 transition-transform" />
                                                 <h4 className="text-white font-black text-sm uppercase tracking-wider">Change Alias</h4>
@@ -164,14 +166,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                             
                                             <button 
                                                 onClick={() => {
-                                                    // This uses Clerk's standard UserButton component internals but triggered manually
                                                     const btn = document.querySelector('.cl-userButtonTrigger') as HTMLElement;
                                                     if (btn) {
                                                         onClose();
                                                         btn.click();
                                                     }
                                                 }}
-                                                className="group p-6 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-2xl text-left transition-all"
+                                                className="group p-6 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-2xl text-left transition-all shadow-lg"
                                             >
                                                 <GlobeAltIcon className="w-6 h-6 text-gray-400 mb-4 group-hover:scale-110 transition-transform" />
                                                 <h4 className="text-white font-black text-sm uppercase tracking-wider">Account Security</h4>
@@ -217,7 +218,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                             </motion.div>
                                         )}
 
-                                        <div className="flex gap-4">
+                                        <div className="flex gap-4 pb-4">
                                             <button 
                                                 onClick={() => setView('overview')}
                                                 className="flex-1 py-4 text-gray-500 font-black uppercase tracking-widest text-[10px] hover:text-white transition-colors"
@@ -238,7 +239,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                             </AnimatePresence>
                         </div>
                         
-                        <div className="p-6 bg-white/5 border-t border-white/10 text-center">
+                        {/* Footer - Fixed */}
+                        <div className="p-6 bg-black/80 backdrop-blur-md border-t border-white/10 text-center shrink-0">
                             <p className="text-[8px] text-gray-600 font-black uppercase tracking-[0.5em]">Identity verification provided by Clerk.dev • FEZ Core</p>
                         </div>
                     </motion.div>

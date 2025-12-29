@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v9.6.1 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v9.6.5 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -77,18 +77,32 @@
       .neon-border { border: 1px solid rgba(220, 38, 38, 0.3); box-shadow: 0 0 15px rgba(220, 38, 38, 0.1); }
       .neon-text { text-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
 
-      /* Force Clerk Centering and Visibility */
+      /* Robust Clerk Centering & Anti-Clip Fix */
       .cl-modalBackdrop {
+        position: fixed !important;
+        inset: 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        z-index: 20000 !important;
-        background: rgba(0,0,0,0.85) !important;
-        backdrop-filter: blur(8px) !important;
+        z-index: 99999 !important;
+        background: rgba(0,0,0,0.92) !important;
+        backdrop-filter: blur(12px) !important;
+        padding: 20px !important;
       }
       .cl-modalContent {
         margin: auto !important;
         position: relative !important;
+        max-height: calc(100vh - 40px) !important;
+        overflow-y: auto !important;
+        border-radius: 2rem !important;
+      }
+      .cl-userProfile-root {
+        margin: auto !important;
+        max-width: 100% !important;
+      }
+      /* Ensure popovers don't clip off screen edges */
+      .cl-popover-content {
+        z-index: 100000 !important;
       }
     </style>
 
