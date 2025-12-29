@@ -8,7 +8,7 @@ interface ContactProps {
 }
 
 export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
-    const [ref, isVisible] = useIntersectionObserver({ threshold: 0.3, triggerOnce: true });
+    const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
     
     const animationClass = isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10';
     const email = siteConfig.branding.email;
@@ -17,9 +17,9 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
         <section 
             ref={ref} 
             id="contact" 
-            className="bg-transparent relative z-10 select-none"
+            className="bg-transparent relative z-10 select-none overflow-visible"
         >
-            <div className={`container mx-auto px-6 text-center transition-all duration-1000 ease-out ${animationClass} py-24 flex flex-col items-center`}>
+            <div className={`container mx-auto px-6 text-center transition-all duration-1000 ease-out ${animationClass} py-20 flex flex-col items-center`}>
                 <div className="mb-8">
                     <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">Order Now</h2>
                     <p className="text-sm text-gray-400 max-w-md mx-auto font-light">Have a project in mind? <br className="hidden md:block" />Select your services and let's get started.</p>
@@ -52,24 +52,40 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                     </div>
                 </div>
 
-                <div className="mt-16 pt-12 border-t border-white/10 w-full max-w-sm flex flex-col items-center">
-                    <p className="text-[10px] text-gray-500 font-black tracking-[0.4em] uppercase mb-8">Follow My Work</p>
-                    <div className="flex justify-center gap-6 md:gap-8">
-                        {siteConfig.branding.socials.map(link => (
+                {/* Social Media Section - Minimalist Style with No Background */}
+                <div className="mt-16 pt-12 border-t border-white/5 w-full max-w-xl flex flex-col items-center">
+                    <div className="mb-8 text-center">
+                        <p className="text-[9px] text-gray-500 font-black tracking-[0.4em] uppercase mb-2 opacity-50">Find me on social media</p>
+                    </div>
+                    
+                    <div className="flex justify-center items-center gap-8 md:gap-10">
+                        {siteConfig.branding.socials.map(social => (
                             <a
-                                key={link.name}
-                                href={link.url}
+                                key={social.name}
+                                href={social.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                aria-label={link.name}
-                                className="group relative"
+                                aria-label={`Follow Fuad on ${social.name}`}
+                                className="group relative flex items-center justify-center p-2"
                             >
-                                <link.icon className="text-2xl md:text-3xl text-gray-500 transition-all duration-300 group-hover:text-red-600 group-hover:scale-125 group-hover:-translate-y-1" />
-                                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10 pointer-events-none z-20">
-                                    {link.name}
+                                {/* Subtle Hover Aura */}
+                                <div className="absolute inset-0 bg-red-600/0 group-hover:bg-red-600/5 rounded-full blur-xl transition-all duration-500 scale-125"></div>
+                                
+                                {/* Small Simple Icon */}
+                                <social.icon className="text-xl md:text-2xl text-gray-400 transition-all duration-300 group-hover:text-red-600 group-hover:-translate-y-1 relative z-10" />
+                                
+                                {/* Tooltip Label */}
+                                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-black text-[9px] font-black uppercase tracking-widest py-1 px-2.5 rounded opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap pointer-events-none z-30 translate-y-1 group-hover:translate-y-0 shadow-xl">
+                                    {social.name}
                                 </span>
                             </a>
                         ))}
+                    </div>
+
+                    <div className="mt-12 flex items-center gap-4 text-gray-800">
+                        <span className="h-px w-6 bg-current opacity-10"></span>
+                        <span className="text-[8px] font-black uppercase tracking-[0.3em] whitespace-nowrap">FEZ • Selected Legend</span>
+                        <span className="h-px w-6 bg-current opacity-10"></span>
                     </div>
                 </div>
             </div>

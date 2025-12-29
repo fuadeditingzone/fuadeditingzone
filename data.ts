@@ -69,13 +69,13 @@ export const graphicWorks: GraphicWork[] = [
         description: 'A powerful tribute manipulation dedicated to the memory of Osman Hadi.'
     },
 
-    // YouTube Thumbnails
+    // YouTube Thumbnails - EXACT Video Titles for SEO
     { 
         id: 12, 
         imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/0mc1y78tdg0qq2yrsm8lz/6434f9234092365.Y3JvcCwxMzgwLDEwODAsMjcwLDA.jpg?rlkey=qfhr7z9vwuquacnbcb2q5pv3u&raw=1', 
         category: 'YouTube Thumbnails',
-        title: 'Cinematic Gaming Thumbnail',
-        description: 'High-CTR YouTube thumbnail design with vibrant colors and expressive character posing.'
+        title: 'Anime VFX Masterclass | Edit Breakdown',
+        description: 'Professional YouTube thumbnail design for: Anime VFX Masterclass'
     },
 
     // Banner Designs
@@ -83,10 +83,10 @@ export const graphicWorks: GraphicWork[] = [
         id: 13, 
         imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/bzhrxzvxv8mpv7ldad6o4/2025-09-16-7.jpg?rlkey=chpubk19uennb7yw4xnssr90f&raw=1', 
         category: 'Banner Designs',
-        title: 'Futuristic Twitch Banner',
+        title: 'Futuristic Twitch Banner | FEZ Zone',
         description: 'Modern, clean banner design for streamers with integrated social handles.'
     },
-    { id: 14, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/81jlduf6n6ih32b6yfpmg/2025-09-18.jpg?rlkey=f9qgajdy0wycg2araptlpqi2r&raw=1', category: 'Banner Designs', title: 'YouTube Channel Art', description: 'Professional brand banner for high-tier content creators.' },
+    { id: 14, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/81jlduf6n6ih32b6yfpmg/2025-09-18.jpg?rlkey=f9qgajdy0wycg2araptlpqi2r&raw=1', category: 'Banner Designs', title: 'YouTube Channel Art | FEZ Branding', description: 'Professional brand banner for high-tier content creators.' },
     { id: 15, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/m5o840ywi39vm56n2chlp/2025-09-16-8.jpg?rlkey=kjk0gt52gowqx1n52ts0t6p5m&raw=1', category: 'Banner Designs', title: 'Minimalist Branding Banner', description: 'Sleek and professional branding for social media profiles.' },
     { id: 16, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/va1p1itvxjw4y5zw2mts3/2025-09-19.jpg?rlkey=ltkx333q2wiaehqp2mrtgq4e0&raw=1', category: 'Banner Designs', title: 'Gaming Community Header', description: 'Vibrant and engaging banner for gaming teams and communities.' },
     { id: 18, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/gmjmfxpf9s8pohwhhl9bl/2025-09-16-9.jpg?rlkey=crkorp8t3wq2uhh84tiwv0r1z&raw=1', category: 'Banner Designs', title: 'Creative Artist Header', description: 'Artistic and clean banner showcasing design excellence.' },

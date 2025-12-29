@@ -71,8 +71,9 @@ export const siteConfig = {
         channelId: 'UCFhqRIXlw0XGh3NOOvbhl6A',
     },
     seo: {
-        title: "Fuad Ahmed | Selected Legend | Fuad Editing Zone | Professional VFX & Design",
-        description: "Official portfolio of Fuad Ahmed (Selected Legend). Professional VFX editing, high-impact photo manipulation, and graphic design for creators globally.",
+        title: "Fuad Ahmed | FEZ | Selected Legend | Fuad Editing Zone | Professional VFX & Design",
+        description: "Official portfolio of Fuad Ahmed (Selected Legend). Premium FEZ VFX editing, high-impact photo manipulation, and professional design for creators globally.",
+        keywords: "FEZ, Fuad Editing Zone, Selected Legend, VFX, Photo Manipulation, YouTube Thumbnails, Fuad Ahmed, fuadeditingzone"
     },
     content: {
         hero: {
@@ -80,7 +81,7 @@ export const siteConfig = {
         },
         about: {
             title: "Fuad Editing Zone",
-            paragraph: "Fuad Editing Zone is a high-performance creative studio led by Fuad Ahmed. Specializing in high-octane VFX and professional graphic design since 2020."
+            paragraph: "Fuad Editing Zone (FEZ) is a high-performance creative studio led by Fuad Ahmed. Specializing in high-octane VFX and professional graphic design since 2020."
         },
         portfolio: {
             graphicWorks,
@@ -92,9 +93,9 @@ export const siteConfig = {
         },
         introCard: {
             title: "Fuad Ahmed",
-            subtitle: "Selected Legend | VFX Artist & Designer",
+            subtitle: "Selected Legend | FEZ Artist & Designer",
             skills: ["VFX Mastery", "Graphic Design", "YouTube Thumbnail", "Photo Manipulation", "AMV EDIT", "Color Science", "Motion Graphics"],
-            experience: "Over 4 years of professional experience in high-end video production and digital art. Dedicated to bringing cinematic quality to every project. Known as Selected Legend, based in Sylhet, serving clients globally via Fuad Editing Zone.",
+            experience: "Over 4 years of professional experience in high-end video production and digital art at FEZ Zone. Dedicated to bringing cinematic quality to every project. Known as Selected Legend, serving clients globally via Fuad Editing Zone.",
         },
     },
 };

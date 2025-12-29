@@ -248,12 +248,13 @@ export const Portfolio: React.FC<PortfolioProps> = ({
 
                 if (ytData.items && ytData.items.length > 0) {
                     const item = ytData.items[0];
+                    const stats = item.statistics;
                     setCurrentVideoStats({
                         id: activeYouTubeId,
                         title: item.snippet.title,
-                        views: new Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(parseInt(item.statistics.viewCount)),
-                        likes: parseInt(item.statistics.likeCount) || 0,
-                        dislikes: rydData.dislikes || Math.floor((parseInt(item.statistics.likeCount) || 0) * 0.05) // Fallback to 5% estimate
+                        views: new Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(parseInt(stats.viewCount)),
+                        likes: parseInt(stats.likeCount) || 0,
+                        dislikes: rydData.dislikes || Math.floor((parseInt(stats.likeCount) || 0) * 0.05) 
                     });
                 }
             } catch (error) {}
@@ -281,6 +282,11 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         const middleIndex = Math.ceil(animeEdits.length / 2);
         const leftAnimeEdits = animeEdits.slice(0, middleIndex);
         const rightAnimeEdits = animeEdits.slice(middleIndex);
+
+        const currentLikes = currentVideoStats ? (likeOverrides[activeYouTubeId] || currentVideoStats.likes) : 0;
+        const currentDislikes = currentVideoStats ? (dislikeOverrides[activeYouTubeId] || currentVideoStats.dislikes) : 0;
+        const totalVotes = currentLikes + currentDislikes;
+        const likeRatio = totalVotes > 0 ? (currentLikes / totalVotes) * 100 : 100;
 
         const ThumbnailButton = ({ video }: { video: VideoWork }) => (
             video.videoId ? (
@@ -315,9 +321,15 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                     </div>
                     
                     <div className="bg-[#0f0f0f] p-4 md:p-6 border-t border-white/5 space-y-5 select-none animate-fade-in">
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-col gap-1">
                             <h3 className="text-white font-bold text-base md:text-2xl break-words tracking-tight leading-tight line-clamp-2">{currentVideoStats?.title || 'Syncing cinematic data...'}</h3>
+                            <div className="flex items-center gap-2 text-gray-500 text-[10px] md:text-xs">
+                                <span>{currentVideoStats?.views || '...'} views</span>
+                                <span>•</span>
+                                <span>Premiered on YouTube</span>
+                            </div>
                         </div>
+
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div className="flex items-center gap-3 md:gap-4 flex-wrap">
                                 <a href={`https://www.youtube.com/channel/${siteConfig.api.channelId}`} target="_blank" rel="noopener noreferrer" className="relative flex-shrink-0 group">
@@ -325,31 +337,36 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                                         <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} alt={stats.channelTitle} className="w-full h-full object-cover object-top" />
                                     </div>
                                 </a>
-                                <div className="flex flex-col min-w-0 pr-4">
+                                <div className="flex flex-col min-w-0">
                                     <span className="text-white font-bold text-sm md:text-base truncate">{stats.channelTitle || siteConfig.branding.name}</span>
-                                    <span className="text-gray-400 text-[10px] md:text-xs font-medium mt-1">{loading ? '...' : formatNumber(stats.subscribers)} subscribers</span>
+                                    <span className="text-gray-400 text-[10px] md:text-xs font-medium">{loading ? '...' : formatNumber(stats.subscribers)} subscribers</span>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
-                                <div className="flex bg-white/5 rounded-full border border-white/10 overflow-hidden h-9 md:h-10">
-                                    <button 
-                                        onClick={handleLikeClick} 
-                                        className={`flex items-center gap-2 px-4 transition-all border-r border-white/10 ${userLikes[activeYouTubeId] ? 'bg-white/20 text-red-500' : 'hover:bg-white/10 text-white'}`}
-                                    >
-                                        <HandThumbUpIcon className="w-4 h-4" /> 
-                                        <span className="text-xs font-bold">{currentVideoStats ? formatNumber(likeOverrides[activeYouTubeId] || currentVideoStats.likes) : '...'}</span>
-                                    </button>
-                                    <button 
-                                        onClick={handleDislikeClick} 
-                                        className={`flex items-center gap-2 px-4 transition-all ${userDislikes[activeYouTubeId] ? 'bg-white/20 text-red-500' : 'hover:bg-white/10 text-white'}`}
-                                    >
-                                        <HandThumbDownIcon className="w-4 h-4" /> 
-                                        <span className="text-xs font-bold">{currentVideoStats ? formatNumber(dislikeOverrides[activeYouTubeId] || currentVideoStats.dislikes) : '...'}</span>
-                                    </button>
+
+                            {/* Live Likes & Dislikes Bar */}
+                            <div className="flex flex-col gap-2 min-w-[160px]">
+                                <div className="flex items-center justify-between px-1">
+                                     <div className="flex items-center gap-2">
+                                         <button onClick={handleLikeClick} className={`flex items-center gap-1.5 transition-colors ${userLikes[activeYouTubeId] ? 'text-red-500' : 'text-white hover:text-red-400'}`}>
+                                            <HandThumbUpIcon className="w-4 h-4" />
+                                            <span className="text-xs font-black">{currentLikes > 0 ? formatNumber(currentLikes) : (currentVideoStats ? '0' : '...')}</span>
+                                         </button>
+                                     </div>
+                                     <div className="flex items-center gap-2">
+                                         <button onClick={handleDislikeClick} className={`flex items-center gap-1.5 transition-colors ${userDislikes[activeYouTubeId] ? 'text-red-500' : 'text-white hover:text-red-400'}`}>
+                                            <span className="text-xs font-black">{currentDislikes > 0 ? formatNumber(currentDislikes) : (currentVideoStats ? '0' : '...')}</span>
+                                            <HandThumbDownIcon className="w-4 h-4" />
+                                         </button>
+                                     </div>
                                 </div>
-                                <div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 text-white text-xs font-bold">
-                                    {currentVideoStats?.views || '...'} views
+                                <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                                    <motion.div 
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${likeRatio}%` }}
+                                        className="h-full bg-red-600"
+                                    />
                                 </div>
+                                <p className="text-[8px] text-center text-gray-500 uppercase tracking-widest font-bold">Community Ratio</p>
                             </div>
                         </div>
                     </div>
@@ -375,12 +392,10 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                     const CategoryIcon = cat === 'Photo Manipulation' ? PhotoManipulationIcon : 
                                          cat === 'YouTube Thumbnails' ? ThumbnailIcon : BannerIcon;
                     
-                    // Aspect ratio logic to prevent clipping
                     let gridAspect = 'aspect-video';
                     if (cat === 'Photo Manipulation') gridAspect = 'aspect-square';
                     if (cat === 'Banner Designs') gridAspect = 'aspect-[3/1] md:aspect-[3.5/1]';
 
-                    // Specific grid columns for banners to make them larger
                     const gridClass = cat === 'Banner Designs' 
                         ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6" 
                         : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4";

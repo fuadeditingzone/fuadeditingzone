@@ -7,7 +7,7 @@ import {
     HomeIcon, ReelsIcon, PlaylistIcon, YouTubeIcon,
     ThreeDotsIcon, CheckCircleIcon, InstagramIcon, HeartHoverIcon,
     CommentIcon, ShareIcon, BookmarkIcon, CheckCircleIcon as CheckIcon,
-    EyeIcon, ChevronLeftIcon, ChevronRightIcon
+    EyeIcon, ChevronLeftIcon, ChevronRightIcon, DownloadIcon
 } from './Icons';
 import { siteConfig } from '../config';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -137,6 +137,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
     const currentItem = items[currentIndex];
     const [useMockup, setUseMockup] = useState(true);
     const [showShareToast, setShowShareToast] = useState(false);
+    const [downloading, setDownloading] = useState(false);
     
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -162,7 +163,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
             try { 
                 await navigator.share({ 
                     title: `${currentItem.title || 'Selected Legend Art'} | FEZ`, 
-                    text: 'Explore premium cinematic visuals and VFX by Selected Legend.',
+                    text: 'Explore premium cinematic visuals and VFX by Selected Legend at FEZ.',
                     url: shareUrl 
                 }); 
             } catch (err) {}
@@ -170,6 +171,45 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
             navigator.clipboard.writeText(shareUrl);
             setShowShareToast(true);
             setTimeout(() => setShowShareToast(false), 2000);
+        }
+    };
+
+    const handleDownload = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (downloading) return;
+        
+        let fileUrl = '';
+        let fileName = 'FEZ_FuadEditingZone_Work.jpg';
+
+        if (isImage(currentItem)) {
+            fileUrl = currentItem.imageUrl;
+            fileName = `FEZ_FuadEditingZone_${(currentItem.title || 'Art').replace(/\s+/g, '_')}.jpg`;
+        } else if (isVideo(currentItem) && currentItem.url) {
+            fileUrl = currentItem.url;
+            fileName = `FEZ_FuadEditingZone_${(currentItem.title || 'VFX').replace(/\s+/g, '_')}.mp4`;
+        } else {
+            // If it's a YouTube video, we can't directly download, so open in new tab
+            window.open(`https://www.youtube.com/watch?v=${currentItem.videoId}`, '_blank');
+            return;
+        }
+
+        try {
+            setDownloading(true);
+            const response = await fetch(fileUrl);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (err) {
+            // Fallback: Open in new tab if download fails due to CORS
+            window.open(fileUrl, '_blank');
+        } finally {
+            setDownloading(false);
         }
     };
 
@@ -190,14 +230,15 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                     >
                         <img 
                             src={currentItem.imageUrl} 
-                            alt="Raw Portfolio Piece" 
+                            alt={currentItem.title || "Raw FEZ Portfolio Piece"} 
+                            title={currentItem.title || "Raw FEZ Portfolio Piece"}
                             className="max-w-full max-h-full object-contain rounded-sm shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/5" 
                         />
                     </motion.div>
                 ) : isVideo(currentItem) ? (
                     <div className="w-full max-w-5xl aspect-video bg-black rounded-lg shadow-2xl overflow-hidden">
                         {currentItem.url ? <video src={currentItem.url} controls autoPlay className="w-full h-full" /> : 
-                        <iframe src={`https://www.youtube.com/embed/${currentItem.videoId}?autoplay=1`} title="VFX" frameBorder="0" allowFullScreen className="w-full h-full"></iframe>}
+                        <iframe src={`https://www.youtube.com/embed/${currentItem.videoId}?autoplay=1`} title="VFX Portfolio - FEZ Zone" frameBorder="0" allowFullScreen className="w-full h-full"></iframe>}
                     </div>
                 ) : null}
             </div>
@@ -215,7 +256,14 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                     </button>
                  )}
                  <div className="flex gap-2 justify-end">
-                    <button onClick={handleShare} className="text-white/70 hover:text-white p-2.5 md:p-3 rounded-full bg-black/60 border border-white/10 backdrop-blur-xl transition-all hover:scale-110 hover:bg-black/80"><ShareIcon className="h-6 w-6" /></button>
+                    <button 
+                        onClick={handleDownload} 
+                        className={`text-white/70 hover:text-white p-2.5 md:p-3 rounded-full bg-black/60 border border-white/10 backdrop-blur-xl transition-all hover:scale-110 hover:bg-black/80 ${downloading ? 'animate-pulse opacity-50' : ''}`}
+                        title="Download Artwork"
+                    >
+                        <DownloadIcon className="h-6 w-6" />
+                    </button>
+                    <button onClick={handleShare} className="text-white/70 hover:text-white p-2.5 md:p-3 rounded-full bg-black/60 border border-white/10 backdrop-blur-xl transition-all hover:scale-110 hover:bg-black/80" title="Share Link"><ShareIcon className="h-6 w-6" /></button>
                     <button onClick={onClose} className="text-white/70 hover:text-white p-2.5 md:p-3 rounded-full bg-black/60 border border-white/10 backdrop-blur-xl transition-all hover:scale-110 hover:bg-black/80"><CloseIcon className="h-6 w-6" /></button>
                  </div>
             </div>
@@ -250,10 +298,10 @@ export const GalleryGridModal: React.FC<{
                     {items.map((item, index) => (
                         <div key={index} onClick={() => onItemClick(index)} className="aspect-square bg-white/5 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-red-600 transition-all group">
                             {'imageUrl' in item ? (
-                                <img src={item.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-all" />
+                                <img src={item.imageUrl} alt={item.title || "Portfolio Art"} className="w-full h-full object-cover group-hover:scale-110 transition-all" />
                             ) : (
                                 <div className="w-full h-full relative">
-                                    <img src={item.thumbnailUrl || `https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg`} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-all" />
+                                    <img src={item.thumbnailUrl || `https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg`} alt={item.title || "Video Work"} className="w-full h-full object-cover group-hover:scale-110 transition-all" />
                                     <div className="absolute inset-0 flex items-center justify-center bg-black/40"><PlayIcon className="w-8 h-8 text-white/80" /></div>
                                 </div>
                             )}
