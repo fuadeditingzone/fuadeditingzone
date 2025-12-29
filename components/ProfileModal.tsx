@@ -36,78 +36,78 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                     />
                     
                     <motion.div
-                        initial={{ scale: 0.98, opacity: 0, y: 15 }}
+                        initial={{ scale: 0.98, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.98, opacity: 0, y: 15 }}
-                        className="relative w-full max-w-[340px] bg-white/10 backdrop-blur-3xl border border-white/30 rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[85vh]"
+                        exit={{ scale: 0.98, opacity: 0, y: 20 }}
+                        className="relative w-full max-w-[340px] bg-white rounded-[2.5rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.4)] flex flex-col max-h-[85vh]"
                     >
-                        {/* Header - Fixed */}
-                        <div className="p-5 flex justify-between items-center border-b border-white/10 shrink-0 bg-black/20">
+                        {/* Header - Light Header */}
+                        <div className="p-5 flex justify-between items-center border-b border-zinc-100 shrink-0 bg-zinc-50/50">
                             <div className="flex items-center gap-2">
-                                <UserCircleIcon className="w-4 h-4 text-white" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Identity Hub</span>
+                                <UserCircleIcon className="w-4 h-4 text-zinc-900" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900">Member ID</span>
                             </div>
-                            <button onClick={onClose} className="p-1.5 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors">
+                            <button onClick={onClose} className="p-1.5 rounded-full hover:bg-zinc-200 text-zinc-400 hover:text-zinc-900 transition-colors">
                                 <CloseIcon className="w-4 h-4" />
                             </button>
                         </div>
 
-                        {/* Scrollable Content - Perfect No-Clip Padding */}
-                        <div className="px-6 py-8 flex flex-col items-center overflow-y-auto custom-scrollbar flex-1">
-                            {/* Profile Image with Glow */}
-                            <div className="relative mb-8 shrink-0">
-                                <div className="absolute -inset-4 bg-red-600/20 blur-2xl rounded-full"></div>
+                        {/* Content Area - White Background */}
+                        <div className="px-6 py-8 flex flex-col items-center overflow-y-auto custom-scrollbar flex-1 bg-white">
+                            {/* Profile Image */}
+                            <div className="relative mb-6 shrink-0">
+                                <div className="absolute -inset-4 bg-red-600/10 blur-2xl rounded-full"></div>
                                 <img 
                                     src={user.imageUrl} 
                                     alt="Profile" 
-                                    className="relative w-20 h-20 rounded-[1.8rem] object-cover border-2 border-white shadow-2xl" 
+                                    className="relative w-24 h-24 rounded-[2rem] object-cover border-4 border-white shadow-xl ring-1 ring-zinc-200" 
                                 />
-                                <div className="absolute -bottom-1 -right-1 bg-white text-red-600 p-1 rounded-lg shadow-lg z-10">
-                                    <CheckCircleIcon className="w-3.5 h-3.5" />
+                                <div className="absolute -bottom-1 -right-1 bg-red-600 text-white p-1 rounded-xl shadow-lg z-10 border-2 border-white">
+                                    <CheckCircleIcon className="w-4 h-4" />
                                 </div>
                             </div>
 
-                            {/* Name Info */}
-                            <div className="text-center mb-8 w-full shrink-0 px-2">
-                                <h3 className="text-xl font-black text-white uppercase tracking-tight leading-none truncate drop-shadow-md">
-                                    {user.fullName || 'Legend Member'}
+                            {/* Name & Username */}
+                            <div className="text-center mb-8 w-full shrink-0">
+                                <h3 className="text-2xl font-black text-zinc-900 uppercase tracking-tight leading-none truncate">
+                                    {user.fullName || 'FEZ Member'}
                                 </h3>
-                                <p className="text-[10px] text-white font-black uppercase tracking-widest mt-3 bg-red-600 px-4 py-1.5 rounded-full inline-block shadow-lg">
-                                    @{user.username || 'user'}
+                                <p className="text-[10px] text-red-600 font-black uppercase tracking-[0.2em] mt-3 bg-red-50 px-4 py-1.5 rounded-full inline-block border border-red-100">
+                                    @{user.username || 'legend'}
                                 </p>
                             </div>
 
-                            {/* Details Grid - Using dark cards for contrast/readability */}
+                            {/* Information Cards - Using light zinc for contrast */}
                             <div className="w-full space-y-3 mb-8 shrink-0">
-                                <div className="flex flex-col gap-1 px-5 py-4 bg-black/40 rounded-2xl border border-white/10 group hover:border-white/30 transition-colors">
-                                    <span className="text-[8px] text-white/50 uppercase font-black tracking-widest">Email Address</span>
-                                    <span className="text-[11px] text-white font-bold truncate">{user.primaryEmailAddress?.emailAddress}</span>
+                                <div className="flex flex-col gap-1 px-5 py-4 bg-zinc-50 rounded-2xl border border-zinc-100 group hover:border-red-200 transition-colors">
+                                    <span className="text-[8px] text-zinc-400 uppercase font-black tracking-widest">Network Email</span>
+                                    <span className="text-[11px] text-zinc-900 font-bold truncate">{user.primaryEmailAddress?.emailAddress}</span>
                                 </div>
-                                <div className="flex flex-col gap-1 px-5 py-4 bg-black/40 rounded-2xl border border-white/10 group hover:border-white/30 transition-colors">
-                                    <span className="text-[8px] text-white/50 uppercase font-black tracking-widest">Enrollment</span>
-                                    <span className="text-[11px] text-white font-bold">Member Since {memberSince}</span>
+                                <div className="flex flex-col gap-1 px-5 py-4 bg-zinc-50 rounded-2xl border border-zinc-100 group hover:border-red-200 transition-colors">
+                                    <span className="text-[8px] text-zinc-400 uppercase font-black tracking-widest">Enrollment Date</span>
+                                    <span className="text-[11px] text-zinc-900 font-bold">Initiated {memberSince}</span>
                                 </div>
-                                <div className="flex flex-col gap-1 px-5 py-4 bg-black/40 rounded-2xl border border-white/10 group hover:border-white/30 transition-colors">
-                                    <span className="text-[8px] text-white/50 uppercase font-black tracking-widest">Zone Status</span>
+                                <div className="flex flex-col gap-1 px-5 py-4 bg-zinc-50 rounded-2xl border border-zinc-100 group hover:border-red-200 transition-colors">
+                                    <span className="text-[8px] text-zinc-400 uppercase font-black tracking-widest">Zone Permission</span>
                                     <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
-                                        <span className="text-[10px] text-white font-black uppercase tracking-widest">Authorized</span>
+                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-sm"></div>
+                                        <span className="text-[10px] text-zinc-900 font-black uppercase tracking-widest">Verified Artist</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Action Button - White for the "White Appearance" */}
+                            {/* Main Action Button */}
                             <button 
                                 onClick={handleManageAccount}
-                                className="w-full py-4 bg-white text-black font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl hover:bg-red-600 hover:text-white transition-all shadow-xl active:scale-95 shrink-0"
+                                className="w-full py-4 bg-zinc-900 text-white font-black uppercase tracking-[0.3em] text-[10px] rounded-2xl hover:bg-red-600 transition-all shadow-xl active:scale-95 shrink-0"
                             >
                                 Manage Account
                             </button>
                         </div>
 
-                        {/* Footer - Fixed */}
-                        <div className="p-4 bg-black/30 border-t border-white/10 text-center shrink-0">
-                            <p className="text-[8px] text-white/30 font-black uppercase tracking-[0.5em]">Fuad Editing Zone Terminal</p>
+                        {/* Footer - Light Footer */}
+                        <div className="p-4 bg-zinc-50 border-t border-zinc-100 text-center shrink-0">
+                            <p className="text-[8px] text-zinc-400 font-black uppercase tracking-[0.5em]">Identity Secured • Fuad Editing Zone</p>
                         </div>
                     </motion.div>
                 </div>
