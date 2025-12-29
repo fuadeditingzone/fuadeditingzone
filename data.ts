@@ -94,7 +94,7 @@ export const graphicWorks: GraphicWork[] = [
 
 export const animeEdits: VideoWork[] = [
     { id: 10, videoId: 'oAEDU-nycsE', thumbnailUrl: 'https://i.ytimg.com/vi/oAEDU-nycsE/hqdefault.jpg', mostViewed: true, title: 'Lokiverse - Legend Edit', description: 'The ultimate cinematic Lokiverse edit featuring high-octane VFX and professional grading.' },
-    { id: 1, videoId: ' GiHZJkUvv6o', thumbnailUrl: 'https://i.ytimg.com/vi/GiHZJkUvv6o/hqdefault.jpg', mostViewed: true, title: 'Anime VFX Masterclass', description: 'High-energy anime edit featuring complex transitions and 2D VFX overlays.' },
+    { id: 1, videoId: 'GiHZJkUvv6o', thumbnailUrl: 'https://i.ytimg.com/vi/GiHZJkUvv6o/hqdefault.jpg', mostViewed: true, title: 'Mortal - Legend Edit', description: 'High-energy anime edit featuring complex transitions and 2D VFX overlays.' },
     { id: 2, videoId: 'U4ge4NqBFAM', thumbnailUrl: 'https://i.ytimg.com/vi/U4ge4NqBFAM/hqdefault.jpg', mostViewed: true, title: 'Smooth Transition AMV', description: 'A seamless anime music video focusing on rhythm and flow.' },
     { id: 3, videoId: 'F-0ATxAccEI', thumbnailUrl: 'https://i.ytimg.com/vi/F-0ATxAccEI/hqdefault.jpg', mostViewed: true, title: 'Cinematic Anime Montage', description: 'Epic montage with advanced color grading and cinematic visual effects.' },
     { id: 4, videoId: '4YWUaCQkUL0', thumbnailUrl: 'https://i.ytimg.com/vi/4YWUaCQkUL0/hqdefault.jpg', title: 'Vibe Edit - Anime Music', description: 'Stylized lo-fi aesthetic anime edit with custom text animation.' },
