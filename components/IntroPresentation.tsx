@@ -51,22 +51,8 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
         const video = videoRef.current;
         if (!video) return;
 
-        video.muted = false;
-        video.volume = 0.3;
-
-        const attemptPlay = async () => {
-            try {
-                await video.play();
-                setPlaybackStarted(true);
-            } catch (err) {
-                console.warn("Autoplay blocked. User interaction required.");
-                video.muted = true;
-                setIsMuted(true);
-                setError(true);
-            }
-        };
-
-        attemptPlay();
+        // Note: Removed attemptPlay() from useEffect to satisfy "after clicking on video the video should play" 
+        // and prevent autoplay blocks from browsers. User must now explicitly start the experience.
 
         const countdownInterval = setInterval(() => {
             setSkipTimer((prev) => {
@@ -110,10 +96,18 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
         if (video) {
             video.muted = false;
             video.volume = 0.4;
-            video.play();
-            setIsMuted(false);
-            setPlaybackStarted(true);
-            setError(false);
+            const playPromise = video.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    setIsMuted(false);
+                    setPlaybackStarted(true);
+                    setError(false);
+                }).catch(err => {
+                    console.error("Manual playback failed:", err);
+                    setError(true);
+                });
+            }
         }
     };
 
@@ -171,10 +165,10 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                 ))}
             </div>
 
-            {/* Content Container - Increased padding to ensure edges are never hit */}
+            {/* Content Container */}
             <div className="relative w-full max-w-7xl h-full flex flex-col lg:flex-row gap-8 lg:gap-12 items-center justify-center z-10 p-12 md:p-16">
                 
-                {/* Main Player Area - Stricter max-width to protect against mobile edge clipping */}
+                {/* Main Player Area */}
                 <div className="w-full flex-1 flex items-center justify-center min-h-0">
                     <motion.div 
                         initial={{ scale: 0.9, opacity: 0 }}
@@ -188,11 +182,12 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                             playsInline
                             muted={isMuted}
                             className="w-full h-full object-contain bg-black"
+                            onClick={playbackStarted ? undefined : handleStartExperience}
                         />
 
                         {/* Interaction Overlay */}
                         <AnimatePresence>
-                            {(!playbackStarted || error) && (
+                            {!playbackStarted && (
                                 <motion.div 
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -210,7 +205,10 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                                             <PlayIcon className="w-8 h-8 md:w-12 md:h-12 ml-1" />
                                         </motion.button>
                                     </div>
-                                    <p className="mt-8 text-[9px] md:text-xs font-black uppercase tracking-[0.5em] text-white animate-pulse">Enter Experience</p>
+                                    <div className="text-center mt-8 space-y-2">
+                                        <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.5em] text-white animate-pulse">Click to Enter Experience</p>
+                                        <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest">Cinematic Intro • Fuad Editing Zone</p>
+                                    </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -291,9 +289,9 @@ export const IntroPresentation: React.FC<IntroPresentationProps> = ({ onFinished
                                         
                                         <div className="w-full rounded-lg overflow-hidden bg-black/40 border border-white/5 relative flex items-center justify-center aspect-video">
                                             {feature.media.type === 'video' ? (
-                                                <video src={feature.media.url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                                                <video src={feature.media.url} autoPlay loop muted playsInline className="w-full h-full object-contain" />
                                             ) : (
-                                                <LazyImage src={feature.media.url} alt="" className="w-full h-full object-cover" />
+                                                <LazyImage src={feature.media.url} alt="" className="w-full h-full object-contain" />
                                             )}
                                         </div>
                                     </motion.div>

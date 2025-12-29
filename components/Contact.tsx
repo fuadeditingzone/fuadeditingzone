@@ -52,7 +52,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                     </div>
                 </div>
 
-                {/* Social Media Section - High Contrast Minimalist Icons */}
+                {/* Social Media Section */}
                 <div className="mt-20 pt-12 border-t border-white/5 w-full max-w-xl flex flex-col items-center">
                     <div className="mb-10 text-center">
                         <p className="text-[9px] text-gray-400 font-black tracking-[0.4em] uppercase mb-2">Connect with Fuad</p>
@@ -69,13 +69,8 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                 aria-label={`Follow Fuad on ${social.name}`}
                                 className="group relative flex items-center justify-center p-2"
                             >
-                                {/* Subtle Hover Aura - Larger for better feedback */}
                                 <div className="absolute inset-0 bg-red-600/0 group-hover:bg-red-600/10 rounded-full blur-2xl transition-all duration-500 scale-150"></div>
-                                
-                                {/* High Contrast Icon - Using text-white for maximum visibility */}
                                 <social.icon className="text-2xl md:text-3xl text-white/90 drop-shadow-[0_0_8px_rgba(0,0,0,0.5)] transition-all duration-300 group-hover:text-red-500 group-hover:-translate-y-2 group-hover:scale-110 relative z-10" />
-                                
-                                {/* Tooltip Label */}
                                 <span className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white text-black text-[9px] font-black uppercase tracking-widest py-1.5 px-3 rounded opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap pointer-events-none z-30 translate-y-1 group-hover:translate-y-0 shadow-2xl border border-white/10">
                                     {social.name}
                                 </span>

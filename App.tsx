@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -22,6 +23,7 @@ import { ServiceSelectionModal } from './components/ServiceSelectionModal';
 import { YouTubeRedirectPopup } from './components/YouTubeRedirectPopup';
 import { IntroPresentation } from './components/IntroPresentation';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
+import { FuadAssistant } from './components/FuadAssistant';
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(() => {
@@ -41,7 +43,6 @@ export default function App() {
   const [isNavVisible, setIsNavVisible] = useState(true);
   const idleTimeoutRef = useRef<number | null>(null);
   
-  // Set default YouTube ID to Lokiverse (from data.ts first entry)
   const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.content.portfolio.animeEdits[0].videoId || 'oAEDU-nycsE');
   const [isYtPlaying, setIsYtPlaying] = useState(false);
   const [playingVfxVideo, setPlayingVfxVideo] = useState<VideoWork | null>(null);
@@ -73,7 +74,6 @@ export default function App() {
     return [...graphics, ...vfx, ...anime];
   }, []);
 
-  // --- EXACT RAW PREVIEW ENGINE ---
   const updateMeta = useCallback((title: string, desc: string, imageUrl: string) => {
     document.title = title;
     const mapping: Record<string, string> = {
@@ -115,7 +115,6 @@ export default function App() {
       if (!hash) return;
       const foundIndex = combinedPortfolio.findIndex(item => (item as any).slug === hash);
       if (foundIndex !== -1 && !modalState) {
-        // Find the item to update metadata BEFORE state kicks in for faster sharing detection
         const item = combinedPortfolio[foundIndex] as any;
         const itemImage = item.imageUrl || (item.videoId ? `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg` : siteConfig.branding.profilePicUrl);
         updateMeta(`${item.title || 'Selected Legend Art'} | FEZ Portfolio`, item.description || siteConfig.seo.description, itemImage);
@@ -196,6 +195,7 @@ export default function App() {
           {pipVideo && <VideoPipPlayer video={pipVideo} onClose={() => setPipVideo(null)} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />}
           {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} onClose={() => setContextMenu(null)} onGalleryOpen={() => { setContextMenu(null); setIsGalleryGridOpen(true); }} />}
           <PwaInstallPrompt />
+          <FuadAssistant />
           <div className={`transition-all fixed bottom-0 left-0 right-0 z-40 ${(isNavVisible && !showIntro) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
             <MobileFooterNav onScrollTo={handleScrollTo} />
           </div>

@@ -189,7 +189,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
             
             try {
                 setDownloading(true);
-                // We use a blob fetch to bypass most browser 'open in tab' behaviors and allow for canvas manipulation
                 const response = await fetch(fileUrl);
                 const blob = await response.blob();
                 
@@ -248,7 +247,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 }, 'image/jpeg', 0.95);
 
             } catch (err) {
-                // If fetch fails (CORS), trigger a normal download link as best effort
                 const link = document.createElement('a');
                 link.href = fileUrl;
                 link.download = fileName;
@@ -283,7 +281,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
             }
             return;
         } else {
-            // YouTube videos cannot be downloaded client-side
             window.open(`https://www.youtube.com/watch?v=${currentItem.videoId}`, '_blank');
             return;
         }
@@ -295,7 +292,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 <div className="absolute inset-0 bg-cover bg-center filter blur-3xl brightness-[0.2] opacity-40 scale-110 pointer-events-none" style={{ backgroundImage: `url(${currentItem.imageUrl})` }} />
             )}
 
-            {/* Top Navigation Bar */}
             <div className="relative z-[100] flex justify-between items-center p-4 bg-gradient-to-b from-black/80 to-transparent flex-shrink-0">
                 <div className="flex items-center gap-3">
                     <img src={siteConfig.branding.logoUrl} className="w-8 h-8 rounded-full border border-white/20" alt="FEZ" />
@@ -327,7 +323,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 </div>
             </div>
 
-            {/* Main Center Area - Flex grow to take all space between bars */}
             <div className="flex-1 relative w-full flex items-center justify-center p-4 md:p-12 overflow-hidden" onClick={onClose}>
                 <div className="relative w-full h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
                     {isImage(currentItem) ? (
@@ -341,7 +336,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                             <img 
                                 src={currentItem.imageUrl} 
                                 alt={currentItem.title || "Portfolio Work"} 
-                                // use max-h-full and max-w-full to prevent clipping by parent
                                 className="max-w-full max-h-full object-contain rounded-lg shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/5" 
                             />
                         </motion.div>
@@ -352,7 +346,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                         </div>
                     ) : null}
 
-                    {/* Nav Arrows */}
                     <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className="absolute left-0 md:-left-16 top-1/2 -translate-y-1/2 text-white/30 hover:text-white p-4 rounded-full transition-all group">
                         <ChevronLeftIcon className="w-10 h-10 group-hover:-translate-x-1 transition-transform" />
                     </button>
@@ -362,7 +355,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 </div>
             </div>
 
-            {/* Bottom Project Meta Bar */}
             <div className="relative z-[100] bg-black/90 backdrop-blur-3xl border-t border-white/10 p-4 md:p-6 flex-shrink-0" onClick={e => e.stopPropagation()}>
                 <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1 flex-1 min-w-0">
