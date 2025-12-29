@@ -77,23 +77,53 @@
       .neon-border { border: 1px solid rgba(220, 38, 38, 0.3); box-shadow: 0 0 15px rgba(220, 38, 38, 0.1); }
       .neon-text { text-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
 
-      /* Force Clerk Modals to not clip and center properly */
+      /* Robust Clerk Modal Styling */
       .cl-modalBackdrop {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        z-index: 99999 !important;
-        background: rgba(0,0,0,0.85) !important;
+        background: rgba(0,0,0,0.8) !important;
         backdrop-filter: blur(12px) !important;
         padding: 1rem !important;
       }
       .cl-modalContent {
+        max-width: 900px !important; /* Allow wider content for profile */
+        width: 100% !important;
+        max-height: calc(100vh - 2rem) !important;
         margin: auto !important;
-        max-height: calc(100vh - 4rem) !important;
-        overflow-y: auto !important;
+        display: flex !important;
+        border-radius: 2rem !important;
+        box-shadow: 0 50px 100px rgba(0,0,0,0.6) !important;
       }
-      .cl-card {
-        border-radius: 1.5rem !important;
+      /* Ensure the user profile takes full available width in its modal */
+      .cl-userProfile-root {
+        width: 100% !important;
+        height: 100% !important;
+      }
+      /* Fix for mobile screens */
+      @media (max-width: 640px) {
+        .cl-modalContent {
+          border-radius: 1.5rem !important;
+        }
+        .cl-userProfile-navbar {
+          display: none !important; /* Hide side nav on mobile profile if it causes clipping */
+        }
+      }
+      
+      /* Better custom scrollbars for modals */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px !important;
+        display: block !important;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent !important;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #e4e4e7 !important;
+        border-radius: 10px !important;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #d4d4d8 !important;
       }
     </style>
 
