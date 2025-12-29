@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { SocialLink, Service } from './hooks/types';
 import { 
@@ -65,12 +66,12 @@ export const siteConfig = {
             { name: 'TikTok', url: 'https://tiktok.com/@fuadeditingzone', icon: TikTokIcon },
             { name: 'WhatsApp', url: `https://wa.me/8801772723595`, icon: WhatsAppIcon },
         ] as SocialLink[],
-        // FIX: Added missing discordWebhookUrl property to resolve type error in useDiscordNotify hook
         discordWebhookUrl: '',
     },
     api: {
         youtubeApiKey: 'AIzaSyCC3wbQp5713OqHlf1jLZabA0VClDstfKY',
         channelId: 'UCFhqRIXlw0XGh3NOOvbhl6A',
+        formspreeEndpoint: 'https://formspree.io/f/xvzovned'
     },
     seo: {
         title: "Fuad Editing Zone | Graphic Designer & VFX Editor | From Sylhet",
