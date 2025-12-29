@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v9.6.9 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v9.7.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -84,19 +84,19 @@
         display: flex !important;
         align-items: flex-start !important;
         justify-content: flex-end !important;
-        background: rgba(0,0,0,0.15) !important; /* Low opacity to see the site */
-        backdrop-filter: blur(4px) !important;
+        background: rgba(0,0,0,0.08) !important; /* Extremely light backdrop */
         padding: 1rem !important;
         padding-top: 5rem !important;
         z-index: 999999 !important;
+        backdrop-filter: none !important; /* REMOVED BLUR */
       }
       .cl-modalContent {
-        max-width: 800px !important;
+        max-width: 600px !important; /* SMALLER WIDTH */
         width: 100% !important;
         max-height: calc(100vh - 8rem) !important;
         display: flex !important;
-        border-radius: 2rem !important;
-        box-shadow: 0 30px 100px rgba(0,0,0,0.4) !important;
+        border-radius: 1.5rem !important;
+        box-shadow: 0 20px 80px rgba(0,0,0,0.3) !important;
         background: white !important;
         overflow: hidden !important;
         transform-origin: top right !important;
@@ -122,7 +122,7 @@
             justify-content: center !important;
         }
         .cl-modalContent {
-          border-radius: 1.5rem !important;
+          border-radius: 1.25rem !important;
           max-height: 80vh !important;
         }
         .cl-userProfile-navbar {
@@ -139,11 +139,11 @@
         background: transparent !important;
       }
       .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #e4e4e7 !important;
+        background: #f1f1f1 !important;
         border-radius: 10px !important;
       }
       .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #d4d4d8 !important;
+        background: #e5e5e5 !important;
       }
     </style>
 

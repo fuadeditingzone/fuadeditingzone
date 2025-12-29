@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -25,7 +26,7 @@ import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(() => {
-    if (typeof window !== 'undefined') return !sessionStorage.getItem('fez_intro_seen');
+    if (typeof window !== 'undefined') return !localStorage.getItem('fez_intro_seen');
     return true;
   });
   
@@ -165,7 +166,7 @@ export default function App() {
     <ParallaxProvider>
       <div className="text-white min-h-screen bg-black" onContextMenu={e => { e.preventDefault(); if(!isAnyOverlayActive) setContextMenu({ x: e.clientX, y: e.clientY }); }}>
           <AnimatePresence>
-            {showIntro && <IntroPresentation onFinished={() => { sessionStorage.setItem('fez_intro_seen', 'true'); setShowIntro(false); }} />}
+            {showIntro && <IntroPresentation onFinished={() => { localStorage.setItem('fez_intro_seen', 'true'); setShowIntro(false); }} />}
           </AnimatePresence>
           <VFXBackground /><MediaGridBackground />
           <div className={`transition-all fixed top-0 left-0 right-0 z-50 ${(isNavVisible && !showIntro) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
