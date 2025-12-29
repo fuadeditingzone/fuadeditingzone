@@ -54,6 +54,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
         e.preventDefault();
         if (!isSignedIn) return;
 
+        // Profanity Check
         if (isAbusive(formData.message) || isAbusive(formData.name)) {
             setErrorMessage("Your message contains prohibited language. Please keep it professional.");
             setStatus('error');
@@ -72,8 +73,8 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                 },
                 body: JSON.stringify({
                     ...formData,
-                    _subject: `FEZ Order Request: ${formData.service || 'New Order'} from ${formData.name}`,
-                    _source: "Fuad Editing Zone Portfolio Terminal",
+                    _subject: `FEZ Order: ${formData.service || 'New Request'} from ${formData.name}`,
+                    _source: "Fuad Editing Zone Portfolio",
                     userId: user?.id,
                     clerk_email: user?.primaryEmailAddress?.emailAddress
                 })
@@ -87,7 +88,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
             }
         } catch (error) {
             console.error("Submission Error:", error);
-            alert("Signal transmission failed. Please use the WhatsApp line for immediate project inquiries.");
+            alert("Signal transmission failed. Please use WhatsApp for immediate inquiries.");
             setStatus('idle');
         }
     };
@@ -96,6 +97,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
         const { name, value } = e.target;
         
         if (name === 'service') {
+            // Auto-populate message based on template
             setFormData(prev => ({ 
                 ...prev, 
                 service: value,
@@ -117,7 +119,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
 
     return (
         <section ref={ref} id="contact" className="py-24 bg-black relative z-10 select-none overflow-hidden">
-            {/* Atmospheric VFX Visuals */}
+            {/* Background Accents */}
             <div className="absolute top-1/4 left-0 w-96 h-96 bg-red-600/5 blur-[120px] pointer-events-none rounded-full"></div>
             <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] bg-red-900/5 blur-[150px] pointer-events-none rounded-full"></div>
 
@@ -127,7 +129,6 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                 animate={isVisible ? "visible" : "hidden"}
                 className="container mx-auto px-6 max-w-4xl flex flex-col items-center"
             >
-                {/* Minimalist Section Header */}
                 <div className="mb-12 text-center">
                     <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Transmission Port</span>
                     <h2 className="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter">Order Now</h2>
@@ -152,11 +153,11 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                     </div>
                                     <div className="space-y-3">
                                         <h3 className="text-2xl font-black text-white uppercase tracking-tight">Identity Required</h3>
-                                        <p className="text-gray-400 text-xs max-w-xs mx-auto font-medium">Please sign in to your account to transmit your project brief to the Zone.</p>
+                                        <p className="text-gray-400 text-xs max-w-xs mx-auto font-medium">Please sign in to your account to place an order in the Zone.</p>
                                     </div>
                                     <SignInButton mode="modal">
                                         <button className="btn-angular bg-red-600 hover:bg-red-700 text-white font-black py-4 px-12 uppercase tracking-[0.4em] text-[11px] transition-all shadow-[0_15px_30px_rgba(220,38,38,0.3)]">
-                                            Authenticate Now
+                                            Authenticate
                                         </button>
                                     </SignInButton>
                                 </motion.div>
@@ -171,7 +172,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                         <CheckCircleIcon className="w-10 h-10 text-green-500" />
                                     </div>
                                     <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">Order Received</h3>
-                                    <p className="text-gray-400 text-sm max-w-xs mx-auto mb-10 font-medium">Mission acknowledged, {user?.firstName}. Your request has been encrypted and sent. Fuad will contact you shortly.</p>
+                                    <p className="text-gray-400 text-sm max-w-xs mx-auto mb-10 font-medium">Mission acknowledged, {user?.firstName}. Fuad will contact you shortly.</p>
                                     <button 
                                         onClick={() => setStatus('idle')} 
                                         className="text-red-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all"
@@ -185,7 +186,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between ml-1">
                                                 <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em]">Name</label>
-                                                <span className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">Locked</span>
+                                                <span className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">Encrypted</span>
                                             </div>
                                             <input 
                                                 required 
@@ -194,13 +195,13 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                                 tabIndex={-1}
                                                 value={formData.name} 
                                                 className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white outline-none cursor-not-allowed opacity-60 grayscale shadow-inner" 
-                                                placeholder="Full Name" 
+                                                placeholder="Your Name" 
                                             />
                                         </div>
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between ml-1">
                                                 <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em]">Email</label>
-                                                <span className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">Locked</span>
+                                                <span className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">Verified</span>
                                             </div>
                                             <input 
                                                 required 
@@ -210,14 +211,14 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                                 tabIndex={-1}
                                                 value={formData.email} 
                                                 className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white outline-none cursor-not-allowed opacity-60 grayscale shadow-inner" 
-                                                placeholder="email@address.com" 
+                                                placeholder="Your Email" 
                                             />
                                         </div>
                                     </div>
 
                                     <div className="space-y-3">
                                         <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Select Service</label>
-                                        <div className="relative group/select">
+                                        <div className="relative">
                                             <select 
                                                 required
                                                 name="service"
@@ -225,21 +226,21 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                                 onChange={handleChange}
                                                 className="w-full bg-black/60 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 outline-none transition-all appearance-none cursor-pointer"
                                             >
-                                                <option value="" disabled>Choose a service category...</option>
-                                                <option value="VFX/Video Editing">Cinematic VFX & Video Editing</option>
-                                                <option value="YouTube Thumbnail">High-CTR YouTube Thumbnail</option>
-                                                <option value="Photo Manipulation">Creative Photo Manipulation</option>
-                                                <option value="Banner/Design">Banner & Social Media Design</option>
-                                                <option value="Custom Request">Custom Visual Project</option>
+                                                <option value="" disabled>Choose a mission type...</option>
+                                                <option value="VFX/Video Editing">VFX & Video Editing</option>
+                                                <option value="YouTube Thumbnail">YouTube Thumbnail</option>
+                                                <option value="Photo Manipulation">Photo Manipulation</option>
+                                                <option value="Banner/Design">Banner & Design</option>
+                                                <option value="Custom Request">Custom Mission</option>
                                             </select>
-                                            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-red-600 group-hover/select:translate-x-1 transition-transform">
+                                            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-red-600">
                                                 <ChevronRightIcon className="w-4 h-4 rotate-90" />
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="space-y-3">
-                                        <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Mission Details</label>
+                                        <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Project Brief</label>
                                         <textarea 
                                             required 
                                             name="message" 
@@ -247,7 +248,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                             value={formData.message} 
                                             onChange={handleChange} 
                                             className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 focus:bg-black outline-none resize-none transition-all placeholder:text-gray-800 shadow-inner" 
-                                            placeholder="Describe your VFX or design requirements..."
+                                            placeholder="Details of your project..."
                                         ></textarea>
                                     </div>
 
@@ -280,14 +281,13 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                     </div>
                 </div>
 
-                {/* Direct Connect Options */}
                 <div className="mt-20 flex flex-col md:flex-row items-center justify-center gap-10 opacity-60 hover:opacity-100 transition-opacity duration-700">
                     <button onClick={() => onStartOrder('whatsapp')} className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-green-500 hover:text-green-400 transition-colors group">
                         <WhatsAppIcon className="w-5 h-5 transition-transform group-hover:-translate-y-1" /> WhatsApp Line
                     </button>
                     <div className="w-1.5 h-1.5 bg-white/20 rounded-full hidden md:block"></div>
                     <button onClick={() => onStartOrder('email')} className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 hover:text-white transition-colors group">
-                        <EmailIcon className="w-5 h-5 transition-transform group-hover:-translate-y-1" /> Direct Mail
+                        <EmailIcon className="w-5 h-5 transition-transform group-hover:-translate-y-1" /> Contact Direct
                     </button>
                 </div>
             </motion.div>

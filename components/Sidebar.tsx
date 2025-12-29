@@ -70,7 +70,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                     onClick={() => onScrollTo('contact')}
                     className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2 uppercase tracking-[0.3em] transition-all shadow-[0_10px_20px_rgba(220,38,38,0.2)] hover:shadow-[0_15px_30px_rgba(220,38,38,0.4)]"
                 >
-                    Join Zone
+                    Order Now
                 </button>
               </SignedOut>
               <SignedIn>
@@ -173,7 +173,7 @@ export const MobileFooterNav: React.FC<{
             <FooterNavLink icon={<HomeIcon className="w-5 h-5" />} label="Home" onClick={() => onScrollTo('home')} />
             <FooterNavLink icon={<BriefcaseIcon className="w-5 h-5" />} label="Design" onClick={() => onScrollTo('portfolio')} />
             <FooterNavLink icon={<VfxIcon className="w-5 h-5" />} label="VFX" onClick={() => onScrollTo('video-editing')} />
-            <FooterNavLink icon={<ChatBubbleIcon className="w-5 h-5" />} label="Link" onClick={() => onScrollTo('contact')} />
+            <FooterNavLink icon={<ChatBubbleIcon className="w-5 h-5" />} label="Order" onClick={() => onScrollTo('contact')} />
             <FooterNavLink icon={<UserCircleIcon className="w-5 h-5" />} label="Profile" onClick={() => onScrollTo('about')} />
         </nav>
     );
