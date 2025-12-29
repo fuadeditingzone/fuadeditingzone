@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { CloseIcon, YouTubeIcon } from './Icons';
 import { siteConfig } from '../config';
@@ -25,15 +25,19 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({
     onYouTubeClick
 }) => {
     const { videos, loading, stats, formatNumber } = useYouTubeChannelStats();
+    const [hasBeenOpened, setHasBeenOpened] = useState(false);
     const playerRef = useRef<any>(null);
 
     const channelName = stats.channelTitle || siteConfig.branding.name;
     const channelImage = stats.channelProfilePic || siteConfig.branding.profilePicUrl;
 
     useEffect(() => {
-        if (!isOpen || !activeYouTubeId) return;
+        if (isOpen) setHasBeenOpened(true);
+    }, [isOpen]);
 
-        // Give a tiny bit for the container to render if it was hidden
+    useEffect(() => {
+        if (!isOpen || !activeYouTubeId || !hasBeenOpened) return;
+
         const timer = setTimeout(() => {
             const container = document.getElementById('youtube-sidebar-player');
             if (!container) return;
@@ -69,9 +73,8 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({
                 playerRef.current = null;
             }
         };
-    }, [isOpen, activeYouTubeId]);
+    }, [isOpen, activeYouTubeId, hasBeenOpened]);
 
-    // Sync external play/pause state with YouTube player instance
     useEffect(() => {
         if (playerRef.current && playerRef.current.getPlayerState) {
             const state = playerRef.current.getPlayerState();
@@ -82,6 +85,9 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({
             }
         }
     }, [isYtPlaying]);
+
+    // If sidebar has never been opened, don't even render the inner content to avoid page-load flashes
+    if (!hasBeenOpened) return null;
 
     return (
         <div 
@@ -107,7 +113,6 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({
             </div>
 
             <div className="flex-1 flex flex-col min-h-0 relative bg-[#0f0f0f]">
-                
                 <div className="flex-shrink-0 bg-black aspect-video relative border-b border-white/5 shadow-lg z-10">
                     {activeYouTubeId && !forcePaused ? (
                         <div id="youtube-sidebar-player" className="w-full h-full"></div>

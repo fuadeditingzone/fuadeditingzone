@@ -173,7 +173,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         }
     }, [activeYouTubeId, youtubeVideos]);
 
-    // Live Stats Fetcher (Fetches accurate live statistics from YouTube API)
+    // Live Stats Fetcher
     useEffect(() => {
         if (!activeYouTubeId) return;
         const fetchStats = async () => {
@@ -209,7 +209,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     useEffect(() => {
         if (!isYouTubeApiReady || !activeYouTubeId) return;
         
-        // If PiP is active, we don't render the player in the main section
         if (pipVideo && pipVideo.videoId === activeYouTubeId) {
             if (playerRef.current) {
                 playerRef.current.destroy();
@@ -257,16 +256,13 @@ export const Portfolio: React.FC<PortfolioProps> = ({
 
     // Professional PiP Logic: Automatically transition when scrolling away
     useEffect(() => {
-        // Only trigger PiP if video is actually playing
         if (isYtPlaying && !isYtVisible && activeYouTubeId) {
-            // Find current video work object
             const currentVideo = animeEdits.find(v => v.videoId === activeYouTubeId);
             if (currentVideo && !pipVideo) {
                 setPipVideo(currentVideo);
             }
         }
         
-        // Remove PiP if we scroll back to the section
         if (isYtVisible && pipVideo && pipVideo.videoId === activeYouTubeId) {
             setPipVideo(null);
         }
@@ -310,7 +306,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
                         setActiveYouTubeId(video.videoId!);
                         setIsYtPlaying(true); 
                         setCurrentTime(0); 
-                        setPipVideo(null); // Reset PiP when manually picking a new video
+                        setPipVideo(null); 
                         if (onPortfolioPlay) onPortfolioPlay();
                     }}
                     className={`relative w-full aspect-video rounded-xl transition-all duration-300 border border-transparent select-none group/thumb bg-black/40 p-0.5 ${activeYouTubeId === video.videoId ? 'opacity-100 scale-105 z-10 shadow-xl border-white/20 ring-2 ring-red-600' : 'opacity-40 hover:opacity-100'}`}
@@ -330,10 +326,8 @@ export const Portfolio: React.FC<PortfolioProps> = ({
 
                 <div className="flex-1 space-y-6 md:space-y-4">
                     <div className="relative aspect-video w-full mx-auto rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-black border border-white/10">
-                        {/* Persistent Player Container */}
                         <div id="youtube-portfolio-player-inner" className={`w-full h-full transition-opacity duration-500 ${isPipActiveForThisVideo ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}></div>
                         
-                        {/* Placeholder state when PiP is active */}
                         <AnimatePresence>
                             {isPipActiveForThisVideo && (
                                 <motion.div 

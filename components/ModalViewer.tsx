@@ -145,7 +145,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [onClose]);
 
-    // Reset mockup state when changing items
     useEffect(() => {
         setUseMockup(true);
     }, [currentIndex]);
@@ -169,9 +168,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
         if (navigator.share) {
             try { 
                 await navigator.share(shareData); 
-            } catch (err) {
-                // User might have cancelled or browser blocked
-            }
+            } catch (err) {}
         } else {
             navigator.clipboard.writeText(shareUrl);
             setShowShareToast(true);
@@ -184,7 +181,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
         if (downloading) return;
         
         let fileUrl = '';
-        let fileName = 'FEZ_FuadEditingZone_Work.jpg';
+        let fileName = 'FEZ_Work.jpg';
 
         if (isImage(currentItem)) {
             fileUrl = currentItem.imageUrl;
@@ -192,11 +189,10 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
             
             try {
                 setDownloading(true);
-                // 1. Fetch original image
+                // We use a blob fetch to bypass most browser 'open in tab' behaviors and allow for canvas manipulation
                 const response = await fetch(fileUrl);
                 const blob = await response.blob();
                 
-                // 2. Create image and canvas for watermarking
                 const img = new Image();
                 img.crossOrigin = "anonymous";
                 const imgUrl = URL.createObjectURL(blob);
@@ -209,13 +205,12 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
 
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                if (!ctx) throw new Error("Could not get canvas context");
+                if (!ctx) throw new Error("Canvas context error");
 
                 canvas.width = img.width;
                 canvas.height = img.height;
                 ctx.drawImage(img, 0, 0);
 
-                // 3. Load and draw logo watermark
                 const logo = new Image();
                 logo.crossOrigin = "anonymous";
                 await new Promise((resolve, reject) => {
@@ -224,12 +219,12 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                     logo.src = siteConfig.branding.logoUrl;
                 });
 
-                // Calculate logo size (e.g., 10% of image height)
-                const logoHeight = Math.floor(img.height * 0.1);
+                const watermarkScale = 0.12; 
+                const logoHeight = Math.floor(img.height * watermarkScale);
                 const logoWidth = Math.floor(logo.width * (logoHeight / logo.height));
-                const padding = Math.floor(img.height * 0.05);
+                const padding = Math.floor(img.height * 0.04);
 
-                ctx.globalAlpha = 0.4; // 40% transparency
+                ctx.globalAlpha = 0.35; 
                 ctx.drawImage(
                     logo, 
                     padding, 
@@ -238,7 +233,6 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                     logoHeight
                 );
 
-                // 4. Trigger download
                 canvas.toBlob((finalBlob) => {
                     if (finalBlob) {
                         const finalUrl = URL.createObjectURL(finalBlob);
@@ -254,36 +248,44 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 }, 'image/jpeg', 0.95);
 
             } catch (err) {
-                console.error("Download failed, falling back", err);
-                window.open(fileUrl, '_blank');
+                // If fetch fails (CORS), trigger a normal download link as best effort
+                const link = document.createElement('a');
+                link.href = fileUrl;
+                link.download = fileName;
+                link.target = "_blank";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             } finally {
                 setDownloading(false);
             }
             return;
         } else if (isVideo(currentItem) && currentItem.url) {
             fileUrl = currentItem.url;
-            fileName = `FEZ_FuadEditingZone_${(currentItem.title || 'VFX').replace(/\s+/g, '_')}.mp4`;
+            fileName = `FEZ_VFX_${(currentItem.title || 'Edit').replace(/\s+/g, '_')}.mp4`;
+            
+            try {
+                setDownloading(true);
+                const response = await fetch(fileUrl);
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+            } catch (err) {
+                window.open(fileUrl, '_blank');
+            } finally {
+                setDownloading(false);
+            }
+            return;
         } else {
+            // YouTube videos cannot be downloaded client-side
             window.open(`https://www.youtube.com/watch?v=${currentItem.videoId}`, '_blank');
             return;
-        }
-
-        try {
-            setDownloading(true);
-            const response = await fetch(fileUrl);
-            const blob = await response.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(blobUrl);
-        } catch (err) {
-            window.open(fileUrl, '_blank');
-        } finally {
-            setDownloading(false);
         }
     };
 
@@ -293,8 +295,8 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 <div className="absolute inset-0 bg-cover bg-center filter blur-3xl brightness-[0.2] opacity-40 scale-110 pointer-events-none" style={{ backgroundImage: `url(${currentItem.imageUrl})` }} />
             )}
 
-            {/* Top Bar Navigation & Controls */}
-            <div className="relative z-[100] flex justify-between items-center p-4 bg-gradient-to-b from-black/80 to-transparent">
+            {/* Top Navigation Bar */}
+            <div className="relative z-[100] flex justify-between items-center p-4 bg-gradient-to-b from-black/80 to-transparent flex-shrink-0">
                 <div className="flex items-center gap-3">
                     <img src={siteConfig.branding.logoUrl} className="w-8 h-8 rounded-full border border-white/20" alt="FEZ" />
                     <div className="hidden sm:block">
@@ -307,6 +309,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                         <button 
                             onClick={() => setUseMockup(!useMockup)} 
                             className={`text-white transition-all p-2 rounded-full border ${!useMockup ? 'bg-red-600 border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.5)]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                            title="Toggle Mockup View"
                         >
                             <EyeIcon className="h-5 w-5" />
                         </button>
@@ -314,6 +317,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                     <button 
                         onClick={handleDownload} 
                         className={`text-white/70 hover:text-white p-2 rounded-full bg-white/5 border border-white/10 transition-all ${downloading ? 'animate-pulse' : ''}`}
+                        title="Download Project"
                     >
                         <DownloadIcon className="h-5 w-5" />
                     </button>
@@ -323,8 +327,8 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 </div>
             </div>
 
-            {/* Main Content Viewer */}
-            <div className="flex-1 relative w-full flex items-center justify-center p-2 sm:p-4 md:p-8" onClick={onClose}>
+            {/* Main Center Area - Flex grow to take all space between bars */}
+            <div className="flex-1 relative w-full flex items-center justify-center p-4 md:p-12 overflow-hidden" onClick={onClose}>
                 <div className="relative w-full h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
                     {isImage(currentItem) ? (
                         (useMockup && isYTThumbnail) ? <YouTubeMockup imageUrl={currentItem.imageUrl} /> :
@@ -332,11 +336,12 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                         <motion.div 
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            className="w-full h-full flex items-center justify-center"
+                            className="w-full h-full flex items-center justify-center relative"
                         >
                             <img 
                                 src={currentItem.imageUrl} 
                                 alt={currentItem.title || "Portfolio Work"} 
+                                // use max-h-full and max-w-full to prevent clipping by parent
                                 className="max-w-full max-h-full object-contain rounded-lg shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/5" 
                             />
                         </motion.div>
@@ -347,7 +352,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                         </div>
                     ) : null}
 
-                    {/* Nav Buttons */}
+                    {/* Nav Arrows */}
                     <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className="absolute left-0 md:-left-16 top-1/2 -translate-y-1/2 text-white/30 hover:text-white p-4 rounded-full transition-all group">
                         <ChevronLeftIcon className="w-10 h-10 group-hover:-translate-x-1 transition-transform" />
                     </button>
@@ -357,8 +362,8 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 </div>
             </div>
 
-            {/* Bottom Info & Share Bar */}
-            <div className="relative z-[100] bg-black/90 backdrop-blur-3xl border-t border-white/10 p-4 md:p-6" onClick={e => e.stopPropagation()}>
+            {/* Bottom Project Meta Bar */}
+            <div className="relative z-[100] bg-black/90 backdrop-blur-3xl border-t border-white/10 p-4 md:p-6 flex-shrink-0" onClick={e => e.stopPropagation()}>
                 <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1 flex-1 min-w-0">
                         <div className="flex items-center gap-2">
