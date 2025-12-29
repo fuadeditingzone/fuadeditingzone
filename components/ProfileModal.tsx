@@ -26,72 +26,69 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[50000] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[50000]">
+                    {/* Very light backdrop to keep website visible */}
                     <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/5 backdrop-blur-[2px]"
                     />
                     
+                    {/* Anchored to top-right below the profile icon */}
                     <motion.div
-                        initial={{ scale: 0.98, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.98, opacity: 0, y: 20 }}
-                        className="relative w-full max-w-[340px] bg-white rounded-[2.5rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.4)] flex flex-col max-h-[85vh]"
+                        initial={{ opacity: 0, y: -10, scale: 0.95, transformOrigin: 'top right' }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        className="absolute top-[70px] right-6 md:right-10 w-full max-w-[320px] bg-white rounded-[2rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.2)] border border-zinc-100 flex flex-col"
                     >
-                        {/* Header - Light Header */}
-                        <div className="p-5 flex justify-between items-center border-b border-zinc-100 shrink-0 bg-zinc-50/50">
+                        {/* Header */}
+                        <div className="p-4 flex justify-between items-center border-b border-zinc-100 shrink-0 bg-zinc-50/50">
                             <div className="flex items-center gap-2">
                                 <UserCircleIcon className="w-4 h-4 text-zinc-900" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900">Member ID</span>
+                                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-900">Account Hub</span>
                             </div>
                             <button onClick={onClose} className="p-1.5 rounded-full hover:bg-zinc-200 text-zinc-400 hover:text-zinc-900 transition-colors">
-                                <CloseIcon className="w-4 h-4" />
+                                <CloseIcon className="w-3.5 h-3.5" />
                             </button>
                         </div>
 
-                        {/* Content Area - White Background */}
-                        <div className="px-6 py-8 flex flex-col items-center overflow-y-auto custom-scrollbar flex-1 bg-white">
+                        {/* Content Area */}
+                        <div className="px-6 py-6 flex flex-col items-center bg-white">
                             {/* Profile Image */}
-                            <div className="relative mb-6 shrink-0">
-                                <div className="absolute -inset-4 bg-red-600/10 blur-2xl rounded-full"></div>
+                            <div className="relative mb-5 shrink-0">
                                 <img 
                                     src={user.imageUrl} 
                                     alt="Profile" 
-                                    className="relative w-24 h-24 rounded-[2rem] object-cover border-4 border-white shadow-xl ring-1 ring-zinc-200" 
+                                    className="relative w-20 h-20 rounded-[1.75rem] object-cover border-4 border-white shadow-lg ring-1 ring-zinc-100" 
                                 />
-                                <div className="absolute -bottom-1 -right-1 bg-red-600 text-white p-1 rounded-xl shadow-lg z-10 border-2 border-white">
-                                    <CheckCircleIcon className="w-4 h-4" />
+                                <div className="absolute -bottom-1 -right-1 bg-red-600 text-white p-1 rounded-lg shadow-md z-10 border-2 border-white">
+                                    <CheckCircleIcon className="w-3.5 h-3.5" />
                                 </div>
                             </div>
 
                             {/* Name & Username */}
-                            <div className="text-center mb-8 w-full shrink-0">
-                                <h3 className="text-2xl font-black text-zinc-900 uppercase tracking-tight leading-none truncate">
+                            <div className="text-center mb-6 w-full shrink-0">
+                                <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tight leading-none truncate px-2">
                                     {user.fullName || 'FEZ Member'}
                                 </h3>
-                                <p className="text-[10px] text-red-600 font-black uppercase tracking-[0.2em] mt-3 bg-red-50 px-4 py-1.5 rounded-full inline-block border border-red-100">
+                                <p className="text-[9px] text-red-600 font-black uppercase tracking-[0.2em] mt-2 bg-red-50 px-3 py-1 rounded-full inline-block border border-red-100">
                                     @{user.username || 'legend'}
                                 </p>
                             </div>
 
-                            {/* Information Cards - Using light zinc for contrast */}
-                            <div className="w-full space-y-3 mb-8 shrink-0">
-                                <div className="flex flex-col gap-1 px-5 py-4 bg-zinc-50 rounded-2xl border border-zinc-100 group hover:border-red-200 transition-colors">
-                                    <span className="text-[8px] text-zinc-400 uppercase font-black tracking-widest">Network Email</span>
-                                    <span className="text-[11px] text-zinc-900 font-bold truncate">{user.primaryEmailAddress?.emailAddress}</span>
+                            {/* Detail Snippets */}
+                            <div className="w-full space-y-2 mb-6 shrink-0">
+                                <div className="flex items-center justify-between px-4 py-3 bg-zinc-50 rounded-xl border border-zinc-100">
+                                    <span className="text-[8px] text-zinc-400 uppercase font-black tracking-widest">Joined</span>
+                                    <span className="text-[10px] text-zinc-900 font-bold">{memberSince}</span>
                                 </div>
-                                <div className="flex flex-col gap-1 px-5 py-4 bg-zinc-50 rounded-2xl border border-zinc-100 group hover:border-red-200 transition-colors">
-                                    <span className="text-[8px] text-zinc-400 uppercase font-black tracking-widest">Enrollment Date</span>
-                                    <span className="text-[11px] text-zinc-900 font-bold">Initiated {memberSince}</span>
-                                </div>
-                                <div className="flex flex-col gap-1 px-5 py-4 bg-zinc-50 rounded-2xl border border-zinc-100 group hover:border-red-200 transition-colors">
-                                    <span className="text-[8px] text-zinc-400 uppercase font-black tracking-widest">Zone Permission</span>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-sm"></div>
-                                        <span className="text-[10px] text-zinc-900 font-black uppercase tracking-widest">Verified Artist</span>
+                                <div className="flex items-center justify-between px-4 py-3 bg-zinc-50 rounded-xl border border-zinc-100">
+                                    <span className="text-[8px] text-zinc-400 uppercase font-black tracking-widest">Status</span>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+                                        <span className="text-[9px] text-zinc-900 font-black uppercase">Verified Artist</span>
                                     </div>
                                 </div>
                             </div>
@@ -99,15 +96,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                             {/* Main Action Button */}
                             <button 
                                 onClick={handleManageAccount}
-                                className="w-full py-4 bg-zinc-900 text-white font-black uppercase tracking-[0.3em] text-[10px] rounded-2xl hover:bg-red-600 transition-all shadow-xl active:scale-95 shrink-0"
+                                className="w-full py-3.5 bg-zinc-900 text-white font-black uppercase tracking-[0.3em] text-[9px] rounded-xl hover:bg-red-600 transition-all shadow-lg active:scale-95 shrink-0"
                             >
                                 Manage Account
                             </button>
                         </div>
 
-                        {/* Footer - Light Footer */}
-                        <div className="p-4 bg-zinc-50 border-t border-zinc-100 text-center shrink-0">
-                            <p className="text-[8px] text-zinc-400 font-black uppercase tracking-[0.5em]">Identity Secured • Fuad Editing Zone</p>
+                        {/* Footer */}
+                        <div className="p-3 bg-zinc-50 border-t border-zinc-100 text-center shrink-0">
+                            <p className="text-[7px] text-zinc-400 font-black uppercase tracking-[0.4em]">Fuad Editing Zone • Secure Session</p>
                         </div>
                     </motion.div>
                 </div>
