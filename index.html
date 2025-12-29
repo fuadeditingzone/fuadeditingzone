@@ -77,56 +77,50 @@
       .neon-border { border: 1px solid rgba(220, 38, 38, 0.3); box-shadow: 0 0 15px rgba(220, 38, 38, 0.1); }
       .neon-text { text-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
 
-      /* Robust Clerk Modal Styling - Facebook style anchored to top-right */
+      /* Robust Clerk Modal Styling - Centered and optimized for zero clipping */
       .cl-modalBackdrop {
         position: fixed !important;
         inset: 0 !important;
         display: flex !important;
-        align-items: flex-start !important;
-        justify-content: flex-end !important;
-        background: rgba(0,0,0,0.08) !important; /* Extremely light backdrop */
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(0,0,0,0.6) !important;
+        backdrop-filter: blur(8px) !important;
         padding: 1rem !important;
-        padding-top: 5rem !important;
         z-index: 999999 !important;
-        backdrop-filter: none !important; /* REMOVED BLUR */
       }
       .cl-modalContent {
-        max-width: 600px !important; /* SMALLER WIDTH */
+        max-width: 480px !important; /* Standard small auth card width */
         width: 100% !important;
-        max-height: calc(100vh - 8rem) !important;
+        max-height: 90vh !important;
         display: flex !important;
-        border-radius: 1.5rem !important;
-        box-shadow: 0 20px 80px rgba(0,0,0,0.3) !important;
+        border-radius: 2.5rem !important;
+        box-shadow: 0 50px 120px rgba(0,0,0,0.5) !important;
         background: white !important;
-        overflow: hidden !important;
-        transform-origin: top right !important;
-        animation: modal-slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        animation: modal-pop-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
       }
-      
-      @keyframes modal-slide-down {
-        from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
-      }
-      
-      /* Specific targeting for Delete Account and internal view components */
+
+      /* Special Case for UserProfile (Account Management) - Needs more width */
       .cl-userProfile-root {
+        max-width: 800px !important;
         width: 100% !important;
-        height: 100% !important;
-        display: flex !important;
+      }
+      
+      @keyframes modal-pop-in {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
       }
       
       /* Fix for mobile screens */
       @media (max-width: 768px) {
         .cl-modalBackdrop {
-            padding-top: 4.5rem !important;
-            justify-content: center !important;
+            padding: 0.75rem !important;
         }
         .cl-modalContent {
-          border-radius: 1.25rem !important;
-          max-height: 80vh !important;
-        }
-        .cl-userProfile-navbar {
-          display: none !important;
+          border-radius: 2rem !important;
+          max-height: 85vh !important;
         }
       }
       
@@ -139,11 +133,11 @@
         background: transparent !important;
       }
       .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #f1f1f1 !important;
+        background: #e4e4e7 !important;
         border-radius: 10px !important;
       }
       .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #e5e5e5 !important;
+        background: #d4d4d8 !important;
       }
     </style>
 

@@ -26,20 +26,20 @@ if (rootElement) {
             colorInputBackground: '#f8f8f8',
             colorInputText: '#18181b',
             colorDanger: '#dc2626',
-            borderRadius: '1.5rem',
+            borderRadius: '1.75rem',
           },
           elements: {
-            // Positioned top-right and removed blur
-            modalBackdrop: "bg-black/5 fixed inset-0 flex items-start justify-end p-4 md:p-8 pt-20 md:pt-20 z-[99999]",
-            modalContent: "bg-white border border-zinc-200 shadow-[0_25px_100px_rgba(0,0,0,0.3)] rounded-[2.5rem] w-full max-w-[720px] overflow-hidden relative animate-in fade-in slide-in-from-top-4 duration-300",
-            card: "bg-white shadow-none border-none p-8 md:p-14 mx-auto",
+            // Centered layout to prevent clipping and improve visibility
+            modalBackdrop: "bg-black/60 backdrop-blur-md fixed inset-0 flex items-center justify-center p-4 z-[99999]",
+            modalContent: "bg-white border border-zinc-200 shadow-[0_40px_120px_rgba(0,0,0,0.5)] rounded-[3rem] w-full max-w-[500px] overflow-hidden relative animate-in fade-in zoom-in-95 duration-400",
+            card: "bg-white shadow-none border-none p-8 md:p-12 mx-auto",
             
             userProfile: {
-              root: "w-full bg-white flex flex-col md:flex-row h-full max-h-[80vh]",
+              root: "w-full bg-white flex flex-col md:flex-row h-full max-h-[85vh] max-w-[800px]",
               navbar: "border-r border-zinc-100 bg-zinc-50/50 p-6 md:w-64 flex-shrink-0",
               navbarButton: "text-zinc-500 font-black uppercase tracking-widest text-[9px] hover:bg-zinc-100 rounded-2xl mb-1.5 px-4 py-3",
               navbarButton__active: "text-red-600 bg-red-50 hover:bg-red-50 shadow-sm",
-              pageScrollBox: "custom-scrollbar flex-1 p-8 md:p-14 overflow-y-auto bg-white",
+              pageScrollBox: "custom-scrollbar flex-1 p-8 md:p-12 overflow-y-auto bg-white",
               headerTitle: "text-zinc-900 font-black uppercase tracking-tight text-2xl mb-2",
               headerSubtitle: "text-zinc-500 text-[10px] uppercase tracking-[0.35em] font-bold mb-8",
               profilePage__common: "bg-white",
@@ -58,18 +58,18 @@ if (rootElement) {
             formFieldInput: "bg-zinc-50 border-zinc-200 text-zinc-900 text-sm h-14 focus:border-red-600 transition-all placeholder:text-zinc-400 rounded-2xl px-5",
             
             userButtonAvatarBox: "border-[3px] border-red-600 w-11 h-11 shadow-lg",
-            userButtonPopoverCard: "bg-white border border-zinc-200 shadow-3xl w-96 overflow-hidden rounded-[2.5rem]",
+            userButtonPopoverCard: "bg-white border border-zinc-200 shadow-3xl w-[calc(100vw-2rem)] max-w-[420px] overflow-hidden rounded-[2.5rem]",
             userButtonPopoverActionButtonText: "text-zinc-900 font-black uppercase tracking-widest text-[11px]",
             userButtonPopoverActionButton: "hover:bg-zinc-50 transition-colors py-5 px-8",
             userButtonPopoverActionButtonIcon: "text-red-600 w-5 h-5",
             userButtonPopoverFooter: "hidden",
             
-            identityPreviewText: "text-zinc-900 font-bold text-base",
+            identityPreviewText: "text-zinc-900 font-bold text-base break-words",
             identityPreviewEditButtonIcon: "text-red-600",
             dividerLine: "bg-zinc-200",
             dividerText: "text-zinc-400 text-[10px] font-black uppercase tracking-widest",
             formFieldErrorText: "text-red-600 text-[10px] font-bold uppercase",
-            alert: "bg-red-50 border border-red-100 text-red-700 rounded-2xl text-[11px] font-bold p-4",
+            alert: "bg-red-50 border border-red-100 text-red-700 rounded-2xl text-[11px] font-bold p-5",
             scrollBox: "custom-scrollbar overflow-y-auto"
           }
         }}
