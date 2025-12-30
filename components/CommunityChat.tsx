@@ -38,10 +38,18 @@ interface ChatUser {
 }
 
 const UserProfilePopup: React.FC<{ user: ChatUser; onClose: () => void; onMessage: () => void }> = ({ user, onClose, onMessage }) => {
+  const [copied, setCopied] = useState(false);
   const isOnline = user.online;
   const lastSeenStr = user.lastSeen && typeof user.lastSeen === 'number' 
     ? new Date(user.lastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
     : 'Unknown';
+
+  const handleCopyUsername = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(user.username);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <motion.div 
@@ -68,7 +76,27 @@ const UserProfilePopup: React.FC<{ user: ChatUser; onClose: () => void; onMessag
           </div>
 
           <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-1">{user.name}</h3>
-          <p className="text-red-500 font-black text-[10px] uppercase tracking-[0.4em] mb-4">@{user.username}</p>
+          
+          <button 
+            onClick={handleCopyUsername}
+            className="group/copy relative flex flex-col items-center mb-4 transition-transform active:scale-95"
+            title="Click to copy username"
+          >
+            <p className="text-red-500 font-black text-[10px] uppercase tracking-[0.4em]">@{user.username}</p>
+            <AnimatePresence>
+              {copied && (
+                <motion.span 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: -20 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute text-[8px] font-black text-white bg-red-600 px-2 py-0.5 rounded uppercase tracking-widest whitespace-nowrap"
+                >
+                  Copied!
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <span className="text-[7px] text-gray-700 font-black uppercase tracking-[0.2em] mt-1 opacity-0 group-hover/copy:opacity-100 transition-opacity">Click to copy</span>
+          </button>
           
           <div className="flex items-center gap-2 mb-8">
             <span className={`text-[9px] font-black uppercase tracking-widest ${isOnline ? 'text-green-500' : 'text-gray-500'}`}>
@@ -92,7 +120,7 @@ const UserProfilePopup: React.FC<{ user: ChatUser; onClose: () => void; onMessag
             className="w-full py-5 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3"
           >
             <SendIcon className="w-4 h-4" />
-            Establish Secure Link
+            Send Message
           </button>
         </div>
         

@@ -1,295 +1,323 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getDatabase, ref, push, onValue, set, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import emailjs from 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { siteConfig } from '../config';
-import { EmailIcon, WhatsAppIcon, CheckCircleIcon, SparklesIcon, ChevronRightIcon } from './Icons';
+import { EmailIcon, WhatsAppIcon, CheckCircleIcon, SparklesIcon, PlayIcon, CloseIcon } from './Icons';
 
-interface ContactProps {
-    onStartOrder: (platform: 'whatsapp' | 'email') => void;
-}
-
-const SERVICE_TEMPLATES: Record<string, string> = {
-    'VFX/Video Editing': "Hi Fuad Ahmed, I'm interested in a cinematic VFX/Video Editing project. I have footage that needs professional compositing and effects. Looking forward to your details!",
-    'YouTube Thumbnail': "Hi Selected Legend, I need a high-CTR YouTube thumbnail for my upcoming video. I want it to be eye-catching and consistent with my brand. What are the next steps?",
-    'Photo Manipulation': "Hello! I saw your Photo Manipulation work and it's incredible. I have a concept that needs your artistic touch to bring to life. Let's discuss the vision.",
-    'Banner/Design': "Hey FEZ Zone, I'm looking for a professional Banner/Graphic Design project for my social media. Can you help me create something premium?",
-    'Custom Request': "Hello Fuad, I have a specific custom project in mind that combines multiple services. I'd love to share the details with you and get a quote."
+// Initialize Services
+const firebaseConfig = {
+  databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
+  apiKey: "AIzaSyCC3wbQp5713OqHlf1jLZabA0VClDstfKY",
+  projectId: "fuad-editing-zone",
+  messagingSenderId: "1032345523456",
+  appId: "1:1032345523456:web:123456789",
 };
 
-const ABUSIVE_WORDS = [
-    'fuck', 'shit', 'bitch', 'asshole', 'dick', 'pussy', 'slut', 'whore', 'bastard', 'cunt', 'faggot', 'nigger', 'retard'
-];
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+emailjs.init("Z-tNNcQWjE-izOeae");
 
-export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
-    const { isSignedIn, user } = useUser();
-    const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
-    const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
-    const [errorMessage, setErrorMessage] = useState('');
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        service: '',
-        message: ''
+interface Order {
+  id: string;
+  service: string;
+  message: string;
+  status: 'Pending' | 'Accepted' | 'Rejected' | 'Completed';
+  timestamp: number;
+}
+
+export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') => void }> = ({ onStartOrder }) => {
+  const { isSignedIn, user } = useUser();
+  const [intersectionRef] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [userOrders, setUserOrders] = useState<Order[]>([]);
+  const [notifiedOrderId, setNotifiedOrderId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({ name: '', email: '', service: '', message: '' });
+
+  // 1. Automatic User Sync to Firebase (Crucial for Search)
+  useEffect(() => {
+    if (isSignedIn && user) {
+      const userRef = ref(db, `users/${user.id}`);
+      set(userRef, {
+        id: user.id,
+        name: user.fullName || 'Legend',
+        username: user.username || user.firstName?.toLowerCase() || 'legend',
+        avatar: user.imageUrl,
+        email: user.primaryEmailAddress?.emailAddress,
+        lastSeen: serverTimestamp()
+      });
+      setFormData(prev => ({ 
+        ...prev, 
+        name: user.fullName || '', 
+        email: user.primaryEmailAddress?.emailAddress || '' 
+      }));
+    }
+  }, [isSignedIn, user]);
+
+  // 2. Real-time Order Monitoring & EmailJS Automation
+  useEffect(() => {
+    if (!isSignedIn || !user) return;
+    const ordersRef = ref(db, `orders/${user.id}`);
+    
+    const unsubscribe = onValue(ordersRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.entries(data).map(([id, val]: [string, any]) => ({ id, ...val })) as Order[];
+        list.sort((a, b) => b.timestamp - a.timestamp);
+        
+        // Automation: Detect Status Change for Email Notifications
+        list.forEach(newOrder => {
+          const oldOrder = userOrders.find(o => o.id === newOrder.id);
+          
+          // Trigger when status changes from Pending to Accepted/Rejected
+          if (oldOrder && oldOrder.status === 'Pending' && (newOrder.status === 'Accepted' || newOrder.status === 'Rejected')) {
+            setNotifiedOrderId(newOrder.id);
+            
+            // EmailJS Notification Logic
+            const emailParams = {
+              user_name: user.fullName,
+              user_email: user.primaryEmailAddress?.emailAddress,
+              order_status: newOrder.status,
+              service_type: newOrder.service,
+              admin_handle: "@fuadeditingzone"
+            };
+
+            emailjs.send("service_default", "template_order_status", emailParams)
+              .then(() => console.log("Status Email Transmitted"))
+              .catch((err) => console.error("Email System Offline:", err));
+
+            // Sound Alert
+            new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3').play().catch(() => {});
+          }
+        });
+        
+        setUserOrders(list);
+      }
     });
+    return () => unsubscribe();
+  }, [isSignedIn, user, userOrders]);
 
-    // Auto-sync form data with Clerk user info when signed in
-    useEffect(() => {
-        if (isSignedIn && user) {
-            setFormData(prev => ({
-                ...prev,
-                name: user.fullName || '',
-                email: user.primaryEmailAddress?.emailAddress || ''
-            }));
-        }
-    }, [isSignedIn, user]);
+  const hasPendingOrder = useMemo(() => userOrders.some(o => o.status === 'Pending'), [userOrders]);
 
-    const isAbusive = (text: string) => {
-        const lowerText = text.toLowerCase();
-        return ABUSIVE_WORDS.some(word => lowerText.includes(word));
+  // 3. Form Submission (Firebase + Formspree)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); // Anti-Scroll Fixed
+    if (!isSignedIn || !user || hasPendingOrder) return;
+
+    setStatus('submitting');
+    const orderId = `order_${Date.now()}`;
+    const orderData = {
+      service: formData.service,
+      message: formData.message,
+      status: 'Pending',
+      timestamp: Date.now(),
+      userName: user.fullName,
+      userEmail: user.primaryEmailAddress?.emailAddress
     };
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!isSignedIn) return;
+    try {
+      // Step A: Save to Firebase RTDB
+      await set(ref(db, `orders/${user.id}/${orderId}`), orderData);
+      
+      // Step B: Direct Email Alert via Formspree
+      await fetch(siteConfig.api.formspreeEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ ...orderData, _subject: `NEW ORDER ALERT: ${formData.service} from ${user.fullName}` })
+      });
 
-        // Profanity Check
-        if (isAbusive(formData.message) || isAbusive(formData.name)) {
-            setErrorMessage("Your message contains prohibited language. Please keep it professional.");
-            setStatus('error');
-            setTimeout(() => setStatus('idle'), 3000);
-            return;
-        }
+      setStatus('success');
+      setFormData(prev => ({ ...prev, message: '', service: '' }));
+      setTimeout(() => setStatus('idle'), 3000);
+    } catch (error) {
+      console.error("Critical Failure:", error);
+      setStatus('idle');
+    }
+  };
 
-        setStatus('submitting');
-        
-        try {
-            const response = await fetch(siteConfig.api.formspreeEndpoint, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json' 
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    _subject: `FEZ Order: ${formData.service || 'New Request'} from ${formData.name}`,
-                    _source: "Fuad Editing Zone Portfolio",
-                    userId: user?.id,
-                    clerk_email: user?.primaryEmailAddress?.emailAddress
-                })
-            });
+  return (
+    <section ref={intersectionRef} id="contact" className="py-24 bg-black relative z-10 select-none overflow-hidden">
+      {/* STATUS CHANGE POPUP */}
+      <AnimatePresence>
+        {notifiedOrderId && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[500] w-full max-w-sm px-6"
+          >
+            <div className="bg-blue-600 text-white p-6 rounded-[2rem] shadow-[0_20px_50px_rgba(37,99,235,0.5)] border border-blue-400/30 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <SparklesIcon className="w-6 h-6 animate-pulse" />
+                <p className="text-[10px] font-black uppercase tracking-widest">Order Status Updated!</p>
+              </div>
+              <button onClick={() => setNotifiedOrderId(null)} className="p-1 hover:rotate-90 transition-transform">
+                <CloseIcon className="w-5 h-5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            if (response.ok) {
-                setStatus('success');
-                setFormData(prev => ({ ...prev, message: '', service: '' }));
-            } else {
-                throw new Error('Transmission Failed');
-            }
-        } catch (error) {
-            console.error("Submission Error:", error);
-            alert("Signal transmission failed. Please use WhatsApp for immediate inquiries.");
-            setStatus('idle');
-        }
-    };
+      <div className="container mx-auto px-6 max-w-6xl">
+        <div className="mb-16 text-center">
+          <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Neural Operations</span>
+          <h2 className="text-white text-4xl md:text-6xl font-black uppercase tracking-tighter">Mission Briefing</h2>
+          <div className="mt-4 inline-block px-6 py-2 rounded-full border border-red-600/30 bg-red-600/10 shadow-[0_0_20px_rgba(220,38,38,0.2)]">
+            <span className="text-[12px] font-black text-red-500 uppercase tracking-[0.4em]">@fuadeditingzone</span>
+          </div>
+        </div>
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        
-        if (name === 'service') {
-            // Auto-populate message based on template
-            setFormData(prev => ({ 
-                ...prev, 
-                service: value,
-                message: value ? SERVICE_TEMPLATES[value] || prev.message : prev.message 
-            }));
-        } else {
-            setFormData(prev => ({ ...prev, [name]: value }));
-        }
-    };
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          
+          {/* SECURE ORDER TERMINAL */}
+          <div className="bg-[#080808]/90 border border-white/10 rounded-[3.5rem] p-10 md:p-14 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-8 opacity-5">
+              <SparklesIcon className="w-24 h-24 text-red-600" />
+            </div>
 
-    const containerVariants = {
-        hidden: { opacity: 0, y: 30 },
-        visible: { 
-            opacity: 1, 
-            y: 0,
-            transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
-        }
-    };
-
-    return (
-        <section ref={ref} id="contact" className="py-24 bg-black relative z-10 select-none overflow-hidden">
-            {/* Background Accents */}
-            <div className="absolute top-1/4 left-0 w-96 h-96 bg-red-600/5 blur-[120px] pointer-events-none rounded-full"></div>
-            <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] bg-red-900/5 blur-[150px] pointer-events-none rounded-full"></div>
-
-            <motion.div 
-                variants={containerVariants}
-                initial="hidden"
-                animate={isVisible ? "visible" : "hidden"}
-                className="container mx-auto px-6 max-w-4xl flex flex-col items-center"
-            >
-                <div className="mb-12 text-center">
-                    <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Transmission Port</span>
-                    <h2 className="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter">Order Now</h2>
-                    <div className="h-1 w-16 bg-red-600 mx-auto mt-6 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]"></div>
+            {!isSignedIn ? (
+              <div className="py-24 text-center space-y-10">
+                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto border border-white/10">
+                  <PlayIcon className="w-8 h-8 text-red-600" />
+                </div>
+                <h3 className="text-2xl font-black text-white uppercase tracking-tight">Identity Authentication Required</h3>
+                <SignInButton mode="modal">
+                  <button className="bg-red-600 hover:bg-red-700 text-white font-black py-5 px-14 uppercase tracking-[0.5em] text-[11px] rounded-2xl transition-all shadow-[0_10px_40px_rgba(220,38,38,0.3)]">Verify Signature</button>
+                </SignInButton>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-[9px] uppercase font-black text-gray-600 tracking-widest ml-1">Authorized Name</label>
+                    <input readOnly value={formData.name} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-sm text-gray-500 outline-none" />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[9px] uppercase font-black text-gray-600 tracking-widest ml-1">Signal Protocol</label>
+                    <input readOnly value={formData.email} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-sm text-gray-500 outline-none" />
+                  </div>
                 </div>
 
-                <div className="w-full bg-[#080808]/90 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-8 md:p-14 shadow-[0_50px_100px_rgba(0,0,0,1)] relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.03] pointer-events-none"></div>
-                    
-                    <div className="relative z-10">
-                        <AnimatePresence mode="wait">
-                            {!isSignedIn ? (
-                                <motion.div 
-                                    key="auth-required"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="py-16 text-center space-y-8"
-                                >
-                                    <div className="w-20 h-20 bg-red-600/10 rounded-full flex items-center justify-center mx-auto border border-red-600/20">
-                                        <SparklesIcon className="w-10 h-10 text-red-600" />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <h3 className="text-2xl font-black text-white uppercase tracking-tight">Identity Required</h3>
-                                        <p className="text-gray-400 text-xs max-w-xs mx-auto font-medium">Please sign in to your account to place an order in the Zone.</p>
-                                    </div>
-                                    <SignInButton mode="modal">
-                                        <button className="btn-angular bg-red-600 hover:bg-red-700 text-white font-black py-4 px-12 uppercase tracking-[0.4em] text-[11px] transition-all shadow-[0_15px_30px_rgba(220,38,38,0.3)]">
-                                            Verify
-                                        </button>
-                                    </SignInButton>
-                                </motion.div>
-                            ) : status === 'success' ? (
-                                <motion.div 
-                                    key="success-state"
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="py-16 text-center"
-                                >
-                                    <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-green-500/20 shadow-[0_0_40px_rgba(34,197,94,0.15)]">
-                                        <CheckCircleIcon className="w-10 h-10 text-green-500" />
-                                    </div>
-                                    <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">Order Received</h3>
-                                    <p className="text-gray-400 text-sm max-w-xs mx-auto mb-10 font-medium">Mission acknowledged, {user?.firstName}. Fuad will contact you shortly.</p>
-                                    <button 
-                                        onClick={() => setStatus('idle')} 
-                                        className="text-red-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all"
-                                    >
-                                        Place Another Order
-                                    </button>
-                                </motion.div>
-                            ) : (
-                                <form id="contact-form" onSubmit={handleSubmit} className="space-y-8">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between ml-1">
-                                                <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em]">Name</label>
-                                                <span className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">Encrypted</span>
-                                            </div>
-                                            <input 
-                                                required 
-                                                name="name" 
-                                                readOnly
-                                                tabIndex={-1}
-                                                value={formData.name} 
-                                                className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white outline-none cursor-not-allowed opacity-60 grayscale shadow-inner" 
-                                                placeholder="Your Name" 
-                                            />
-                                        </div>
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between ml-1">
-                                                <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em]">Email</label>
-                                                <span className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">Verified</span>
-                                            </div>
-                                            <input 
-                                                required 
-                                                type="email" 
-                                                name="email" 
-                                                readOnly
-                                                tabIndex={-1}
-                                                value={formData.email} 
-                                                className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white outline-none cursor-not-allowed opacity-60 grayscale shadow-inner" 
-                                                placeholder="Your Email" 
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Select Service</label>
-                                        <div className="relative">
-                                            <select 
-                                                required
-                                                name="service"
-                                                value={formData.service}
-                                                onChange={handleChange}
-                                                className="w-full bg-black/60 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 outline-none transition-all appearance-none cursor-pointer"
-                                            >
-                                                <option value="" disabled>Choose a mission type...</option>
-                                                <option value="VFX/Video Editing">VFX & Video Editing</option>
-                                                <option value="YouTube Thumbnail">YouTube Thumbnail</option>
-                                                <option value="Photo Manipulation">Photo Manipulation</option>
-                                                <option value="Banner/Design">Banner & Design</option>
-                                                <option value="Custom Request">Custom Mission</option>
-                                            </select>
-                                            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-red-600">
-                                                <ChevronRightIcon className="w-4 h-4 rotate-90" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] uppercase font-black text-gray-500 tracking-[0.3em] ml-1">Project Brief</label>
-                                        <textarea 
-                                            required 
-                                            name="message" 
-                                            rows={5} 
-                                            value={formData.message} 
-                                            onChange={handleChange} 
-                                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-7 py-5 text-sm text-white focus:border-red-600 focus:bg-black outline-none resize-none transition-all placeholder:text-gray-800 shadow-inner" 
-                                            placeholder="Details of your project..."
-                                        ></textarea>
-                                    </div>
-
-                                    {status === 'error' && (
-                                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-[10px] font-black uppercase tracking-widest text-center bg-red-500/10 py-3 rounded-lg border border-red-500/20">
-                                            {errorMessage}
-                                        </motion.p>
-                                    )}
-
-                                    <button 
-                                        type="submit" 
-                                        disabled={status === 'submitting'} 
-                                        className="w-full bg-red-600 hover:bg-red-700 text-white font-black py-5 rounded-2xl uppercase tracking-[0.5em] text-[11px] transition-all shadow-[0_20px_40px_rgba(220,38,38,0.3)] active:scale-[0.98] flex items-center justify-center gap-4 group"
-                                    >
-                                        {status === 'submitting' ? (
-                                            <>
-                                                <SparklesIcon className="w-5 h-5 animate-spin" />
-                                                <span>Transmitting...</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform duration-500" />
-                                                <span>Place Order</span>
-                                            </>
-                                        )}
-                                    </button>
-                                </form>
-                            )}
-                        </AnimatePresence>
-                    </div>
+                <div className="space-y-3">
+                  <label className="text-[9px] uppercase font-black text-gray-600 tracking-widest ml-1">Operation Type</label>
+                  <select 
+                    required 
+                    name="service" 
+                    value={formData.service} 
+                    onChange={e => setFormData(p => ({ ...p, service: e.target.value }))} 
+                    className="w-full bg-black border border-blue-600/30 rounded-2xl px-6 py-5 text-sm text-white focus:border-red-600 outline-none transition-all cursor-pointer shadow-lg"
+                  >
+                    <option value="" disabled>Select Objective...</option>
+                    <option value="Cinematic VFX Mastery">Cinematic VFX Mastery</option>
+                    <option value="High-CTR YouTube Thumbnail">High-CTR YouTube Thumbnail</option>
+                    <option value="Elite Photo Manipulation">Elite Photo Manipulation</option>
+                    <option value="Legendary Anime Edit">Legendary Anime Edit (AMV)</option>
+                  </select>
                 </div>
 
-                <div className="mt-20 flex flex-col md:flex-row items-center justify-center gap-10 opacity-60 hover:opacity-100 transition-opacity duration-700">
-                    <button onClick={() => onStartOrder('whatsapp')} className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-green-500 hover:text-green-400 transition-colors group">
-                        <WhatsAppIcon className="w-5 h-5 transition-transform group-hover:-translate-y-1" /> WhatsApp Line
-                    </button>
-                    <div className="w-1.5 h-1.5 bg-white/20 rounded-full hidden md:block"></div>
-                    <button onClick={() => onStartOrder('email')} className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 hover:text-white transition-colors group">
-                        <EmailIcon className="w-5 h-5 transition-transform group-hover:-translate-y-1" /> Contact Direct
-                    </button>
+                <div className="space-y-3">
+                  <label className="text-[9px] uppercase font-black text-gray-600 tracking-widest ml-1">Mission Details</label>
+                  <textarea 
+                    required 
+                    rows={4} 
+                    value={formData.message} 
+                    onChange={e => setFormData(p => ({ ...p, message: e.target.value }))} 
+                    className="w-full bg-black border border-blue-600/30 rounded-2xl px-6 py-5 text-sm text-white focus:border-red-600 outline-none resize-none transition-all shadow-lg" 
+                    placeholder="Describe your creative vision..." 
+                  />
                 </div>
-            </motion.div>
-        </section>
-    );
+
+                <button 
+                  type="submit" 
+                  disabled={status === 'submitting' || hasPendingOrder} 
+                  className={`w-full py-6 rounded-2xl text-[11px] font-black uppercase tracking-[0.6em] transition-all flex items-center justify-center gap-4 ${
+                    hasPendingOrder 
+                      ? 'bg-yellow-600/10 text-yellow-500 cursor-not-allowed border border-yellow-500/20' 
+                      : 'bg-red-600 hover:bg-red-700 text-white shadow-[0_20px_50px_rgba(220,38,38,0.4)] active:scale-95'
+                  }`}
+                >
+                  {status === 'submitting' ? <SparklesIcon className="w-5 h-5 animate-spin" /> : 
+                   hasPendingOrder ? 'Mission In Progress' : 'Initiate Protocol'}
+                </button>
+                
+                {hasPendingOrder && (
+                  <p className="text-[9px] text-center text-yellow-500/60 uppercase font-black tracking-widest mt-4">
+                    Active order detected. Please await completion of current mission.
+                  </p>
+                )}
+              </form>
+            )}
+          </div>
+
+          {/* REAL-TIME DASHBOARD */}
+          <div className="space-y-8">
+            <div className="bg-[#0a0a0a] border border-white/5 rounded-[3rem] p-10 min-h-[500px] shadow-inner">
+                <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-6">
+                    <h3 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-4">
+                        <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse"></div>
+                        Mission History
+                    </h3>
+                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">{userOrders.length} Files Found</span>
+                </div>
+
+                <div className="space-y-6 max-h-[550px] overflow-y-auto pr-3 custom-scrollbar">
+                    {userOrders.length === 0 ? (
+                        <div className="py-24 text-center opacity-20 flex flex-col items-center gap-6">
+                            <SparklesIcon className="w-16 h-16" />
+                            <p className="text-[10px] uppercase font-black tracking-[0.5em]">No Missions Recorded</p>
+                        </div>
+                    ) : (
+                        userOrders.map((order) => (
+                            <motion.div 
+                                key={order.id} 
+                                initial={{ opacity: 0, x: 30 }} 
+                                animate={{ opacity: 1, x: 0 }}
+                                className={`p-8 rounded-3xl border transition-all duration-500 ${
+                                    order.status === 'Pending' ? 'bg-yellow-600/5 border-yellow-500/30 shadow-[0_0_30px_rgba(234,179,8,0.1)]' :
+                                    order.status === 'Accepted' ? 'bg-blue-600/5 border-blue-500/30 shadow-[0_0_30px_rgba(37,99,235,0.15)]' :
+                                    order.status === 'Rejected' ? 'bg-red-600/5 border-red-500/20' :
+                                    'bg-green-600/5 border-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.1)]'
+                                }`}
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <p className="text-[13px] font-black text-white uppercase tracking-widest mb-1">{order.service}</p>
+                                        <p className="text-[9px] text-gray-600 font-bold uppercase">{new Date(order.timestamp).toLocaleString()}</p>
+                                    </div>
+                                    <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                        order.status === 'Pending' ? 'text-yellow-500 border-yellow-500/30 bg-yellow-500/5' :
+                                        order.status === 'Accepted' ? 'text-blue-500 border-blue-500/30 bg-blue-500/5' :
+                                        order.status === 'Rejected' ? 'text-red-500 border-red-500/30 bg-red-500/5' :
+                                        'text-green-500 border-green-500/30 bg-green-500/5'
+                                    }`}>
+                                        {order.status}
+                                    </div>
+                                </div>
+                                <p className="text-[11px] text-gray-500 font-medium leading-relaxed italic border-l-2 border-white/5 pl-4">
+                                  "{order.message.length > 100 ? order.message.slice(0, 100) + '...' : order.message}"
+                                </p>
+                            </motion.div>
+                        ))
+                    )}
+                </div>
+            </div>
+
+            {/* EXTERNAL COMMS */}
+            <div className="grid grid-cols-2 gap-6">
+                <button onClick={() => onStartOrder('whatsapp')} className="p-8 bg-green-600/10 border border-green-600/20 rounded-[2.5rem] text-center group hover:bg-green-600/20 transition-all shadow-xl">
+                    <WhatsAppIcon className="w-8 h-8 text-green-500 mx-auto mb-4 transition-transform group-hover:-translate-y-2" />
+                    <p className="text-[10px] font-black text-white uppercase tracking-widest">WhatsApp Direct</p>
+                </button>
+                <button onClick={() => onStartOrder('email')} className="p-8 bg-red-600/10 border border-red-600/20 rounded-[2.5rem] text-center group hover:bg-red-600/20 transition-all shadow-xl">
+                    <EmailIcon className="w-8 h-8 text-red-500 mx-auto mb-4 transition-transform group-hover:-translate-y-2" />
+                    <p className="text-[10px] font-black text-white uppercase tracking-widest">Official Email</p>
+                </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 };

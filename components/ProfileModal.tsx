@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@clerk/clerk-react';
 import { CloseIcon, CheckCircleIcon, UserCircleIcon, SparklesIcon } from './Icons';
@@ -10,6 +10,7 @@ interface ProfileModalProps {
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
     const { user, isLoaded } = useUser();
+    const [copied, setCopied] = useState(false);
 
     // 7-day modification restriction logic
     const canModify = useMemo(() => {
@@ -20,6 +21,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     }, [user]);
 
     if (!isLoaded || !user) return null;
+
+    const handleCopyUsername = () => {
+        const username = user.username || 'selected_legend';
+        navigator.clipboard.writeText(username);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     const memberSince = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'New Member';
 
@@ -85,10 +93,26 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                 <h3 className="text-4xl md:text-5xl font-black text-zinc-900 uppercase tracking-tighter leading-none break-words px-6 mb-8">
                                     {user.fullName || 'FEZ Artist'}
                                 </h3>
-                                <div>
-                                    <p className="text-[14px] md:text-base text-red-600 font-black uppercase tracking-[0.6em] bg-red-50 px-12 py-5 rounded-full inline-block border-2 border-red-100 shadow-sm">
+                                <div className="relative">
+                                    <button 
+                                        onClick={handleCopyUsername}
+                                        className="group/personal-copy relative text-[14px] md:text-base text-red-600 font-black uppercase tracking-[0.6em] bg-red-50 px-12 py-5 rounded-full inline-block border-2 border-red-100 shadow-sm transition-transform active:scale-95"
+                                        title="Click to copy your username"
+                                    >
                                         @{user.username || 'selected_legend'}
-                                    </p>
+                                        <AnimatePresence>
+                                            {copied && (
+                                                <motion.span 
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: -45 }}
+                                                    exit={{ opacity: 0 }}
+                                                    className="absolute left-1/2 -translate-x-1/2 text-[10px] font-black text-white bg-red-600 px-3 py-1 rounded-full uppercase tracking-widest shadow-xl"
+                                                >
+                                                    Copied!
+                                                </motion.span>
+                                            )}
+                                        </AnimatePresence>
+                                    </button>
                                 </div>
                             </div>
 
