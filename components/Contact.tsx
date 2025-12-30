@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
@@ -157,7 +156,7 @@ export const Contact: React.FC<ContactProps> = ({ onStartOrder }) => {
                                     </div>
                                     <SignInButton mode="modal">
                                         <button className="btn-angular bg-red-600 hover:bg-red-700 text-white font-black py-4 px-12 uppercase tracking-[0.4em] text-[11px] transition-all shadow-[0_15px_30px_rgba(220,38,38,0.3)]">
-                                            Authenticate
+                                            Verify
                                         </button>
                                     </SignInButton>
                                 </motion.div>

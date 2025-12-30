@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   SignedIn, 
@@ -63,7 +62,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
               <SignedOut>
                 <SignInButton mode="modal">
                   <button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.3em] transition-all">
-                    Sign In
+                    Verify
                   </button>
                 </SignInButton>
                 <button 
@@ -120,7 +119,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                 <SignedOut>
                     <SignInButton mode="modal">
                     <button className="text-[10px] font-black text-red-500 uppercase tracking-widest">
-                        Login
+                        Verify
                     </button>
                     </SignInButton>
                 </SignedOut>

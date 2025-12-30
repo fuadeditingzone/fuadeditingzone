@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUser, SignIn } from '@clerk/clerk-react';
 
 import type { GraphicWork, VideoWork, VfxSubTab, ModalItem } from './hooks/types';
 import { siteConfig } from './config';
@@ -14,7 +14,7 @@ import { ModalViewer, GalleryGridModal } from './components/ModalViewer';
 import { ContextMenu } from './components/ContextMenu';
 import { VFXBackground } from './components/VFXBackground';
 import { MediaSidebar } from './components/MediaSidebar';
-import { YouTubeIcon } from './components/Icons';
+import { YouTubeIcon, SparklesIcon } from './components/Icons';
 import { ParallaxProvider } from './contexts/ParallaxContext';
 import { MediaGridBackground } from './components/MediaGridBackground';
 import { ServicesListPopup } from './components/ServicesListPopup';
@@ -25,6 +25,7 @@ import { IntroPresentation } from './components/IntroPresentation';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 
 export default function App() {
+  const { isSignedIn, isLoaded: isClerkLoaded } = useUser();
   const [showIntro, setShowIntro] = useState(() => {
     if (typeof window !== 'undefined') return !localStorage.getItem('fez_intro_seen');
     return true;
@@ -40,6 +41,7 @@ export default function App() {
   const [selectionTarget, setSelectionTarget] = useState<'whatsapp' | 'email' | null>(null);
   const [isYouTubeRedirectOpen, setIsYouTubeRedirectOpen] = useState(false);
   const [isNavVisible, setIsNavVisible] = useState(true);
+  const [isLockActive, setIsLockActive] = useState(false);
   const idleTimeoutRef = useRef<number | null>(null);
   
   const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.content.portfolio.animeEdits[0].videoId || 'oAEDU-nycsE');
@@ -48,7 +50,23 @@ export default function App() {
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
-  const isAnyOverlayActive = !!(showIntro || modalState || isGalleryGridOpen || singleImageViewerState || isServicesPopupOpen || selectionTarget || isYouTubeRedirectOpen || isMediaSidebarOpen || contextMenu);
+  const isAnyOverlayActive = !!(showIntro || modalState || isGalleryGridOpen || singleImageViewerState || isServicesPopupOpen || selectionTarget || isYouTubeRedirectOpen || isMediaSidebarOpen || contextMenu || isLockActive);
+
+  // --- 5-Minute Force Login Timer ---
+  useEffect(() => {
+    if (isSignedIn) {
+        setIsLockActive(false);
+        return;
+    }
+
+    const timer = setTimeout(() => {
+        if (!isSignedIn && isClerkLoaded) {
+            setIsLockActive(true);
+        }
+    }, 300000); // 5 minutes (300,000ms)
+
+    return () => clearTimeout(timer);
+  }, [isSignedIn, isClerkLoaded]);
 
   const handleInactivity = useCallback(() => {
     setIsNavVisible(true);
@@ -186,6 +204,45 @@ export default function App() {
                   </motion.main>
               )}
           </AnimatePresence>
+
+          {/* Forced Authentication Overlay */}
+          <AnimatePresence>
+            {isLockActive && (
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[100000] bg-black/90 flex flex-col items-center justify-center p-6"
+                >
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-600/10 blur-[120px] rounded-full pointer-events-none"></div>
+                    <div className="relative w-full max-w-[480px] bg-white rounded-[3rem] overflow-hidden shadow-3xl">
+                        <div className="p-8 md:p-12 text-center bg-white">
+                             <div className="w-20 h-20 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-red-600/20">
+                                <SparklesIcon className="w-10 h-10 text-red-600" />
+                            </div>
+                            <h2 className="text-zinc-900 text-3xl font-black uppercase tracking-tight mb-4">Session Lock</h2>
+                            <p className="text-zinc-500 text-sm font-medium leading-relaxed mb-10 uppercase tracking-widest text-[10px]">Your browsing session has expired. Verification is required to access the Zone content.</p>
+                            <div className="flex justify-center">
+                                <SignIn 
+                                    routing="hash"
+                                    appearance={{
+                                        elements: {
+                                            rootBox: "w-full",
+                                            card: "shadow-none border-none p-0",
+                                            header: "hidden",
+                                            footer: "hidden",
+                                            formButtonPrimary: "bg-red-600 hover:bg-red-700 h-16 rounded-2xl font-black uppercase tracking-[0.4em] text-[11px] shadow-2xl transition-all",
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <p className="mt-8 text-white/40 text-[9px] font-black uppercase tracking-[0.6em]">Fuad Editing Zone • Artist Hub Secure</p>
+                </motion.div>
+            )}
+          </AnimatePresence>
+
           {modalState && <ModalViewer state={modalState} onClose={() => setModalState(null)} onNext={handleModalNext} onPrev={handleModalPrev} />}
           {isGalleryGridOpen && <GalleryGridModal items={combinedPortfolio} onClose={() => setIsGalleryGridOpen(false)} onItemClick={index => { setIsGalleryGridOpen(false); handleOpenModal(combinedPortfolio, index); }} />}
           {isServicesPopupOpen && <ServicesListPopup onClose={() => setIsServicesPopupOpen(false)} />}

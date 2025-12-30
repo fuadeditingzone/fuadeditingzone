@@ -29,9 +29,9 @@ if (rootElement) {
             borderRadius: '1.75rem',
           },
           elements: {
-            // Centered layout to prevent clipping and improve visibility
-            modalBackdrop: "bg-black/60 backdrop-blur-md fixed inset-0 flex items-center justify-center p-4 z-[99999]",
-            modalContent: "bg-white border border-zinc-200 shadow-[0_40px_120px_rgba(0,0,0,0.5)] rounded-[3rem] w-full max-w-[500px] overflow-hidden relative animate-in fade-in zoom-in-95 duration-400",
+            // Background is NOT blurred. Positioned in a Dropdown layout (Top Right) on desktop.
+            modalBackdrop: "bg-black/40 backdrop-blur-none fixed inset-0 flex items-start justify-end p-4 md:p-8 pt-20 md:pt-24 z-[99999]",
+            modalContent: "bg-white border border-zinc-200 shadow-[0_40px_120px_rgba(0,0,0,0.5)] rounded-[3rem] w-full max-w-[480px] overflow-hidden relative animate-in fade-in slide-in-from-top-10 duration-500",
             card: "bg-white shadow-none border-none p-8 md:p-12 mx-auto",
             
             userProfile: {

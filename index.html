@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v9.7.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v9.8.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -77,54 +77,59 @@
       .neon-border { border: 1px solid rgba(220, 38, 38, 0.3); box-shadow: 0 0 15px rgba(220, 38, 38, 0.1); }
       .neon-text { text-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
 
-      /* Robust Clerk Modal Styling - Centered and optimized for zero clipping */
+      /* Removed Blur for Authentication Modals */
       .cl-modalBackdrop {
         position: fixed !important;
         inset: 0 !important;
         display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: rgba(0,0,0,0.6) !important;
-        backdrop-filter: blur(8px) !important;
-        padding: 1rem !important;
+        align-items: flex-start !important;
+        justify-content: flex-end !important;
+        background: rgba(0,0,0,0.4) !important;
+        backdrop-filter: none !important;
+        padding: 1.5rem !important;
+        padding-top: 5.5rem !important;
         z-index: 999999 !important;
       }
+      
       .cl-modalContent {
-        max-width: 480px !important; /* Standard small auth card width */
+        max-width: 480px !important;
         width: 100% !important;
-        max-height: 90vh !important;
+        max-height: 85vh !important;
         display: flex !important;
-        border-radius: 2.5rem !important;
-        box-shadow: 0 50px 120px rgba(0,0,0,0.5) !important;
+        border-radius: 3rem !important;
+        box-shadow: 0 50px 120px rgba(0,0,0,0.6) !important;
         background: white !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
-        animation: modal-pop-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        animation: modal-drop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
       }
 
-      /* Special Case for UserProfile (Account Management) - Needs more width */
-      .cl-userProfile-root {
-        max-width: 800px !important;
-        width: 100% !important;
+      /* Desktop Dropdown Style for UserProfile */
+      @media (min-width: 1024px) {
+        .cl-userProfile-root {
+          max-width: 820px !important;
+          width: 100% !important;
+        }
       }
       
-      @keyframes modal-pop-in {
-        from { opacity: 0; transform: scale(0.95) translateY(10px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
+      @keyframes modal-drop-in {
+        from { opacity: 0; transform: translateY(-20px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
       }
       
-      /* Fix for mobile screens */
+      /* Mobile override for centering */
       @media (max-width: 768px) {
         .cl-modalBackdrop {
-            padding: 0.75rem !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 1rem !important;
         }
         .cl-modalContent {
-          border-radius: 2rem !important;
+          border-radius: 2.5rem !important;
           max-height: 85vh !important;
         }
       }
       
-      /* Better custom scrollbars for modals */
       .custom-scrollbar::-webkit-scrollbar {
         width: 6px !important;
         display: block !important;
@@ -135,9 +140,6 @@
       .custom-scrollbar::-webkit-scrollbar-thumb {
         background: #e4e4e7 !important;
         border-radius: 10px !important;
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #d4d4d8 !important;
       }
     </style>
 
