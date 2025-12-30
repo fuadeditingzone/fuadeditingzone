@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v13.0.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v14.0.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -18,27 +18,26 @@
       ::-webkit-scrollbar { display: none !important; }
       h1, h2, h3, h4 { font-family: 'Teko', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
       
-      /* BULLETPROOF CLERK VFX BRANDING & LAYOUT FIXES */
+      /* BULLETPROOF CLERK VFX BRANDING & INTERACTION FIXES */
       
       /* Force Modals to Center and Prevent Clipping */
       .cl-modalBackdrop {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        background: rgba(0,0,0,0.85) !important;
+        background: rgba(0,0,0,0.9) !important;
         backdrop-filter: none !important;
         z-index: 999999 !important;
-        pointer-events: none !important;
         padding: 1rem !important;
+        /* Removed pointer-events: none to ensure all sub-menus like the 3-dots work */
       }
 
       .cl-modalContent {
-        pointer-events: auto !important;
         margin: auto !important;
         max-width: 95vw !important;
         max-height: 92vh !important;
         border: none !important;
-        background: #0a0a0a !important; /* Eliminate white empty space */
+        background: #0a0a0a !important;
       }
 
       /* Dual-Color Neon Border: Red Left, Blue Right */
@@ -49,21 +48,16 @@
         background-image: linear-gradient(#0a0a0a, #0a0a0a), linear-gradient(to right, #dc2626, #3b82f6) !important;
         background-origin: border-box !important;
         background-clip: padding-box, border-box !important;
-        box-shadow: -15px 0 35px rgba(220, 38, 38, 0.25), 15px 0 35px rgba(59, 130, 246, 0.25) !important;
-        z-index: 999999 !important;
+        box-shadow: -15px 0 35px rgba(220, 38, 38, 0.3), 15px 0 35px rgba(59, 130, 246, 0.3) !important;
       }
 
-      /* Desktop Dropdown Adjustments for UserButton specifically */
-      @media (min-width: 1024px) {
-        .cl-userButtonPopoverCard {
-          position: fixed !important;
-          right: 2.5rem !important;
-          top: 5rem !important;
-          margin: 0 !important;
-        }
+      /* Ensure three-dots and action menus are interactive */
+      .cl-popover, .cl-menu {
+        pointer-events: auto !important;
+        z-index: 1000000 !important;
       }
 
-      /* Mobile Polish */
+      /* Mobile Center & Force Fit */
       @media (max-width: 767px) {
         .cl-userButtonPopoverCard {
           position: fixed !important;
@@ -82,17 +76,14 @@
         }
       }
 
-      /* Global Scrollbar Overrides for Clerk internals */
-      .cl-scrollBox {
-        scrollbar-width: thin !important;
-        scrollbar-color: #dc2626 #0a0a0a !important;
-      }
-      .cl-scrollBox::-webkit-scrollbar {
-        width: 5px !important;
-      }
-      .cl-scrollBox::-webkit-scrollbar-thumb {
-        background: #dc2626 !important;
-        border-radius: 10px !important;
+      /* Desktop Dropdown Adjustments */
+      @media (min-width: 1024px) {
+        .cl-userButtonPopoverCard {
+          position: fixed !important;
+          right: 2.5rem !important;
+          top: 5rem !important;
+          margin: 0 !important;
+        }
       }
 
       .custom-scrollbar::-webkit-scrollbar {
