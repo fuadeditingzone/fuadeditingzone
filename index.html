@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v29.0.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v31.0.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -18,7 +18,7 @@
       (function() {
         if (window.emailjs) {
           emailjs.init("Z-tNNcQWjE-izOeae");
-          console.log("EmailJS Initialized: Ready for Protocol Transmission.");
+          console.log("EmailJS Hub Initialized for Global Dispatch.");
         }
       })();
     </script>
@@ -47,14 +47,12 @@
         font-size: 8px !important;
       }
 
-      .service-card-selected {
-        border-color: #ff0000 !important;
-        box-shadow: 0 0 30px rgba(255, 0, 0, 0.4), inset 0 0 15px rgba(255, 0, 0, 0.1) !important;
-        transform: translateY(-5px) scale(1.02);
-      }
-
       .neon-glow-red {
         text-shadow: 0 0 10px rgba(220, 38, 38, 0.8), 0 0 20px rgba(220, 38, 38, 0.4);
+      }
+      
+      .neon-glow-blue {
+        text-shadow: 0 0 10px rgba(37, 99, 235, 0.8), 0 0 20px rgba(37, 99, 235, 0.4);
       }
 
       .cl-modalBackdrop { background: rgba(0,0,0,0.96) !important; backdrop-filter: blur(15px) !important; }
@@ -63,6 +61,12 @@
       .custom-scrollbar::-webkit-scrollbar { width: 4px !important; display: block !important; }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 0, 0.5) !important; border-radius: 10px !important; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent !important; }
+
+      .service-card-selected {
+        border-color: #ff0000 !important;
+        box-shadow: 0 0 40px rgba(255, 0, 0, 0.4), inset 0 0 20px rgba(255, 0, 0, 0.1) !important;
+        transform: translateY(-5px) scale(1.02);
+      }
 
       @media (max-width: 767px) {
         .cl-userButtonPopoverCard { right: 1.5rem !important; top: 5rem !important; }
