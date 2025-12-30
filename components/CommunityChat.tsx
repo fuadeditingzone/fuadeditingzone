@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, push, onChildAdded, onValue, set, serverTimestamp, query, limitToLast } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, ref, push, onChildAdded, onValue, set, serverTimestamp, query, limitToLast, onDisconnect } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { getMessaging, getToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
 import { SparklesIcon, SendIcon, SearchIcon, UserCircleIcon, GlobeAltIcon, CheckCircleIcon, CloseIcon } from './Icons';
 
@@ -33,20 +33,26 @@ interface ChatUser {
   username: string;
   avatar: string;
   createdAt: number;
-  lastSeen?: number;
+  lastSeen: number | string | object;
+  online?: boolean;
 }
 
 const UserProfilePopup: React.FC<{ user: ChatUser; onClose: () => void; onMessage: () => void }> = ({ user, onClose, onMessage }) => {
+  const isOnline = user.online;
+  const lastSeenStr = user.lastSeen && typeof user.lastSeen === 'number' 
+    ? new Date(user.lastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+    : 'Unknown';
+
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-sm bg-[#0f0f0f] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl relative"
+        className="w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-[3rem] overflow-hidden shadow-[0_0_100px_rgba(220,38,38,0.1)] relative"
         onClick={e => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
@@ -55,38 +61,43 @@ const UserProfilePopup: React.FC<{ user: ChatUser; onClose: () => void; onMessag
 
         <div className="p-10 flex flex-col items-center">
           <div className="relative mb-6">
-            <div className="w-28 h-28 rounded-[2rem] overflow-hidden border-2 border-red-600/40 p-1 bg-black">
-              <img src={user.avatar} className="w-full h-full object-cover rounded-[1.6rem]" alt="" />
+            <div className="w-32 h-32 rounded-[2.5rem] overflow-hidden border-2 border-red-600/40 p-1 bg-black shadow-2xl">
+              <img src={user.avatar} className="w-full h-full object-cover rounded-[2.1rem]" alt="" />
             </div>
-            <div className="absolute -bottom-2 -right-2 bg-red-600 text-white p-1.5 rounded-full border-2 border-[#0f0f0f]">
-              <CheckCircleIcon className="w-4 h-4" />
-            </div>
+            <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-[#0a0a0a] ${isOnline ? 'bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)]' : 'bg-gray-600'}`}></div>
           </div>
 
-          <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-1">{user.name}</h3>
-          <p className="text-red-500 font-black text-[11px] uppercase tracking-[0.3em] mb-8">@{user.username || 'legendary_agent'}</p>
+          <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-1">{user.name}</h3>
+          <p className="text-red-500 font-black text-[10px] uppercase tracking-[0.4em] mb-4">@{user.username}</p>
+          
+          <div className="flex items-center gap-2 mb-8">
+            <span className={`text-[9px] font-black uppercase tracking-widest ${isOnline ? 'text-green-500' : 'text-gray-500'}`}>
+              {isOnline ? 'Neural Link Active' : `Signal Lost at ${lastSeenStr}`}
+            </span>
+          </div>
 
-          <div className="w-full space-y-3 mb-10">
-            <div className="flex justify-between items-center px-6 py-4 bg-white/5 rounded-2xl border border-white/5">
-              <span className="text-[9px] text-gray-500 uppercase font-black tracking-widest">Joined Zone</span>
-              <span className="text-[10px] text-white font-bold">{new Date(user.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+          <div className="w-full grid grid-cols-2 gap-3 mb-10">
+            <div className="bg-white/5 border border-white/5 p-4 rounded-2xl text-center">
+              <p className="text-[8px] text-gray-500 uppercase font-black tracking-widest mb-1">Status</p>
+              <p className="text-[10px] text-white font-bold uppercase">{isOnline ? 'Online' : 'Offline'}</p>
             </div>
-            <div className="flex justify-between items-center px-6 py-4 bg-white/5 rounded-2xl border border-white/5">
-              <span className="text-[9px] text-gray-500 uppercase font-black tracking-widest">Neural ID</span>
-              <span className="text-[10px] text-white font-bold uppercase">{user.id.slice(0, 10)}...</span>
+            <div className="bg-white/5 border border-white/5 p-4 rounded-2xl text-center">
+              <p className="text-[8px] text-gray-500 uppercase font-black tracking-widest mb-1">Identity</p>
+              <p className="text-[10px] text-white font-bold uppercase">Verified</p>
             </div>
           </div>
 
           <button 
             onClick={() => { onMessage(); onClose(); }}
-            className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[0.4em] text-[10px] rounded-2xl transition-all shadow-xl active:scale-95"
+            className="w-full py-5 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3"
           >
-            Open Secure Line
+            <SendIcon className="w-4 h-4" />
+            Establish Secure Link
           </button>
         </div>
         
-        <div className="bg-black/40 py-4 text-center border-t border-white/5">
-          <p className="text-[8px] text-gray-600 uppercase font-black tracking-[1em]">Official Identity Verification</p>
+        <div className="bg-black/60 py-4 text-center border-t border-white/5">
+          <p className="text-[8px] text-gray-700 uppercase font-black tracking-[1em]">Official Identity Verification</p>
         </div>
       </div>
     </motion.div>
@@ -111,36 +122,36 @@ export const CommunityChat: React.FC = () => {
     audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
   }, []);
 
-  // Sync Clerk User to Firebase 'users/' path
+  // 1. PRESENCE & USER SYNC
   useEffect(() => {
     if (isSignedIn && clerkUser) {
       const userRef = ref(db, `users/${clerkUser.id}`);
-      
-      const syncUserData = (token?: string) => {
-        set(userRef, {
-          id: clerkUser.id,
-          name: clerkUser.fullName || clerkUser.username || 'Legend',
-          username: clerkUser.username || clerkUser.firstName?.toLowerCase().replace(/\s/g, '_') || 'anonymous',
-          avatar: clerkUser.imageUrl,
-          createdAt: clerkUser.createdAt ? new Date(clerkUser.createdAt).getTime() : Date.now(),
-          fcmToken: token || null,
-          lastSeen: serverTimestamp()
-        });
-      };
+      const connectedRef = ref(db, '.info/connected');
 
-      Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-          getToken(messaging, { vapidKey: 'BE7pik37RZvIuKStwPfrAucx4DhCTQ3BK9ehWMpThmtxKaKZfGkurRqWGECejo8Wu_LqHh-k5JMnGetyEJ4Uukc' })
-            .then(syncUserData)
-            .catch(() => syncUserData());
-        } else {
-          syncUserData();
+      onValue(connectedRef, (snap) => {
+        if (snap.val() === true) {
+          // Sync Clerk data to Firebase on connection
+          set(userRef, {
+            id: clerkUser.id,
+            name: clerkUser.fullName || clerkUser.username || 'Selected Legend',
+            username: clerkUser.username || clerkUser.firstName?.toLowerCase().replace(/\s/g, '_') || 'legend',
+            avatar: clerkUser.imageUrl,
+            createdAt: clerkUser.createdAt ? new Date(clerkUser.createdAt).getTime() : Date.now(),
+            lastSeen: serverTimestamp(),
+            online: true
+          });
+
+          // Handle Disconnect
+          onDisconnect(userRef).update({
+            online: false,
+            lastSeen: serverTimestamp()
+          });
         }
       });
     }
   }, [isSignedIn, clerkUser]);
 
-  // Listen to User Directory
+  // 2. LISTEN TO ALL USERS (FOR SEARCH)
   useEffect(() => {
     const usersRef = ref(db, 'users');
     const unsubscribe = onValue(usersRef, (snapshot) => {
@@ -153,6 +164,7 @@ export const CommunityChat: React.FC = () => {
     return () => unsubscribe();
   }, [clerkUser?.id]);
 
+  // 3. DETERMINISTIC CHAT PATHS
   const chatPath = useMemo(() => {
     if (isGlobal) return 'community/global';
     if (!clerkUser?.id || !selectedUser?.id) return null;
@@ -160,6 +172,7 @@ export const CommunityChat: React.FC = () => {
     return `messages/${sortedIds}`;
   }, [isGlobal, clerkUser?.id, selectedUser?.id]);
 
+  // 4. MESSAGE SUBSCRIPTION & ALERTS
   useEffect(() => {
     if (!chatPath) return;
     setMessages([]);
@@ -172,22 +185,18 @@ export const CommunityChat: React.FC = () => {
         return [...prev, { ...data, id: snapshot.key }];
       });
       
-      if (data.senderId !== clerkUser?.id && (!data.timestamp || Date.now() - data.timestamp < 10000)) {
+      // Sound alert for private messages
+      if (!isGlobal && data.senderId !== clerkUser?.id && (!data.timestamp || Date.now() - data.timestamp < 10000)) {
         audioRef.current?.play().catch(() => {});
       }
     });
     
     return () => unsubscribe();
-  }, [chatPath, clerkUser?.id]);
+  }, [chatPath, clerkUser?.id, isGlobal]);
 
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }, [messages]);
-
+  // 5. ANTI-SCROLL MSG HANDLER
   const handleSendMessage = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault(); // Stop jump/scroll
+    if (e) e.preventDefault(); // CRITICAL: Stop global scroll jump
     if (!isSignedIn || !inputValue.trim() || !chatPath || !clerkUser) return;
 
     const textToSend = inputValue.trim();
@@ -211,10 +220,16 @@ export const CommunityChat: React.FC = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault(); // Crucial anti-scroll fix
+      e.preventDefault(); // Stop newline/scrolling
       handleSendMessage();
     }
   };
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [messages]);
 
   const filteredUsers = useMemo(() => {
     if (!searchTerm.trim()) return users;
@@ -231,7 +246,7 @@ export const CommunityChat: React.FC = () => {
   };
 
   return (
-    <section id="community" className="py-24 bg-[#050505] relative z-10 select-none overflow-hidden">
+    <section id="community" className="py-24 bg-black relative z-10 select-none overflow-hidden">
       <AnimatePresence>
         {viewingProfile && (
           <UserProfilePopup 
@@ -245,24 +260,25 @@ export const CommunityChat: React.FC = () => {
       <div className="container mx-auto px-6 max-w-6xl">
         <div className="mb-12 text-center">
           <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Neural Link Hub</span>
-          <h2 className="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter">Community Briefing</h2>
-          <div className="h-1 w-16 bg-gradient-to-r from-red-600 to-blue-600 mx-auto mt-6 rounded-full"></div>
+          <h2 className="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter">FEZ Community</h2>
+          <div className="h-1 w-16 bg-red-600 mx-auto mt-6 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]"></div>
         </div>
 
-        <div className="w-full bg-[#0a0a0a] border border-white/5 rounded-[3rem] overflow-hidden shadow-[0_60px_120px_rgba(0,0,0,0.9)] flex flex-col md:flex-row h-[750px] relative">
+        <div className="w-full bg-[#080808] border border-white/5 rounded-[3rem] overflow-hidden shadow-[0_60px_150px_rgba(0,0,0,1)] flex flex-col md:flex-row h-[800px] relative">
           
-          <div className="w-full md:w-80 border-r border-white/5 flex flex-col bg-black/40">
-            {/* GLOBAL LOBBY BUTTON */}
+          {/* SIDEBAR */}
+          <div className="w-full md:w-80 border-r border-white/5 flex flex-col bg-[#050505]/50">
+            {/* GLOBAL TOGGLE */}
             <button 
               onClick={() => { setIsGlobal(true); setSelectedUser(null); }}
-              className={`flex items-center gap-4 p-6 border-b border-white/5 transition-all ${isGlobal ? 'bg-red-600/15 border-red-500/30' : 'hover:bg-white/5'}`}
+              className={`flex items-center gap-4 p-6 border-b border-white/5 transition-all ${isGlobal ? 'bg-red-600/10' : 'hover:bg-white/5'}`}
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${isGlobal ? 'bg-red-600 border-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.4)]' : 'bg-white/5 border-white/10 text-gray-500'}`}>
+              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center border transition-all ${isGlobal ? 'bg-red-600 border-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.3)]' : 'bg-white/5 border-white/10 text-gray-500'}`}>
                 <GlobeAltIcon className="w-5 h-5" />
               </div>
               <div className="text-left">
-                <p className={`text-[11px] font-black uppercase tracking-widest ${isGlobal ? 'text-white' : 'text-gray-400'}`}>Global Lobby</p>
-                <p className="text-[8px] text-gray-600 uppercase font-black">Open Frequency</p>
+                <p className={`text-[11px] font-black uppercase tracking-widest ${isGlobal ? 'text-white' : 'text-gray-500'}`}>Global Lobby</p>
+                <p className="text-[8px] text-gray-600 uppercase font-black">Open Transmission</p>
               </div>
             </button>
 
@@ -272,8 +288,8 @@ export const CommunityChat: React.FC = () => {
                 <input 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search @username..."
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-[10px] font-bold text-white uppercase tracking-widest focus:border-red-600 outline-none transition-all"
+                  placeholder="Scan Legends..."
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-[10px] font-bold text-white uppercase tracking-widest focus:border-red-600 outline-none transition-all shadow-inner"
                 />
               </div>
             </div>
@@ -281,8 +297,8 @@ export const CommunityChat: React.FC = () => {
             <div className="flex-1 overflow-y-auto chat-scrollbar p-4 space-y-2">
               <AnimatePresence mode="popLayout">
                 {filteredUsers.length === 0 ? (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-10 opacity-10">
-                    <UserCircleIcon className="w-10 h-10 mx-auto mb-2" />
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 opacity-10">
+                    <UserCircleIcon className="w-12 h-12 mx-auto mb-3" />
                     <p className="text-[9px] uppercase font-black tracking-widest">No Signals Found</p>
                   </motion.div>
                 ) : (
@@ -290,11 +306,11 @@ export const CommunityChat: React.FC = () => {
                     <motion.button 
                       layout key={u.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
                       onClick={() => setViewingProfile(u)}
-                      className={`w-full flex items-center gap-4 p-3 rounded-2xl transition-all border border-transparent ${selectedUser?.id === u.id ? 'bg-blue-600/10 border-blue-600/30' : 'hover:bg-white/5 hover:border-white/5'}`}
+                      className={`w-full flex items-center gap-4 p-3 rounded-2xl transition-all border border-transparent ${selectedUser?.id === u.id ? 'bg-blue-600/10 border-blue-600/20' : 'hover:bg-white/5'}`}
                     >
                       <div className="relative">
-                        <img src={u.avatar} className="w-10 h-10 rounded-full border border-white/10" alt="" />
-                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0a0a0a]"></div>
+                        <img src={u.avatar} className="w-11 h-11 rounded-2xl border border-white/10 object-cover" alt="" />
+                        <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[#080808] ${u.online ? 'bg-green-500' : 'bg-gray-600'}`}></div>
                       </div>
                       <div className="text-left min-w-0">
                         <p className="text-[10px] font-black text-white uppercase tracking-widest truncate">{u.name}</p>
@@ -307,38 +323,41 @@ export const CommunityChat: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col bg-[#050505] relative">
-            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-black/40 backdrop-blur-md">
+          {/* CHAT AREA */}
+          <div className="flex-1 flex flex-col bg-black relative">
+            {/* HEADER */}
+            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-black/40 backdrop-blur-md z-10">
               <div className="flex items-center gap-5">
                 {isGlobal ? (
-                  <div className="w-12 h-12 rounded-full bg-red-600/20 flex items-center justify-center border border-red-600/40 shadow-[0_0_20px_rgba(220,38,38,0.2)]">
+                  <div className="w-14 h-14 rounded-2xl bg-red-600/15 flex items-center justify-center border border-red-600/30">
                     <GlobeAltIcon className="w-6 h-6 text-red-500" />
                   </div>
                 ) : (
                   <div className="relative cursor-pointer group" onClick={() => selectedUser && setViewingProfile(selectedUser)}>
-                    <img src={selectedUser?.avatar} className="w-12 h-12 rounded-full border-2 border-blue-600/40 group-hover:border-blue-500 transition-colors shadow-[0_0_20px_rgba(37,99,235,0.2)]" alt="" />
-                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-[#050505]"></div>
+                    <img src={selectedUser?.avatar} className="w-14 h-14 rounded-2xl border-2 border-blue-600/40 group-hover:border-blue-500 transition-colors shadow-2xl" alt="" />
+                    <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-black ${selectedUser?.online ? 'bg-green-500' : 'bg-gray-600'}`}></div>
                   </div>
                 )}
                 <div>
-                  <h4 className="text-[13px] font-black text-white uppercase tracking-widest">
-                    {isGlobal ? 'Global Communications' : selectedUser?.name}
+                  <h4 className="text-[14px] font-black text-white uppercase tracking-widest">
+                    {isGlobal ? 'Global Transmission' : selectedUser?.name}
                   </h4>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                    <span className="text-[9px] text-gray-600 uppercase font-black tracking-widest">
-                      {isGlobal ? 'Frequency: Community' : `@${selectedUser?.username}`}
+                    <span className={`w-1.5 h-1.5 rounded-full ${isGlobal || selectedUser?.online ? 'bg-green-500 animate-pulse' : 'bg-gray-600'}`}></span>
+                    <span className="text-[9px] text-gray-500 uppercase font-black tracking-widest">
+                      {isGlobal ? 'Protocol: Community' : `@${selectedUser?.username}`}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-1 chat-scrollbar bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">
+            {/* MESSAGES */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-1 chat-scrollbar bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] bg-fixed">
               {messages.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center opacity-20 text-center">
-                  <SparklesIcon className="w-12 h-12 mb-4" />
-                  <p className="text-[10px] uppercase font-black tracking-[0.3em]">Ready for Transmission</p>
+                <div className="h-full flex flex-col items-center justify-center opacity-10 text-center">
+                  <SparklesIcon className="w-16 h-16 mb-6" />
+                  <p className="text-[11px] uppercase font-black tracking-[0.5em]">Establishing Neural Connection...</p>
                 </div>
               ) : (
                 messages.map((msg, index) => {
@@ -349,15 +368,15 @@ export const CommunityChat: React.FC = () => {
                   return (
                     <motion.div 
                       key={msg.id}
-                      initial={showHeader ? { opacity: 0, y: 5 } : { opacity: 1 }}
+                      initial={showHeader ? { opacity: 0, y: 10 } : { opacity: 1 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className={`flex gap-4 group ${showHeader ? 'mt-6' : 'mt-0.5'} ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}
+                      className={`flex gap-4 group ${showHeader ? 'mt-8' : 'mt-0.5'} ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}
                     >
-                      <div className="flex-shrink-0 w-10 flex flex-col items-center">
+                      <div className="flex-shrink-0 w-11 flex flex-col items-center">
                         {showHeader ? (
                           <img 
                             src={msg.senderAvatar} 
-                            className={`w-10 h-10 rounded-xl border cursor-pointer hover:scale-110 transition-transform ${isOwn ? 'border-red-600/30 shadow-[0_0_15px_rgba(220,38,38,0.1)]' : 'border-blue-600/30 shadow-[0_0_15px_rgba(37,99,235,0.1)]'}`} 
+                            className={`w-11 h-11 rounded-2xl border cursor-pointer hover:scale-105 transition-all duration-300 ${isOwn ? 'border-red-600/30 shadow-[0_0_15px_rgba(220,38,38,0.15)]' : 'border-blue-600/30 shadow-[0_0_15px_rgba(37,99,235,0.15)]'}`} 
                             alt="" 
                             onClick={() => {
                               const found = users.find(u => u.id === msg.senderId);
@@ -365,24 +384,24 @@ export const CommunityChat: React.FC = () => {
                             }}
                           />
                         ) : (
-                          <span className="opacity-0 group-hover:opacity-100 text-[8px] text-gray-700 font-black pt-1 transition-opacity">
+                          <span className="opacity-0 group-hover:opacity-100 text-[8px] text-gray-800 font-black pt-1 transition-opacity">
                             {new Date(msg.timestamp).getHours()}:{String(new Date(msg.timestamp).getMinutes()).padStart(2, '0')}
                           </span>
                         )}
                       </div>
 
-                      <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-[80%]`}>
+                      <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-[75%]`}>
                         {showHeader && (
-                          <div className={`flex items-center gap-3 mb-1.5 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
+                          <div className={`flex items-center gap-3 mb-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
                             <span className={`text-[10px] font-black uppercase tracking-widest ${isOwn ? 'text-red-500' : 'text-blue-500'}`}>
-                              {isOwn ? 'You' : msg.senderName}
+                              {isOwn ? 'Authorized User' : msg.senderName}
                             </span>
                             <span className="text-[8px] text-gray-700 font-black uppercase tracking-widest">
                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
                         )}
-                        <div className={`p-4 rounded-2xl text-[13px] font-medium leading-relaxed border transition-all ${
+                        <div className={`p-4 rounded-[1.8rem] text-[13px] font-medium leading-relaxed border transition-all ${
                           isOwn 
                             ? 'sent-bubble text-white rounded-tr-none' 
                             : 'received-bubble text-white rounded-tl-none'
@@ -397,21 +416,22 @@ export const CommunityChat: React.FC = () => {
               <div ref={messagesEndRef} className="h-4 w-full" />
             </div>
 
-            <div className="p-8 bg-black/40 border-t border-white/5">
+            {/* INPUT */}
+            <div className="p-8 bg-black/60 border-t border-white/5 backdrop-blur-xl">
               {isSignedIn ? (
-                <form onSubmit={handleSendMessage} className="flex gap-4 bg-white/5 border border-white/10 rounded-2xl p-2 focus-within:border-red-600/50 transition-all shadow-inner">
+                <form onSubmit={handleSendMessage} className="flex gap-4 bg-white/5 border border-white/10 rounded-2xl p-2.5 focus-within:border-red-600/50 transition-all shadow-inner">
                   <input 
                     ref={inputRef}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder={isGlobal ? "Broadcast to Global Lobby..." : `Message ${selectedUser?.name.split(' ')[0]}...`}
+                    placeholder={isGlobal ? "Broadcast to Global Lobby..." : `Transmitting to ${selectedUser?.name.split(' ')[0]}...`}
                     className="flex-1 bg-transparent px-6 py-3 text-[13px] font-bold text-white outline-none placeholder:text-gray-700"
                   />
                   <button 
                     type="submit"
                     disabled={!inputValue.trim()}
-                    className="bg-red-600 hover:bg-red-700 disabled:opacity-30 disabled:bg-gray-800 text-white w-12 h-12 flex items-center justify-center rounded-xl shadow-xl active:scale-95 transition-all group"
+                    className="bg-red-600 hover:bg-red-700 disabled:opacity-30 disabled:bg-gray-900 text-white w-14 h-14 flex items-center justify-center rounded-xl shadow-2xl active:scale-95 transition-all group"
                   >
                     <SendIcon className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </button>
@@ -419,15 +439,16 @@ export const CommunityChat: React.FC = () => {
               ) : (
                 <div className="text-center py-2">
                   <SignInButton mode="modal">
-                    <button className="bg-red-600 hover:bg-red-700 text-white font-black py-4 px-10 rounded-2xl text-[10px] uppercase tracking-widest transition-all shadow-[0_15px_30px_rgba(220,38,38,0.3)]">
-                      Identify Yourself to Transmit
+                    <button className="bg-red-600 hover:bg-red-700 text-white font-black py-5 px-12 rounded-2xl text-[11px] uppercase tracking-[0.5em] transition-all shadow-[0_20px_50px_rgba(220,38,38,0.3)] border border-red-500/20 active:scale-95">
+                      Verify Signature to Transmit
                     </button>
                   </SignInButton>
                 </div>
               )}
-              <div className="mt-4 flex items-center justify-center gap-6 opacity-30">
-                <p className="text-[7px] text-gray-500 uppercase font-black tracking-[0.4em]">Verified Neural Signature</p>
-                <p className="text-[7px] text-gray-500 uppercase font-black tracking-[0.4em]">E2E Encryption Active</p>
+              <div className="mt-6 flex items-center justify-center gap-8 opacity-20">
+                <p className="text-[7px] text-gray-500 uppercase font-black tracking-[0.5em]">Neural Link Verified</p>
+                <div className="w-1 h-1 bg-white/20 rounded-full"></div>
+                <p className="text-[7px] text-gray-500 uppercase font-black tracking-[0.5em]">E2E Encrypted</p>
               </div>
             </div>
           </div>
