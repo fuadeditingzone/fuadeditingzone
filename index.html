@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v20.0.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v21.0.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -44,25 +44,29 @@
 
       /* NEON GLOW CHAT BUBBLES */
       .sent-bubble {
-        background: rgba(0, 0, 0, 0.85) !important;
-        border: 1px solid rgba(255, 0, 0, 0.6) !important;
-        box-shadow: 0 0 20px rgba(255, 0, 0, 0.2) !important;
-        backdrop-filter: blur(10px);
+        background: rgba(220, 38, 38, 0.08) !important;
+        border: 1px solid rgba(255, 0, 0, 0.4) !important;
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.12) !important;
+        backdrop-filter: blur(12px);
       }
       .received-bubble {
-        background: rgba(0, 0, 0, 0.85) !important;
-        border: 1px solid rgba(59, 130, 246, 0.6) !important;
-        box-shadow: 0 0 20px rgba(59, 130, 246, 0.2) !important;
-        backdrop-filter: blur(10px);
+        background: rgba(37, 99, 235, 0.08) !important;
+        border: 1px solid rgba(59, 130, 246, 0.4) !important;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.12) !important;
+        backdrop-filter: blur(12px);
       }
 
+      /* Isolated Container Scrollbar */
       .chat-scrollbar::-webkit-scrollbar {
-        width: 4px !important;
+        width: 3px !important;
         display: block !important;
       }
       .chat-scrollbar::-webkit-scrollbar-thumb {
-        background: #ff0000 !important;
+        background: rgba(255, 0, 0, 0.5) !important;
         border-radius: 10px !important;
+      }
+      .chat-scrollbar::-webkit-scrollbar-track {
+        background: transparent !important;
       }
 
       @media (max-width: 767px) {
