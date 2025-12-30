@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v27.0.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v28.0.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -14,6 +14,15 @@
     
     <!-- EmailJS Global Script -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+      (function() {
+        // Initialize EmailJS immediately
+        if (window.emailjs) {
+          emailjs.init("Z-tNNcQWjE-izOeae");
+          console.log("EmailJS Engine: Initialized [Z-tNNcQWjE-izOeae]");
+        }
+      })();
+    </script>
 
     <style>
       :root { --background-base: #050505; --accent-base: #ff0000; }
