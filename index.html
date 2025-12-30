@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v28.0.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v29.0.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -16,10 +16,9 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
       (function() {
-        // Initialize EmailJS immediately
         if (window.emailjs) {
           emailjs.init("Z-tNNcQWjE-izOeae");
-          console.log("EmailJS Engine: Initialized [Z-tNNcQWjE-izOeae]");
+          console.log("EmailJS Initialized: Ready for Protocol Transmission.");
         }
       })();
     </script>
@@ -30,13 +29,11 @@
       ::-webkit-scrollbar { display: none !important; }
       h1, h2, h3, h4 { font-family: 'Teko', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
       
-      /* FORM ANTI-SCROLL & TERMINAL STYLE */
       input, textarea, select {
         overscroll-behavior: contain !important;
         -webkit-tap-highlight-color: transparent;
       }
       
-      /* OWNER BADGE STYLE */
       .owner-badge {
         background: #ff0000 !important;
         color: white !important;
@@ -50,31 +47,19 @@
         font-size: 8px !important;
       }
 
-      /* NEON GLOWS: SELECTED LEGEND THEME */
-      .sent-bubble, .order-sent {
-        background: rgba(220, 38, 38, 0.12) !important;
-        border: 1px solid rgba(255, 0, 0, 0.4) !important;
-        box-shadow: 0 0 35px rgba(255, 0, 0, 0.12) !important;
-        backdrop-filter: blur(14px);
-      }
-      
-      .received-bubble, .status-update {
-        background: rgba(37, 99, 235, 0.12) !important;
-        border: 1px solid rgba(59, 130, 246, 0.4) !important;
-        box-shadow: 0 0 35px rgba(59, 130, 246, 0.12) !important;
-        backdrop-filter: blur(14px);
+      .service-card-selected {
+        border-color: #ff0000 !important;
+        box-shadow: 0 0 30px rgba(255, 0, 0, 0.4), inset 0 0 15px rgba(255, 0, 0, 0.1) !important;
+        transform: translateY(-5px) scale(1.02);
       }
 
-      /* NEON RED BRANDING GLOW */
       .neon-glow-red {
         text-shadow: 0 0 10px rgba(220, 38, 38, 0.8), 0 0 20px rgba(220, 38, 38, 0.4);
       }
 
-      /* CLERK DARK MODE OVERRIDES */
       .cl-modalBackdrop { background: rgba(0,0,0,0.96) !important; backdrop-filter: blur(15px) !important; }
       .cl-card { background-color: #0a0a0a !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; }
 
-      /* Scrollbar for dashboard */
       .custom-scrollbar::-webkit-scrollbar { width: 4px !important; display: block !important; }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 0, 0.5) !important; border-radius: 10px !important; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent !important; }
