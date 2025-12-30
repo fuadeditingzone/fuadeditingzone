@@ -9,6 +9,17 @@ if (!CLERK_PUBLISHABLE_KEY) {
   throw new Error("Missing Clerk Publishable Key");
 }
 
+// Register Service Worker for FCM
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/firebase-messaging-sw.js')
+    .then((registration) => {
+      console.log('Neural SW registered: ', registration);
+    })
+    .catch((err) => {
+      console.log('Neural SW registration failed: ', err);
+    });
+}
+
 const rootElement = document.getElementById('root');
 if (rootElement) {
   const root = ReactDOM.createRoot(rootElement);
@@ -30,18 +41,9 @@ if (rootElement) {
           },
           elements: {
             rootBox: "w-full",
-            card: {
-              backgroundColor: '#0f0f0f',
-              overflow: 'hidden',
-              border: '1px solid rgba(255, 0, 0, 0.4)',
-            },
-            userButtonPopoverCard: {
-                zIndex: 1000002,
-                backgroundColor: '#0f0f0f',
-                overflow: 'hidden',
-                border: '1px solid rgba(255, 0, 0, 0.4)',
-            },
-            userButtonPopoverActionButton: "hover:bg-white/5 transition-colors py-6 px-10 border-b border-white/5 text-white",
+            card: "bg-[#0f0f0f] border border-red-600/40 shadow-2xl overflow-hidden",
+            userButtonPopoverCard: "bg-[#0f0f0f] border border-red-600/40 shadow-2xl overflow-hidden",
+            userButtonPopoverActionButton: "hover:bg-white/5 transition-colors py-6 px-10 border-b border-white/5 text-white forced-white",
             userButtonPopoverActionButtonText: "text-white font-black uppercase tracking-widest text-[11px]",
             userButtonPopoverActionButtonIcon: "text-red-600 w-6 h-6",
             userButtonPopoverFooter: "hidden",
@@ -50,8 +52,8 @@ if (rootElement) {
               root: "bg-[#0f0f0f] border-none",
               navbar: "bg-[#0a0a0a] border-r border-white/10 p-8",
               navbarButton: "text-white opacity-60 font-black uppercase tracking-widest text-[10px] hover:opacity-100 hover:bg-white/5 rounded-2xl mb-2 px-5 py-4",
-              navbarButton__active: "text-white opacity-100 bg-red-500/10 shadow-sm border border-red-500/20",
-              pageScrollBox: "bg-[#0f0f0f] p-10 md:p-16 overflow-y-auto",
+              navbarButton__active: "text-white opacity-100 bg-red-600/10 shadow-sm border border-red-600/20",
+              pageScrollBox: "bg-[#0f0f0f] p-10 md:p-16",
               headerTitle: "text-white font-black uppercase tracking-tight text-3xl mb-3",
               headerSubtitle: "text-white opacity-70 text-[11px] uppercase tracking-[0.4em] font-bold mb-10",
               sectionTitleText: "text-white font-black uppercase tracking-widest text-[11px] border-b border-white/10 pb-5 mb-10",
@@ -68,8 +70,6 @@ if (rootElement) {
             
             dividerLine: "bg-white/10",
             dividerText: "text-white opacity-50 text-[10px] font-black uppercase tracking-widest",
-            identityPreviewText: "text-white font-bold text-base break-words",
-            identityPreviewEditButtonIcon: "text-red-600",
             alert: "bg-red-600/10 border border-red-600/20 text-white rounded-2xl text-[11px] font-bold p-6",
             scrollBox: "chat-scrollbar overflow-y-auto"
           }
