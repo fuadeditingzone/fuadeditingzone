@@ -22,7 +22,7 @@ if (rootElement) {
             colorPrimary: '#dc2626',
             colorBackground: '#0a0a0a',
             colorText: '#ffffff',
-            colorTextSecondary: '#ffffff', // Forced white
+            colorTextSecondary: '#ffffff',
             colorInputBackground: '#18181b',
             colorInputText: '#ffffff',
             colorDanger: '#dc2626',
@@ -45,10 +45,14 @@ if (rootElement) {
                 backgroundColor: '#0a0a0a',
                 overflow: 'hidden'
             },
-            userButtonPopoverActionButton: "hover:bg-white/10 transition-colors py-6 px-10 border-b border-white/5",
+            userButtonPopoverActionButton: "hover:bg-white/10 transition-colors py-6 px-10 border-b border-white/5 text-white",
             userButtonPopoverActionButtonText: "text-white font-black uppercase tracking-widest text-[11px]",
             userButtonPopoverActionButtonIcon: "text-red-600 w-6 h-6",
             userButtonPopoverFooter: "hidden",
+            
+            // User Identification in Popover
+            userButtonPopoverTitle: "text-white font-black uppercase text-sm",
+            userButtonPopoverSubtitle: "text-white opacity-60 text-[10px]",
             
             // Profile Modal (Account) Styling - ALL WHITE TEXT
             userProfile: {
@@ -62,9 +66,11 @@ if (rootElement) {
               sectionTitleText: "text-white font-black uppercase tracking-widest text-[11px] border-b border-white/10 pb-5 mb-10",
             },
 
-            // Fix for the three-dots (action menu) in Profile Details
+            // Targeting the email "three dots" menu and other action buttons in profile details
             profileSectionPrimaryButton: "text-white hover:text-red-500 transition-colors",
             actionButton: "text-white hover:text-red-500",
+            menuItemButton: "text-white hover:bg-white/10",
+            menuItemText: "text-white font-bold",
             
             // Input and Form refinement
             formFieldLabel: "text-white font-black uppercase text-[10px] tracking-widest mb-3 ml-1",

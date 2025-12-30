@@ -10,6 +10,7 @@ import { Home } from './components/Home';
 import { Portfolio } from './components/Portfolio';
 import { Contact } from './components/Contact';
 import { AboutAndFooter } from './components/AboutAndFooter';
+import { CommunityChat } from './components/CommunityChat'; // Added
 import { ModalViewer, GalleryGridModal } from './components/ModalViewer';
 import { ContextMenu } from './components/ContextMenu';
 import { VFXBackground } from './components/VFXBackground';
@@ -63,7 +64,7 @@ export default function App() {
         if (!isSignedIn && isClerkLoaded) {
             setIsLockActive(true);
         }
-    }, 300000); // 5 minutes (300,000ms)
+    }, 300000); // 5 minutes
 
     return () => clearTimeout(timer);
   }, [isSignedIn, isClerkLoaded]);
@@ -91,68 +92,6 @@ export default function App() {
     return [...graphics, ...vfx, ...anime];
   }, []);
 
-  const updateMeta = useCallback((title: string, desc: string, imageUrl: string) => {
-    document.title = title;
-    const mapping: Record<string, string> = {
-        'meta[property="og:title"]': title,
-        'meta[name="twitter:title"]': title,
-        'meta[name="title"]': title,
-        'meta[property="og:description"]': desc,
-        'meta[name="description"]': desc,
-        'meta[name="twitter:description"]': desc,
-        'meta[property="og:image"]': imageUrl,
-        'meta[property="og:image:secure_url"]': imageUrl,
-        'meta[name="twitter:image"]': imageUrl,
-        'meta[itemprop="image"]': imageUrl,
-        'meta[property="og:url"]': window.location.href,
-    };
-    Object.entries(mapping).forEach(([sel, val]) => {
-        const el = document.querySelector(sel);
-        if (el) el.setAttribute('content', val);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (modalState) {
-        const item = modalState.items[modalState.currentIndex] as any;
-        const itemImage = item.imageUrl || (item.videoId ? `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg` : siteConfig.branding.profilePicUrl);
-        updateMeta(
-            `${item.title || 'Selected Legend Art'} | FEZ Portfolio`, 
-            item.description || siteConfig.seo.description, 
-            itemImage
-        );
-    } else {
-        updateMeta(siteConfig.seo.title, siteConfig.seo.description, siteConfig.branding.profilePicUrl);
-    }
-  }, [modalState, updateMeta]);
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '');
-      if (!hash) return;
-      const foundIndex = combinedPortfolio.findIndex(item => (item as any).slug === hash);
-      if (foundIndex !== -1 && !modalState) {
-        const item = combinedPortfolio[foundIndex] as any;
-        const itemImage = item.imageUrl || (item.videoId ? `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg` : siteConfig.branding.profilePicUrl);
-        updateMeta(`${item.title || 'Selected Legend Art'} | FEZ Portfolio`, item.description || siteConfig.seo.description, itemImage);
-        
-        setModalState({ items: combinedPortfolio, currentIndex: foundIndex });
-        setShowIntro(false);
-      }
-    };
-    window.addEventListener('hashchange', handleHashChange);
-    handleHashChange();
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [combinedPortfolio, updateMeta]);
-
-  useEffect(() => {
-      window.onYouTubeIframeAPIReady = () => setIsYouTubeApiReady(true);
-      if (!(window.YT && window.YT.Player)) {
-        const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
-      } else setIsYouTubeApiReady(true);
-    }, []);
-
   const handleOpenModal = (items: (GraphicWork | VideoWork)[], startIndex: number) => {
       if (Array.isArray(items) && items.length > 0) {
           const itemsWithSlugs = items.map(item => {
@@ -164,7 +103,7 @@ export default function App() {
       }
   };
 
-  const handleScrollTo = (target: 'home' | 'portfolio' | 'contact' | 'video-editing' | 'about') => {
+  const handleScrollTo = (target: string) => {
     document.getElementById(target)?.scrollIntoView({ behavior: 'smooth' });
   };
   
@@ -182,14 +121,13 @@ export default function App() {
             <DesktopHeader onScrollTo={handleScrollTo} /><MobileHeader onScrollTo={handleScrollTo} />
           </div>
           <MediaSidebar isOpen={isMediaSidebarOpen} onClose={() => setIsMediaSidebarOpen(false)} activeYouTubeId={activeYouTubeId} onSelectYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
-          {!isMediaSidebarOpen && !isAnyOverlayActive && (
-              <button onClick={() => setIsMediaSidebarOpen(true)} className={`fixed top-24 right-0 z-40 bg-black/40 backdrop-blur-xl border-l border-t border-b border-white/10 text-white p-3 rounded-l-xl transition-all ${(isNavVisible && !showIntro) ? 'opacity-100' : 'opacity-0 translate-x-full'}`}><YouTubeIcon className="w-6 h-6 text-red-500" /></button>
-          )}
+          
           <AnimatePresence>
               {!showIntro && (
                   <motion.main initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="main-content relative z-10 pb-20 md:pb-0">
                       <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
                       <Portfolio openModal={handleOpenModal} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
+                      <CommunityChat />
                       <Contact onStartOrder={setSelectionTarget} />
                       <AboutAndFooter onReplayIntro={() => setShowIntro(true)} />
                   </motion.main>
