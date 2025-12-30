@@ -45,8 +45,9 @@ if (rootElement) {
                 backgroundColor: '#0a0a0a',
                 overflow: 'hidden'
             },
-            userButtonPopoverActionButton: "hover:bg-white/10 transition-colors py-6 px-10 border-b border-white/5 text-white",
-            userButtonPopoverActionButtonText: "text-white font-black uppercase tracking-widest text-[11px]",
+            // Explicitly forcing white text on the popover action buttons (Manage Account / Sign Out)
+            userButtonPopoverActionButton: "hover:bg-white/10 transition-colors py-6 px-10 border-b border-white/5 text-white forced-white",
+            userButtonPopoverActionButtonText: "text-white font-black uppercase tracking-widest text-[11px] forced-white",
             userButtonPopoverActionButtonIcon: "text-red-600 w-6 h-6",
             userButtonPopoverFooter: "hidden",
             
