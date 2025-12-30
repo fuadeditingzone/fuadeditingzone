@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v25.0.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v26.0.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -12,6 +12,9 @@
     <link rel="icon" type="image/png" href="https://dl.dropboxusercontent.com/scl/fi/vvk2qlo8i0mer2n4sip1h/faeez-logo.png?rlkey=xiahu40vwixf0uf96wwnvqlw2&raw=1" />
     <meta name="theme-color" content="#000000" />
     
+    <!-- EmailJS Global Script -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
     <style>
       :root { --background-base: #050505; --accent-base: #ff0000; }
       html, body { margin: 0; background-color: var(--background-base); font-family: 'Montserrat', sans-serif; color: #ffffff; overflow-x: hidden; scrollbar-width: none; }
@@ -37,6 +40,11 @@
         border: 1px solid rgba(59, 130, 246, 0.4) !important;
         box-shadow: 0 0 35px rgba(59, 130, 246, 0.12) !important;
         backdrop-filter: blur(14px);
+      }
+
+      /* NEON RED BRANDING GLOW */
+      .neon-glow-red {
+        text-shadow: 0 0 10px rgba(220, 38, 38, 0.8), 0 0 20px rgba(220, 38, 38, 0.4);
       }
 
       /* CLERK DARK MODE OVERRIDES */
