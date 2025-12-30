@@ -11,7 +11,7 @@ interface ProfileModalProps {
 export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
     const { user, isLoaded } = useUser();
 
-    // 7-day restriction logic
+    // 7-day modification restriction logic
     const canModify = useMemo(() => {
         if (!user?.createdAt) return false;
         const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
@@ -25,6 +25,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
 
     const handleManageAccount = () => {
         if (!canModify) return;
+        // Trigger the internal Clerk UserButton dropdown programmatically
         const btn = document.querySelector('.cl-userButtonTrigger') as HTMLElement;
         if (btn) {
             onClose();
@@ -36,7 +37,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
         <AnimatePresence>
             {isOpen && (
                 <div className="fixed inset-0 z-[50000] flex items-center justify-center p-6">
-                    {/* Darker backdrop - NO blur as requested */}
+                    {/* Darker backdrop - NO blur as requested for clarity */}
                     <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -45,14 +46,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                         className="absolute inset-0 bg-black/70"
                     />
                     
-                    {/* Centered Modal Content - ENLARGED FOR CLARITY */}
+                    {/* Centered Modal Content - ENLARGED FOR ZERO CLIPPING */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full max-w-[560px] bg-white rounded-[4.5rem] shadow-[0_80px_200px_rgba(0,0,0,0.8)] border border-zinc-100 flex flex-col overflow-hidden max-h-[94vh]"
+                        className="relative w-full max-w-[580px] bg-white rounded-[4.5rem] shadow-[0_80px_200px_rgba(0,0,0,0.8)] border border-red-600/20 flex flex-col overflow-hidden max-h-[94vh]"
                     >
-                        {/* Premium Header */}
+                        {/* Selected Legend Header */}
                         <div className="px-14 py-12 flex justify-between items-center border-b border-zinc-100 shrink-0 bg-zinc-50/50">
                             <div className="flex items-center gap-6">
                                 <UserCircleIcon className="w-10 h-10 text-zinc-900" />
@@ -64,14 +65,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                         </div>
 
                         {/* Profile Body - LUXURY SPACIOUSNESS */}
-                        <div className="px-14 md:px-24 py-20 md:py-28 flex flex-col items-center bg-white overflow-y-auto custom-scrollbar">
+                        <div className="px-14 md:px-24 py-16 md:py-24 flex flex-col items-center bg-white overflow-y-auto custom-scrollbar">
                             {/* Larger Avatar Display */}
-                            <div className="relative mb-20 shrink-0">
-                                <div className="p-5 bg-white rounded-[4.5rem] shadow-3xl ring-1 ring-zinc-100 scale-125">
+                            <div className="relative mb-16 shrink-0">
+                                <div className="p-5 bg-white rounded-[4.5rem] shadow-3xl ring-2 ring-red-600/10 scale-110">
                                     <img 
                                         src={user.imageUrl} 
                                         alt="Profile" 
-                                        className="relative w-48 h-48 md:w-56 md:h-56 rounded-[3.8rem] object-cover" 
+                                        className="relative w-44 h-44 md:w-52 md:h-52 rounded-[3.8rem] object-cover" 
                                     />
                                 </div>
                                 <div className="absolute -bottom-4 -right-4 bg-red-600 text-white p-5 rounded-[1.8rem] shadow-4xl z-10 border-[10px] border-white">
@@ -80,8 +81,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                             </div>
 
                             {/* Info Section - ULTRA SPACIOUS */}
-                            <div className="text-center mb-20 w-full shrink-0">
-                                <h3 className="text-4xl md:text-6xl font-black text-zinc-900 uppercase tracking-tighter leading-none break-words px-6 mb-8">
+                            <div className="text-center mb-16 w-full shrink-0">
+                                <h3 className="text-4xl md:text-5xl font-black text-zinc-900 uppercase tracking-tighter leading-none break-words px-6 mb-8">
                                     {user.fullName || 'FEZ Artist'}
                                 </h3>
                                 <div>
@@ -92,16 +93,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                             </div>
 
                             {/* Metadata Grid */}
-                            <div className="w-full space-y-8 mb-24 shrink-0">
-                                <div className="flex items-center justify-between px-12 py-10 bg-zinc-50 rounded-[3rem] border border-zinc-100">
-                                    <span className="text-[13px] text-zinc-400 uppercase font-black tracking-widest">Artist Since</span>
-                                    <span className="text-lg text-zinc-900 font-black">{memberSince}</span>
+                            <div className="w-full space-y-6 mb-16 shrink-0">
+                                <div className="flex items-center justify-between px-10 py-8 bg-zinc-50 rounded-[2.5rem] border border-zinc-100">
+                                    <span className="text-[11px] text-zinc-400 uppercase font-black tracking-widest">Verification Date</span>
+                                    <span className="text-base text-zinc-900 font-black">{memberSince}</span>
                                 </div>
-                                <div className="flex items-center justify-between px-12 py-10 bg-zinc-50 rounded-[3rem] border border-zinc-100">
-                                    <span className="text-[13px] text-zinc-400 uppercase font-black tracking-widest">Verification</span>
-                                    <div className="flex items-center gap-5">
+                                <div className="flex items-center justify-between px-10 py-8 bg-zinc-50 rounded-[2.5rem] border border-zinc-100">
+                                    <span className="text-[11px] text-zinc-400 uppercase font-black tracking-widest">Zone Status</span>
+                                    <div className="flex items-center gap-4">
                                         <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(34,197,94,0.6)]"></div>
-                                        <span className="text-[14px] text-zinc-900 font-black uppercase tracking-[0.2em]">Secure</span>
+                                        <span className="text-[14px] text-zinc-900 font-black uppercase tracking-[0.2em]">Secure Access</span>
                                     </div>
                                 </div>
                             </div>
@@ -111,7 +112,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                 {canModify ? (
                                     <button 
                                         onClick={handleManageAccount}
-                                        className="w-full py-9 md:py-12 bg-zinc-900 text-white font-black uppercase tracking-[0.7em] text-[14px] md:text-base rounded-[3rem] hover:bg-red-600 transition-all shadow-[0_40px_80px_rgba(0,0,0,0.4)] active:scale-[0.97]"
+                                        className="w-full py-9 md:py-11 bg-zinc-900 text-white font-black uppercase tracking-[0.7em] text-[14px] md:text-base rounded-[2.5rem] hover:bg-red-600 transition-all shadow-[0_40px_80px_rgba(0,0,0,0.4)] active:scale-[0.97]"
                                     >
                                         Update Preferences
                                     </button>
@@ -119,10 +120,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                                     <div className="w-full p-8 md:p-12 bg-red-50/50 rounded-[3rem] border-2 border-red-100 text-center space-y-4">
                                         <div className="flex items-center justify-center gap-3 text-red-600">
                                             <SparklesIcon className="w-6 h-6 animate-spin-slow" />
-                                            <span className="text-[11px] md:text-[13px] font-black uppercase tracking-[0.4em]">Modification Locked</span>
+                                            <span className="text-[11px] md:text-[13px] font-black uppercase tracking-[0.4em]">Identity Locked</span>
                                         </div>
-                                        <p className="text-[10px] md:text-[12px] text-zinc-500 font-medium leading-relaxed uppercase tracking-widest">
-                                            To maintain Zone integrity, names and usernames cannot be changed within the first 7 days of verification.
+                                        <p className="text-[10px] md:text-[12px] text-zinc-500 font-medium leading-relaxed uppercase tracking-[0.5em] px-4">
+                                            Zone Policy: Verification details cannot be modified during the first 7 days.
                                         </p>
                                     </div>
                                 )}
