@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v16.0.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v18.0.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -13,108 +13,60 @@
     <meta name="theme-color" content="#000000" />
     
     <style>
-      :root { --background-base: #000000; --accent-base: #dc2626; }
+      :root { --background-base: #050505; --accent-base: #ff0000; }
       html, body { margin: 0; background-color: var(--background-base); font-family: 'Montserrat', sans-serif; color: #ffffff; overflow-x: hidden; scrollbar-width: none; }
       ::-webkit-scrollbar { display: none !important; }
       h1, h2, h3, h4 { font-family: 'Teko', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
       
-      /* BULLETPROOF CLERK VFX BRANDING & INTERACTION FIXES */
-      
-      /* Force Modals to Center and Prevent Clipping */
+      /* CLERK VFX MODAL & CLIPPING FIXES */
       .cl-modalBackdrop {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        background: rgba(0,0,0,0.92) !important;
-        backdrop-filter: none !important;
+        background: rgba(0,0,0,0.96) !important;
         z-index: 999999 !important;
-        padding: 1rem !important;
-        pointer-events: auto !important;
+        position: fixed !important;
+        inset: 0 !important;
       }
 
-      .cl-modalContent {
-        margin: auto !important;
-        max-width: 95vw !important;
-        max-height: 92vh !important;
-        border: none !important;
-        background: #0a0a0a !important;
+      .cl-card, .cl-userButtonPopoverCard {
+        background-color: #0f0f0f !important;
+        border: 1px solid rgba(255, 0, 0, 0.3) !important;
+        box-shadow: 0 0 50px rgba(255, 0, 0, 0.15) !important;
+        overflow: hidden !important;
+        border-radius: 2rem !important;
       }
 
-      /* Dual-Color Neon Border: Red Left, Blue Right */
-      .cl-card, .cl-userButtonPopoverCard, .cl-popover, .cl-menu {
-        position: relative !important;
-        background: #0a0a0a !important;
-        border: 2px solid transparent !important;
-        background-image: linear-gradient(#0a0a0a, #0a0a0a), linear-gradient(to right, #dc2626, #3b82f6) !important;
-        background-origin: border-box !important;
-        background-clip: padding-box, border-box !important;
-        box-shadow: -15px 0 35px rgba(220, 38, 38, 0.3), 15px 0 35px rgba(59, 130, 246, 0.3) !important;
-      }
-
-      /* ULTIMATE FORCED WHITE TEXT FOR CLERK POPOVER BUTTONS */
-      .cl-userButtonPopoverActionButtonText, 
-      .cl-userButtonPopoverActionButton,
-      .cl-userButtonPopoverActionButton p,
-      .cl-userButtonPopoverActionButton span,
-      .cl-actionButton__manageAccount,
-      .cl-actionButton__signOut,
-      .cl-menuItemButton, 
-      .cl-actionButton, 
-      .cl-popover button {
-        color: #ffffff !important;
-      }
-
-      .cl-userButtonPopoverActionButton:hover {
-        background-color: rgba(255, 255, 255, 0.1) !important;
-      }
-
-      .cl-menuItemButton:hover, .cl-actionButton:hover {
-        background-color: rgba(255, 255, 255, 0.1) !important;
-        color: #ef4444 !important; /* Red hover for secondary actions */
-      }
-
-      /* Ensure three-dots and action menus are interactive and above everything */
-      .cl-popover, .cl-menu, .cl-internal-ph79u2 {
-        pointer-events: auto !important;
+      .cl-userButtonPopoverCard {
+        position: fixed !important;
         z-index: 1000001 !important;
       }
 
-      /* Mobile Center & Force Fit */
-      @media (max-width: 767px) {
-        .cl-userButtonPopoverCard {
-          position: fixed !important;
-          left: 50% !important;
-          top: 50% !important;
-          transform: translate(-50%, -50%) !important;
-          width: 90vw !important;
-          max-width: 420px !important;
-        }
-        .cl-modalContent {
-          width: 95vw !important;
-        }
-        .cl-userProfile-root {
-          flex-direction: column !important;
-          height: 85vh !important;
-        }
-      }
-
-      /* Desktop Dropdown Adjustments */
-      @media (min-width: 1024px) {
-        .cl-userButtonPopoverCard {
-          position: fixed !important;
-          right: 2.5rem !important;
-          top: 5rem !important;
-          margin: 0 !important;
-        }
-      }
-
-      .custom-scrollbar::-webkit-scrollbar {
-        width: 6px !important;
+      /* VFX CHAT CUSTOM SCROLLBAR */
+      .chat-scrollbar::-webkit-scrollbar {
+        width: 4px !important;
         display: block !important;
       }
-      .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #dc2626 !important;
+      .chat-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1) !important;
         border-radius: 10px !important;
+      }
+      .chat-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #ff0000 !important;
+      }
+
+      /* ACTIVE USER GLOW */
+      .active-user-pulse {
+        box-shadow: 0 0 15px rgba(220, 38, 38, 0.4);
+        border-color: #ff0000 !important;
+      }
+
+      @media (max-width: 767px) {
+        .cl-userButtonPopoverCard {
+          right: 1.5rem !important;
+          top: 5rem !important;
+          width: 280px !important;
+        }
       }
     </style>
 

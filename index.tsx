@@ -19,72 +19,59 @@ if (rootElement) {
         afterSignOutUrl="/"
         appearance={{
           variables: {
-            colorPrimary: '#dc2626',
-            colorBackground: '#0a0a0a',
+            colorPrimary: '#ff0000',
+            colorBackground: '#0f0f0f',
             colorText: '#ffffff',
             colorTextSecondary: '#ffffff',
-            colorInputBackground: '#18181b',
+            colorInputBackground: '#1a1a1a',
             colorInputText: '#ffffff',
-            colorDanger: '#dc2626',
+            colorDanger: '#ff0000',
             borderRadius: '2rem',
           },
           elements: {
             rootBox: "w-full",
             card: {
-              margin: 'auto',
-              maxWidth: '100%',
-              backgroundColor: '#0a0a0a',
-              padding: '2.5rem',
+              backgroundColor: '#0f0f0f',
+              overflow: 'hidden',
+              border: '1px solid rgba(255, 0, 0, 0.4)',
             },
-            
-            // UserButton Popover (Dropout) Settings
             userButtonPopoverCard: {
-                zIndex: 999999,
-                width: 'calc(100vw - 2rem)',
-                maxWidth: '480px',
-                backgroundColor: '#0a0a0a',
-                overflow: 'hidden'
+                zIndex: 1000002,
+                backgroundColor: '#0f0f0f',
+                overflow: 'hidden',
+                border: '1px solid rgba(255, 0, 0, 0.4)',
             },
-            // Explicitly forcing white text on the popover action buttons (Manage Account / Sign Out)
-            userButtonPopoverActionButton: "hover:bg-white/10 transition-colors py-6 px-10 border-b border-white/5 text-white forced-white",
-            userButtonPopoverActionButtonText: "text-white font-black uppercase tracking-widest text-[11px] forced-white",
+            userButtonPopoverActionButton: "hover:bg-white/5 transition-colors py-6 px-10 border-b border-white/5 text-white",
+            userButtonPopoverActionButtonText: "text-white font-black uppercase tracking-widest text-[11px]",
             userButtonPopoverActionButtonIcon: "text-red-600 w-6 h-6",
             userButtonPopoverFooter: "hidden",
             
-            // User Identification in Popover
-            userButtonPopoverTitle: "text-white font-black uppercase text-sm",
-            userButtonPopoverSubtitle: "text-white opacity-60 text-[10px]",
-            
-            // Profile Modal (Account) Styling - ALL WHITE TEXT
             userProfile: {
-              root: "bg-black border-none",
-              navbar: "bg-[#050505] border-r border-white/10 p-8",
+              root: "bg-[#0f0f0f] border-none",
+              navbar: "bg-[#0a0a0a] border-r border-white/10 p-8",
               navbarButton: "text-white opacity-60 font-black uppercase tracking-widest text-[10px] hover:opacity-100 hover:bg-white/5 rounded-2xl mb-2 px-5 py-4",
               navbarButton__active: "text-white opacity-100 bg-red-500/10 shadow-sm border border-red-500/20",
-              pageScrollBox: "bg-[#0a0a0a] p-10 md:p-16 overflow-y-auto",
+              pageScrollBox: "bg-[#0f0f0f] p-10 md:p-16 overflow-y-auto",
               headerTitle: "text-white font-black uppercase tracking-tight text-3xl mb-3",
               headerSubtitle: "text-white opacity-70 text-[11px] uppercase tracking-[0.4em] font-bold mb-10",
               sectionTitleText: "text-white font-black uppercase tracking-widest text-[11px] border-b border-white/10 pb-5 mb-10",
             },
 
-            // Targeting the email "three dots" menu and other action buttons in profile details
             profileSectionPrimaryButton: "text-white hover:text-red-500 transition-colors",
             actionButton: "text-white hover:text-red-500",
             menuItemButton: "text-white hover:bg-white/10",
             menuItemText: "text-white font-bold",
             
-            // Input and Form refinement
             formFieldLabel: "text-white font-black uppercase text-[10px] tracking-widest mb-3 ml-1",
-            formFieldInput: "bg-[#111111] border-white/10 text-white text-sm h-14 focus:border-red-600 transition-all placeholder:text-zinc-600 rounded-2xl px-5",
+            formFieldInput: "bg-[#1a1a1a] border-white/10 text-white text-sm h-14 focus:border-red-600 transition-all placeholder:text-zinc-700 rounded-2xl px-5",
             formButtonPrimary: "bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[0.3em] text-[11px] h-14 transition-all shadow-2xl active:scale-95 px-8",
             
-            // Metadata & Shared Elements
             dividerLine: "bg-white/10",
             dividerText: "text-white opacity-50 text-[10px] font-black uppercase tracking-widest",
             identityPreviewText: "text-white font-bold text-base break-words",
             identityPreviewEditButtonIcon: "text-red-600",
-            alert: "bg-red-500/10 border border-red-500/20 text-white rounded-2xl text-[11px] font-bold p-6",
-            scrollBox: "custom-scrollbar overflow-y-auto"
+            alert: "bg-red-600/10 border border-red-600/20 text-white rounded-2xl text-[11px] font-bold p-6",
+            scrollBox: "chat-scrollbar overflow-y-auto"
           }
         }}
       >
