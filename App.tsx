@@ -52,7 +52,7 @@ export default function App() {
 
   const isAnyOverlayActive = !!(showIntro || modalState || isGalleryGridOpen || singleImageViewerState || isServicesPopupOpen || selectionTarget || isYouTubeRedirectOpen || isMediaSidebarOpen || contextMenu || isLockActive);
 
-  // --- 5-Minute Force Login Timer ---
+  // --- 5-Minute STRICT Access Lock ---
   useEffect(() => {
     if (isSignedIn) {
         setIsLockActive(false);
@@ -122,7 +122,7 @@ export default function App() {
             itemImage
         );
     } else {
-        updateMeta(siteConfig.seo.title, siteConfig.seo.description, "https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1");
+        updateMeta(siteConfig.seo.title, siteConfig.seo.description, siteConfig.branding.profilePicUrl);
     }
   }, [modalState, updateMeta]);
 
@@ -144,15 +144,6 @@ export default function App() {
     handleHashChange();
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [combinedPortfolio, updateMeta]);
-
-  useEffect(() => {
-    if (modalState) {
-      const currentItem = modalState.items[modalState.currentIndex] as any;
-      if (currentItem?.slug) window.history.replaceState(null, '', `#${currentItem.slug}`);
-    } else if (window.location.hash && !isGalleryGridOpen && !singleImageViewerState) {
-      window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    }
-  }, [modalState, isGalleryGridOpen, singleImageViewerState]);
 
   useEffect(() => {
       window.onYouTubeIframeAPIReady = () => setIsYouTubeApiReady(true);
@@ -205,24 +196,24 @@ export default function App() {
               )}
           </AnimatePresence>
 
-          {/* Forced Authentication Overlay */}
+          {/* Non-dismissible Verify Overlay after 5 minutes */}
           <AnimatePresence>
             {isLockActive && (
                 <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[100000] bg-black/90 flex flex-col items-center justify-center p-6"
+                    className="fixed inset-0 z-[1000000] bg-black/95 flex flex-col items-center justify-center p-6"
                 >
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-600/10 blur-[120px] rounded-full pointer-events-none"></div>
-                    <div className="relative w-full max-w-[480px] bg-white rounded-[3rem] overflow-hidden shadow-3xl">
-                        <div className="p-8 md:p-12 text-center bg-white">
-                             <div className="w-20 h-20 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-red-600/20">
-                                <SparklesIcon className="w-10 h-10 text-red-600" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-red-600/5 blur-[160px] rounded-full pointer-events-none"></div>
+                    <div className="relative w-full max-w-[520px] bg-white rounded-[4rem] overflow-hidden shadow-[0_0_200px_rgba(0,0,0,1)]">
+                        <div className="p-12 md:p-20 text-center bg-white">
+                             <div className="w-24 h-24 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-10 border-2 border-red-600/20 shadow-inner">
+                                <SparklesIcon className="w-12 h-12 text-red-600" />
                             </div>
-                            <h2 className="text-zinc-900 text-3xl font-black uppercase tracking-tight mb-4">Session Lock</h2>
-                            <p className="text-zinc-500 text-sm font-medium leading-relaxed mb-10 uppercase tracking-widest text-[10px]">Your browsing session has expired. Verification is required to access the Zone content.</p>
-                            <div className="flex justify-center">
+                            <h2 className="text-zinc-900 text-4xl font-black uppercase tracking-tighter mb-6 leading-none">Access Locked</h2>
+                            <p className="text-zinc-500 text-sm font-bold leading-relaxed mb-12 uppercase tracking-[0.4em] text-[11px]">Your 5-minute preview has expired. Verification required to continue exploring the Zone.</p>
+                            <div className="flex justify-center scale-110">
                                 <SignIn 
                                     routing="hash"
                                     appearance={{
@@ -231,14 +222,14 @@ export default function App() {
                                             card: "shadow-none border-none p-0",
                                             header: "hidden",
                                             footer: "hidden",
-                                            formButtonPrimary: "bg-red-600 hover:bg-red-700 h-16 rounded-2xl font-black uppercase tracking-[0.4em] text-[11px] shadow-2xl transition-all",
+                                            formButtonPrimary: "bg-red-600 hover:bg-red-700 h-20 rounded-3xl font-black uppercase tracking-[0.6em] text-[13px] shadow-3xl transition-all",
                                         }
                                     }}
                                 />
                             </div>
                         </div>
                     </div>
-                    <p className="mt-8 text-white/40 text-[9px] font-black uppercase tracking-[0.6em]">Fuad Editing Zone • Artist Hub Secure</p>
+                    <p className="mt-12 text-white/30 text-[10px] font-black uppercase tracking-[1em]">Fuad Ahmed • Artist Verification Required</p>
                 </motion.div>
             )}
           </AnimatePresence>

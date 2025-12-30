@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v10.0.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v10.1.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -18,22 +18,25 @@
       ::-webkit-scrollbar { display: none !important; }
       h1, h2, h3, h4 { font-family: 'Teko', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
       
-      /* Non-dismissible Clerk Modal: Disable backdrop clicks */
+      /* STRICT AUTH: Non-dismissible Clerk Modal Logic */
       .cl-modalBackdrop {
-        pointer-events: none !important;
-        background: rgba(0,0,0,0.3) !important;
-        backdrop-filter: none !important;
+        pointer-events: none !important; /* Backdrop cannot be clicked */
+        background: rgba(0,0,0,0.5) !important;
+        backdrop-filter: none !important; /* NO BLUR */
+        display: flex !important;
+        z-index: 999999 !important;
       }
       .cl-modalContent {
-        pointer-events: auto !important;
+        pointer-events: auto !important; /* Buttons inside modal still work */
+        box-shadow: 0 50px 100px rgba(0,0,0,0.7) !important;
       }
 
-      /* Desktop Dropdown positioning for Auth */
+      /* Desktop Dropdown layout for Auth */
       @media (min-width: 1024px) {
         .cl-modalBackdrop {
             align-items: flex-start !important;
             justify-content: flex-end !important;
-            padding: 1.5rem !important;
+            padding: 2rem !important;
             padding-top: 6rem !important;
         }
       }

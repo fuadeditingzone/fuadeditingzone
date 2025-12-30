@@ -61,7 +61,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
           <div className="flex items-center gap-6">
               <SignedOut>
                 <SignInButton mode="modal">
-                  <button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.3em] transition-all">
+                  <button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.4em] transition-all">
                     Verify
                   </button>
                 </SignInButton>
@@ -77,7 +77,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                     <UserButton 
                         appearance={{
                         elements: {
-                            userButtonAvatarBox: "w-9 h-9 border-2 border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.3)] hover:scale-105 transition-transform"
+                            userButtonAvatarBox: "w-11 h-11 border-[3px] border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:scale-105 transition-transform"
                         }
                         }}
                     />
@@ -128,7 +128,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                         <UserButton 
                         appearance={{
                             elements: {
-                            userButtonAvatarBox: "w-8 h-8 border border-red-600"
+                            userButtonAvatarBox: "w-9 h-9 border-2 border-red-600"
                             }
                         }}
                         />

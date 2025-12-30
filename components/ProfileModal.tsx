@@ -27,72 +27,72 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
         <AnimatePresence>
             {isOpen && (
                 <div className="fixed inset-0 z-[50000] flex items-center justify-center p-6">
-                    {/* Transparent backdrop - NO blur */}
+                    {/* Darker backdrop - NO blur as requested */}
                     <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-black/40"
+                        className="absolute inset-0 bg-black/60"
                     />
                     
-                    {/* Centered Modal Content - Designed for clarity and no clipping */}
+                    {/* Centered Modal Content - Designed for clarity and zero clipping */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full max-w-[460px] bg-white rounded-[3rem] shadow-[0_50px_150px_rgba(0,0,0,0.6)] border border-zinc-100 flex flex-col overflow-hidden max-h-[90vh]"
+                        className="relative w-full max-w-[500px] bg-white rounded-[4rem] shadow-[0_60px_180px_rgba(0,0,0,0.7)] border border-zinc-100 flex flex-col overflow-hidden max-h-[92vh]"
                     >
-                        {/* Elegant Header */}
-                        <div className="px-10 py-7 flex justify-between items-center border-b border-zinc-100 shrink-0 bg-zinc-50/50">
-                            <div className="flex items-center gap-4">
-                                <UserCircleIcon className="w-6 h-6 text-zinc-900" />
-                                <span className="text-xs md:text-sm font-black uppercase tracking-[0.4em] text-zinc-900">Artist Profile</span>
+                        {/* Premium Header */}
+                        <div className="px-12 py-10 flex justify-between items-center border-b border-zinc-100 shrink-0 bg-zinc-50/50">
+                            <div className="flex items-center gap-5">
+                                <UserCircleIcon className="w-8 h-8 text-zinc-900" />
+                                <span className="text-sm md:text-base font-black uppercase tracking-[0.5em] text-zinc-900">Artist Hub</span>
                             </div>
-                            <button onClick={onClose} className="p-3 rounded-full hover:bg-zinc-200 text-zinc-400 hover:text-zinc-900 transition-colors">
-                                <CloseIcon className="w-6 h-6" />
+                            <button onClick={onClose} className="p-4 rounded-full hover:bg-zinc-200 text-zinc-400 hover:text-zinc-900 transition-colors border border-transparent hover:border-zinc-200">
+                                <CloseIcon className="w-8 h-8" />
                             </button>
                         </div>
 
-                        {/* Profile Body - Spacious Layout */}
-                        <div className="px-10 md:px-14 py-12 md:py-16 flex flex-col items-center bg-white overflow-y-auto custom-scrollbar">
-                            {/* Avatar Display */}
-                            <div className="relative mb-12 shrink-0">
-                                <div className="p-3 bg-white rounded-[3rem] shadow-2xl ring-1 ring-zinc-100">
+                        {/* Profile Body - Luxury Spacing */}
+                        <div className="px-12 md:px-20 py-16 md:py-24 flex flex-col items-center bg-white overflow-y-auto custom-scrollbar">
+                            {/* Larger Avatar Display */}
+                            <div className="relative mb-16 shrink-0">
+                                <div className="p-4 bg-white rounded-[4rem] shadow-2xl ring-1 ring-zinc-100 scale-110">
                                     <img 
                                         src={user.imageUrl} 
                                         alt="Profile" 
-                                        className="relative w-36 h-36 md:w-44 md:h-44 rounded-[2.5rem] object-cover" 
+                                        className="relative w-44 h-44 md:w-52 md:h-52 rounded-[3.2rem] object-cover" 
                                     />
                                 </div>
-                                <div className="absolute -bottom-2 -right-2 bg-red-600 text-white p-3 rounded-2xl shadow-3xl z-10 border-[6px] border-white">
-                                    <CheckCircleIcon className="w-6 h-6" />
+                                <div className="absolute -bottom-3 -right-3 bg-red-600 text-white p-4 rounded-[1.5rem] shadow-3xl z-10 border-[8px] border-white">
+                                    <CheckCircleIcon className="w-8 h-8" />
                                 </div>
                             </div>
 
-                            {/* Info Section */}
-                            <div className="text-center mb-12 w-full shrink-0">
-                                <h3 className="text-3xl md:text-4xl font-black text-zinc-900 uppercase tracking-tighter leading-none break-words px-4">
+                            {/* Info Section - Ultra Spacious */}
+                            <div className="text-center mb-16 w-full shrink-0">
+                                <h3 className="text-4xl md:text-5xl font-black text-zinc-900 uppercase tracking-tighter leading-none break-words px-4">
                                     {user.fullName || 'FEZ Member'}
                                 </h3>
-                                <div className="mt-5">
-                                    <p className="text-[11px] md:text-xs text-red-600 font-black uppercase tracking-[0.4em] bg-red-50 px-8 py-3 rounded-full inline-block border border-red-100">
+                                <div className="mt-8">
+                                    <p className="text-[12px] md:text-sm text-red-600 font-black uppercase tracking-[0.6em] bg-red-50 px-10 py-4 rounded-full inline-block border-2 border-red-100 shadow-sm">
                                         @{user.username || 'artist'}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Metadata Grid */}
-                            <div className="w-full space-y-5 mb-14 shrink-0">
-                                <div className="flex items-center justify-between px-8 py-6 bg-zinc-50 rounded-[2rem] border border-zinc-100/80">
-                                    <span className="text-[10px] text-zinc-400 uppercase font-black tracking-widest">Artist Since</span>
-                                    <span className="text-sm text-zinc-900 font-bold">{memberSince}</span>
+                            <div className="w-full space-y-6 mb-20 shrink-0">
+                                <div className="flex items-center justify-between px-10 py-8 bg-zinc-50 rounded-[2.5rem] border border-zinc-100">
+                                    <span className="text-[11px] text-zinc-400 uppercase font-black tracking-widest">Artist Since</span>
+                                    <span className="text-base text-zinc-900 font-black">{memberSince}</span>
                                 </div>
-                                <div className="flex items-center justify-between px-8 py-6 bg-zinc-50 rounded-[2rem] border border-zinc-100/80">
-                                    <span className="text-[10px] text-zinc-400 uppercase font-black tracking-widest">Zone Access</span>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
-                                        <span className="text-[11px] text-zinc-900 font-black uppercase tracking-widest">Premium Active</span>
+                                <div className="flex items-center justify-between px-10 py-8 bg-zinc-50 rounded-[2.5rem] border border-zinc-100">
+                                    <span className="text-[11px] text-zinc-400 uppercase font-black tracking-widest">Auth Status</span>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+                                        <span className="text-[12px] text-zinc-900 font-black uppercase tracking-[0.2em]">Verified</span>
                                     </div>
                                 </div>
                             </div>
@@ -100,15 +100,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                             {/* Control Button */}
                             <button 
                                 onClick={handleManageAccount}
-                                className="w-full py-6 md:py-7 bg-zinc-900 text-white font-black uppercase tracking-[0.5em] text-[11px] md:text-xs rounded-[2rem] hover:bg-red-600 transition-all shadow-2xl active:scale-[0.98] shrink-0"
+                                className="w-full py-7 md:py-9 bg-zinc-900 text-white font-black uppercase tracking-[0.6em] text-[13px] md:text-sm rounded-[2.5rem] hover:bg-red-600 transition-all shadow-[0_30px_60px_rgba(0,0,0,0.4)] active:scale-[0.97] shrink-0"
                             >
-                                Update Preferences
+                                Open Settings
                             </button>
                         </div>
 
                         {/* Footnote */}
-                        <div className="p-8 bg-zinc-50 border-t border-zinc-100 text-center shrink-0">
-                            <p className="text-[9px] text-zinc-400 font-black uppercase tracking-[0.8em]">Fuad Editing Zone • Artist Central</p>
+                        <div className="p-10 bg-zinc-50 border-t border-zinc-100 text-center shrink-0">
+                            <p className="text-[10px] text-zinc-400 font-black uppercase tracking-[1em]">Fuad Ahmed • Portfolio Session</p>
                         </div>
                     </motion.div>
                 </div>
