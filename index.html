@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v31.0.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v32.0.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -18,7 +18,7 @@
       (function() {
         if (window.emailjs) {
           emailjs.init("Z-tNNcQWjE-izOeae");
-          console.log("EmailJS Hub Initialized for Global Dispatch.");
+          console.log("EmailJS Hub Online.");
         }
       })();
     </script>
@@ -61,6 +61,14 @@
       .custom-scrollbar::-webkit-scrollbar { width: 4px !important; display: block !important; }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 0, 0.5) !important; border-radius: 10px !important; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent !important; }
+
+      /* Glassmorphism Classes */
+      .glass-modal {
+        background: rgba(10, 10, 10, 0.7) !important;
+        backdrop-filter: blur(24px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
 
       .service-card-selected {
         border-color: #ff0000 !important;
