@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v21.0.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v22.0.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -18,45 +18,41 @@
       ::-webkit-scrollbar { display: none !important; }
       h1, h2, h3, h4 { font-family: 'Teko', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
       
-      /* CLERK ULTIMATE DARK MODE FIX */
+      /* CLERK DARK MODE OVERRIDES */
       .cl-modalBackdrop {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: rgba(0,0,0,0.98) !important;
-        z-index: 1000000 !important;
-        position: fixed !important;
-        inset: 0 !important;
+        background: rgba(0,0,0,0.95) !important;
+        backdrop-filter: blur(10px) !important;
       }
-
-      .cl-card, .cl-userButtonPopoverCard, .cl-popover, .cl-menu {
-        background-color: #0f0f0f !important;
-        border: 1px solid rgba(255, 0, 0, 0.4) !important;
-        box-shadow: 0 0 40px rgba(255, 0, 0, 0.1), 0 0 100px rgba(0,0,0,1) !important;
-        overflow: hidden !important;
-        border-radius: 2rem !important;
+      .cl-card, .cl-userButtonPopoverCard, .cl-userProfile-root {
+        background-color: #0a0a0a !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
       }
-
-      .cl-userButtonPopoverCard {
-        position: fixed !important;
-        z-index: 1000001 !important;
+      .cl-headerTitle, .cl-headerSubtitle, .cl-formFieldLabel, .cl-userButtonOuterIdentifier, .cl-userButtonPopoverActionButtonText, .cl-navbarButton {
+        color: white !important;
+      }
+      .cl-socialButtonsBlockButton {
+        background-color: #18181b !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+      }
+      .cl-socialButtonsBlockButtonText {
+        color: white !important;
       }
 
       /* NEON GLOW CHAT BUBBLES */
       .sent-bubble {
-        background: rgba(220, 38, 38, 0.08) !important;
+        background: rgba(220, 38, 38, 0.1) !important;
         border: 1px solid rgba(255, 0, 0, 0.4) !important;
-        box-shadow: 0 0 20px rgba(255, 0, 0, 0.12) !important;
-        backdrop-filter: blur(12px);
+        box-shadow: 0 0 25px rgba(255, 0, 0, 0.08) !important;
+        backdrop-filter: blur(14px);
       }
       .received-bubble {
-        background: rgba(37, 99, 235, 0.08) !important;
+        background: rgba(37, 99, 235, 0.1) !important;
         border: 1px solid rgba(59, 130, 246, 0.4) !important;
-        box-shadow: 0 0 20px rgba(59, 130, 246, 0.12) !important;
-        backdrop-filter: blur(12px);
+        box-shadow: 0 0 25px rgba(59, 130, 246, 0.08) !important;
+        backdrop-filter: blur(14px);
       }
 
-      /* Isolated Container Scrollbar */
+      /* Chat container scrollbar */
       .chat-scrollbar::-webkit-scrollbar {
         width: 3px !important;
         display: block !important;
@@ -73,7 +69,6 @@
         .cl-userButtonPopoverCard {
           right: 1.5rem !important;
           top: 5rem !important;
-          width: 280px !important;
         }
       }
     </style>

@@ -111,6 +111,7 @@ export const CommunityChat: React.FC = () => {
     audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
   }, []);
 
+  // Sync Clerk User to Firebase 'users/' path
   useEffect(() => {
     if (isSignedIn && clerkUser) {
       const userRef = ref(db, `users/${clerkUser.id}`);
@@ -118,7 +119,7 @@ export const CommunityChat: React.FC = () => {
       const syncUserData = (token?: string) => {
         set(userRef, {
           id: clerkUser.id,
-          name: clerkUser.fullName || 'Legend',
+          name: clerkUser.fullName || clerkUser.username || 'Legend',
           username: clerkUser.username || clerkUser.firstName?.toLowerCase().replace(/\s/g, '_') || 'anonymous',
           avatar: clerkUser.imageUrl,
           createdAt: clerkUser.createdAt ? new Date(clerkUser.createdAt).getTime() : Date.now(),
@@ -139,6 +140,7 @@ export const CommunityChat: React.FC = () => {
     }
   }, [isSignedIn, clerkUser]);
 
+  // Listen to User Directory
   useEffect(() => {
     const usersRef = ref(db, 'users');
     const unsubscribe = onValue(usersRef, (snapshot) => {
@@ -185,7 +187,7 @@ export const CommunityChat: React.FC = () => {
   }, [messages]);
 
   const handleSendMessage = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+    if (e) e.preventDefault(); // Stop jump/scroll
     if (!isSignedIn || !inputValue.trim() || !chatPath || !clerkUser) return;
 
     const textToSend = inputValue.trim();
@@ -193,7 +195,7 @@ export const CommunityChat: React.FC = () => {
 
     const newMessage = {
       senderId: clerkUser.id,
-      senderName: clerkUser.fullName || 'Legend',
+      senderName: clerkUser.fullName || clerkUser.username || 'Legend',
       senderAvatar: clerkUser.imageUrl,
       text: textToSend,
       timestamp: Date.now(),
@@ -209,7 +211,7 @@ export const CommunityChat: React.FC = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
+      e.preventDefault(); // Crucial anti-scroll fix
       handleSendMessage();
     }
   };
@@ -250,16 +252,17 @@ export const CommunityChat: React.FC = () => {
         <div className="w-full bg-[#0a0a0a] border border-white/5 rounded-[3rem] overflow-hidden shadow-[0_60px_120px_rgba(0,0,0,0.9)] flex flex-col md:flex-row h-[750px] relative">
           
           <div className="w-full md:w-80 border-r border-white/5 flex flex-col bg-black/40">
+            {/* GLOBAL LOBBY BUTTON */}
             <button 
               onClick={() => { setIsGlobal(true); setSelectedUser(null); }}
-              className={`flex items-center gap-4 p-6 border-b border-white/5 transition-all ${isGlobal ? 'bg-red-600/10' : 'hover:bg-white/5'}`}
+              className={`flex items-center gap-4 p-6 border-b border-white/5 transition-all ${isGlobal ? 'bg-red-600/15 border-red-500/30' : 'hover:bg-white/5'}`}
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${isGlobal ? 'bg-red-600 border-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.3)]' : 'bg-white/5 border-white/10 text-gray-500'}`}>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${isGlobal ? 'bg-red-600 border-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.4)]' : 'bg-white/5 border-white/10 text-gray-500'}`}>
                 <GlobeAltIcon className="w-5 h-5" />
               </div>
               <div className="text-left">
-                <p className="text-[11px] font-black text-white uppercase tracking-widest">Global Lobby</p>
-                <p className="text-[8px] text-gray-500 uppercase font-black">Open Frequency</p>
+                <p className={`text-[11px] font-black uppercase tracking-widest ${isGlobal ? 'text-white' : 'text-gray-400'}`}>Global Lobby</p>
+                <p className="text-[8px] text-gray-600 uppercase font-black">Open Frequency</p>
               </div>
             </button>
 
@@ -287,7 +290,7 @@ export const CommunityChat: React.FC = () => {
                     <motion.button 
                       layout key={u.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
                       onClick={() => setViewingProfile(u)}
-                      className={`w-full flex items-center gap-4 p-3 rounded-2xl transition-all border border-transparent ${selectedUser?.id === u.id ? 'bg-blue-600/10 border-blue-600/30' : 'hover:bg-white/5'}`}
+                      className={`w-full flex items-center gap-4 p-3 rounded-2xl transition-all border border-transparent ${selectedUser?.id === u.id ? 'bg-blue-600/10 border-blue-600/30' : 'hover:bg-white/5 hover:border-white/5'}`}
                     >
                       <div className="relative">
                         <img src={u.avatar} className="w-10 h-10 rounded-full border border-white/10" alt="" />
@@ -308,12 +311,12 @@ export const CommunityChat: React.FC = () => {
             <div className="p-8 border-b border-white/5 flex items-center justify-between bg-black/40 backdrop-blur-md">
               <div className="flex items-center gap-5">
                 {isGlobal ? (
-                  <div className="w-12 h-12 rounded-full bg-red-600/20 flex items-center justify-center border border-red-600/40">
+                  <div className="w-12 h-12 rounded-full bg-red-600/20 flex items-center justify-center border border-red-600/40 shadow-[0_0_20px_rgba(220,38,38,0.2)]">
                     <GlobeAltIcon className="w-6 h-6 text-red-500" />
                   </div>
                 ) : (
                   <div className="relative cursor-pointer group" onClick={() => selectedUser && setViewingProfile(selectedUser)}>
-                    <img src={selectedUser?.avatar} className="w-12 h-12 rounded-full border-2 border-blue-600/40 group-hover:border-blue-500 transition-colors" alt="" />
+                    <img src={selectedUser?.avatar} className="w-12 h-12 rounded-full border-2 border-blue-600/40 group-hover:border-blue-500 transition-colors shadow-[0_0_20px_rgba(37,99,235,0.2)]" alt="" />
                     <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-[#050505]"></div>
                   </div>
                 )}
@@ -354,7 +357,7 @@ export const CommunityChat: React.FC = () => {
                         {showHeader ? (
                           <img 
                             src={msg.senderAvatar} 
-                            className={`w-10 h-10 rounded-xl border cursor-pointer hover:scale-110 transition-transform ${isOwn ? 'border-red-600/30' : 'border-blue-600/30'}`} 
+                            className={`w-10 h-10 rounded-xl border cursor-pointer hover:scale-110 transition-transform ${isOwn ? 'border-red-600/30 shadow-[0_0_15px_rgba(220,38,38,0.1)]' : 'border-blue-600/30 shadow-[0_0_15px_rgba(37,99,235,0.1)]'}`} 
                             alt="" 
                             onClick={() => {
                               const found = users.find(u => u.id === msg.senderId);
