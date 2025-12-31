@@ -242,10 +242,10 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
           </div>
           <nav className="flex items-center gap-2">
               <NavLink onClick={() => onScrollTo('home')}>Home</NavLink>
-              <NavLink onClick={() => onScrollTo('portfolio')}>Gallery</NavLink>
+              <NavLink onClick={() => onScrollTo('portfolio')}>Portfolio</NavLink>
               <NavLink onClick={() => onScrollTo('video-editing')}>VFX</NavLink>
-              <NavLink onClick={() => onScrollTo('about')}>Bio</NavLink>
-              <NavLink onClick={() => onScrollTo('contact')}>Store</NavLink>
+              <NavLink onClick={() => onScrollTo('about')}>About</NavLink>
+              <NavLink onClick={() => onScrollTo('contact')}>Hire Me</NavLink>
           </nav>
           <div className="flex items-center gap-6">
               <SignedIn>
@@ -255,7 +255,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                 </div>
               </SignedIn>
               <SignedOut>
-                <SignInButton mode="modal"><button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.4em] transition-all">Verify Identity</button></SignInButton>
+                <SignInButton mode="modal"><button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.4em] transition-all">Log In</button></SignInButton>
                 <button onClick={() => onScrollTo('contact')} className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2.5 uppercase tracking-[0.3em] transition-all shadow-lg">Start Project</button>
               </SignedOut>
               <SignedIn>
@@ -285,17 +285,33 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
         setIsProfileOpen(true);
     }, []);
 
+    const toggleNotifications = (v: boolean) => {
+        setIsNotificationsOpen(v);
+        if (v) {
+            setIsRequestsOpen(false);
+            setIsProfileOpen(false);
+        }
+    };
+
+    const toggleRequests = (v: boolean) => {
+        setIsRequestsOpen(v);
+        if (v) {
+            setIsNotificationsOpen(false);
+            setIsProfileOpen(false);
+        }
+    };
+
     return (
-        <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-[100] h-20 px-6 select-none bg-black/60 backdrop-blur-xl border-b border-white/5">
+        <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-[9999] h-20 px-6 select-none bg-transparent">
             <div onClick={() => { setIsSpinning(true); onScrollTo('home'); setTimeout(() => setIsSpinning(false), 2000); }} className="flex items-center gap-3">
                 <img src={siteConfig.branding.logoUrl} alt="Logo" className={`h-9 w-9 rounded-full ${isSpinning ? 'logo-3d-spin' : ''}`} />
-                <span className="font-black text-white tracking-widest text-[10px] uppercase leading-none">FEZ GRID</span>
+                <span className="font-black text-white tracking-widest text-[10px] uppercase leading-none">FUAD EDITING ZONE</span>
             </div>
             <div className="flex items-center gap-2.5">
                 <SignedIn>
                     <div className="flex items-center gap-2.5">
-                        <RequestHub isOpen={isRequestsOpen} setIsOpen={(v) => { setIsRequestsOpen(v); if(v) setIsNotificationsOpen(false); }} />
-                        <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); if(v) setIsRequestsOpen(false); }} />
+                        <RequestHub isOpen={isRequestsOpen} setIsOpen={toggleRequests} />
+                        <NotificationHub isOpen={isNotificationsOpen} setIsOpen={toggleNotifications} />
                         <button onClick={openSettings} className="p-2 text-gray-400 hover:text-white transition-all active:scale-90"><i className="fa-solid fa-gear text-[16px]"></i></button>
                         <UserButton appearance={{ elements: { userButtonAvatarBox: "w-10 h-10 border-2 border-red-600" } }} />
                     </div>
@@ -317,11 +333,11 @@ const FooterNavLink: React.FC<{ icon: React.ReactNode, label: string, onClick: (
 export const MobileFooterNav: React.FC<{ onScrollTo: (section: 'home' | 'portfolio' | 'contact' | 'video-editing' | 'about') => void; }> = ({ onScrollTo }) => {
     return (
         <nav className="md:hidden fixed bottom-6 left-6 right-6 z-40 bg-black/80 backdrop-blur-3xl rounded-[2rem] h-18 flex justify-around items-center shadow-2xl border border-white/10 p-2">
-            <FooterNavLink icon={<HomeIcon className="w-5 h-5" />} label="Sync" onClick={() => onScrollTo('home')} />
-            <FooterNavLink icon={<BriefcaseIcon className="w-5 h-5" />} label="Mastery" onClick={() => onScrollTo('portfolio')} />
+            <FooterNavLink icon={<HomeIcon className="w-5 h-5" />} label="Home" onClick={() => onScrollTo('home')} />
+            <FooterNavLink icon={<BriefcaseIcon className="w-5 h-5" />} label="Gallery" onClick={() => onScrollTo('portfolio')} />
             <FooterNavLink icon={<VfxIcon className="w-5 h-5" />} label="VFX" onClick={() => onScrollTo('video-editing')} />
-            <FooterNavLink icon={<ChatBubbleIcon className="w-5 h-5" />} label="Market" onClick={() => onScrollTo('contact')} />
-            <FooterNavLink icon={<UserCircleIcon className="w-5 h-5" />} label="Agent" onClick={() => onScrollTo('about')} />
+            <FooterNavLink icon={<ChatBubbleIcon className="w-5 h-5" />} label="Hire" onClick={() => onScrollTo('contact')} />
+            <FooterNavLink icon={<UserCircleIcon className="w-5 h-5" />} label="About" onClick={() => onScrollTo('about')} />
         </nav>
     );
 };

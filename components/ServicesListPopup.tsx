@@ -34,12 +34,12 @@ const ServiceItem: React.FC<{ service: Service }> = ({ service }) => {
                         )}
                     </div>
                 </div>
-                <ChevronRightIcon className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} />
+                <ChevronRightIcon className={`w-4 h-4 text-zinc-600 transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} />
             </div>
             
             {isExpanded && (
                 <div className="mt-4 pt-4 border-t border-white/5 animate-fade-in">
-                    <p className="text-xs md:text-sm text-gray-400 leading-relaxed font-light">
+                    <p className="text-xs md:text-sm text-zinc-400 leading-relaxed font-light">
                         {service.description}
                     </p>
                 </div>
@@ -69,35 +69,32 @@ export const ServicesListPopup: React.FC<ServicesListPopupProps> = ({ onClose })
 
     return (
         <div 
-            className="fixed inset-0 bg-black/80 z-[70] flex items-center justify-center p-4 animate-fade-in backdrop-blur-sm select-none"
+            className="fixed inset-0 bg-black/80 z-[100000] flex items-center justify-center p-4 animate-fade-in backdrop-blur-sm select-none"
             onClick={onClose}
         >
             <div
                 className="bg-black border border-white/20 w-full max-w-md md:max-w-4xl h-auto max-h-[90vh] flex flex-col shadow-[0_0_100px_rgba(0,0,0,1)] animate-popup-scale-in overflow-hidden rounded-2xl"
                 onClick={e => e.stopPropagation()}
             >
-                {/* Header */}
                 <div className="p-6 border-b border-white/10 flex justify-between items-center bg-black flex-shrink-0">
                     <div className="pr-4">
-                        <h2 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tighter truncate">Our Services</h2>
-                        <p className="text-gray-500 text-[10px] md:text-xs mt-0.5 uppercase tracking-widest font-bold">Fuad Editing Zone • Expertise</p>
+                        <h2 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tighter truncate">How I Can Help</h2>
+                        <p className="text-zinc-500 text-[10px] md:text-xs mt-0.5 uppercase tracking-widest font-bold">Services & Expertise</p>
                     </div>
                     <button 
                         onClick={onClose}
-                        className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 transition-colors flex-shrink-0"
+                        className="p-2 rounded-full bg-white/5 hover:bg-red-600 text-zinc-400 transition-colors flex-shrink-0"
                     >
                         <CloseIcon className="w-5 h-5 md:w-6 md:h-6" />
                     </button>
                 </div>
 
-                {/* Content Area */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-12 bg-black custom-scrollbar">
-                    {/* Graphic Design Section */}
                     {graphicServices.length > 0 && (
                         <div>
                             <h3 className="text-red-600 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                 <span className="w-10 h-px bg-red-600/30"></span>
-                                Graphic Design Solutions
+                                Graphic Design
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 {graphicServices.map(service => (
@@ -107,12 +104,11 @@ export const ServicesListPopup: React.FC<ServicesListPopupProps> = ({ onClose })
                         </div>
                     )}
 
-                    {/* VFX Section */}
                     {vfxServices.length > 0 && (
                         <div>
                             <h3 className="text-red-600 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                 <span className="w-10 h-px bg-red-600/30"></span>
-                                Premium Video Editing
+                                Video & VFX
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 {vfxServices.map(service => (
@@ -123,20 +119,13 @@ export const ServicesListPopup: React.FC<ServicesListPopupProps> = ({ onClose })
                     )}
                 </div>
 
-                {/* Footer */}
                 <div className="p-6 bg-black border-t border-white/10 flex-shrink-0">
                     <button 
                         onClick={onClose}
-                        className="w-full btn-angular btn-3d bg-red-600 text-white hover:bg-red-700 py-4 font-bold uppercase tracking-widest text-[11px] md:text-xs transition-all duration-300 shadow-[0_10px_25px_rgba(220,38,38,0.4)] flex items-center justify-center gap-2"
+                        className="w-full btn-angular bg-red-600 text-white hover:bg-red-700 py-4 font-bold uppercase tracking-widest text-[11px] md:text-xs transition-all duration-300 shadow-[0_10px_25px_rgba(220,38,38,0.4)] flex items-center justify-center gap-2"
                     >
-                        <span>Close Catalog</span>
+                        <span>Back to Site</span>
                     </button>
-                    
-                    <div className="mt-4 flex justify-between items-center px-1">
-                         <span className="text-[10px] md:text-xs text-gray-400 uppercase tracking-widest font-black text-center w-full">
-                            {allServices.length} SKILLS LISTED • PRO BADGE DENOTES PREMIUM MASTERY
-                         </span>
-                    </div>
                 </div>
             </div>
         </div>

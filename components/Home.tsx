@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { siteConfig } from '../config';
-import { ThreeDotsIcon, CheckCircleIcon, YouTubeIcon, SparklesIcon } from './Icons';
+import { ThreeDotsIcon, CheckCircleIcon, YouTubeIcon, SparklesIcon, ChevronRightIcon } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { useAnimatedCounter } from '../hooks/useAnimatedCounter';
 import { useParallax } from '../contexts/ParallaxContext';
@@ -57,7 +56,6 @@ export const Home: React.FC<HomeProps> = ({
     const [parallaxEnabled, setParallaxEnabled] = useState(false);
     const [isImageLoaded, setIsImageLoaded] = useState(false);
     
-    // Refresh trigger to restart the counter animation periodically
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     useEffect(() => {
@@ -98,7 +96,6 @@ export const Home: React.FC<HomeProps> = ({
             id="home" 
             className="h-[100dvh] w-full flex flex-col items-center justify-center relative select-none overflow-hidden p-0 bg-[#1C1B1A]"
         >
-            {/* HERO BACKGROUND - CLEAN SOLID COLOR, NO IMAGES OR VIDEOS */}
             <div className="absolute inset-0 z-0 bg-[#1C1B1A]"></div>
 
             <motion.div 
@@ -108,37 +105,30 @@ export const Home: React.FC<HomeProps> = ({
                 className="relative z-30 w-full text-center flex flex-col items-center max-w-5xl -mt-8 md:mt-[-4vh]" 
                 style={headlineStyle}
             >
-                {/* ARTIST IDENTITY HEADER */}
                 <div className="relative flex flex-col md:flex-row items-center justify-center mb-4 md:mb-6 gap-3 md:gap-8 min-h-[120px] md:min-h-[180px]">
-                    
-                    {/* PROFILE CONTAINER */}
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.9, rotateY: 30 }}
                         animate={isImageLoaded ? { opacity: 1, scale: 1, rotateY: 0 } : { opacity: 0 }}
                         transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                         className="relative group flex-shrink-0 z-40"
                     >
-                        {/* Subtler highlight ring for dark background */}
                         <div className="absolute -inset-4 bg-red-600/5 rounded-[2.5rem] blur-2xl animate-pulse group-hover:bg-red-600/10 transition-colors duration-700"></div>
-                        
                         <div className="relative w-24 h-24 md:w-36 md:h-36 rounded-[1.8rem] md:rounded-[2.5rem] overflow-hidden border-2 border-white/10 transition-all duration-1000 bg-black shadow-[0_20px_40px_rgba(0,0,0,0.4)] ring-1 ring-white/5">
                             <motion.img 
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 src={siteConfig.branding.profilePicUrl} 
-                                alt="Fuad Ahmed | Selected Legend Profile" 
+                                alt="Fuad Ahmed" 
                                 onLoad={() => setIsImageLoaded(true)}
                                 className="w-full h-full object-cover object-top origin-top transition-all duration-700 group-hover:scale-105 group-hover:brightness-110" 
                             />
                         </div>
-                        
                         <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 bg-red-600 text-white py-1 px-2 md:py-1.5 md:px-3 rounded-full shadow-lg flex items-center gap-1 border border-white/20 z-50 transform hover:scale-110 transition-transform">
                             <CheckCircleIcon className="w-2 md:w-3 text-white" />
-                            <span className="text-[5px] md:text-[8px] font-black uppercase tracking-[0.2em]">Verified</span>
+                            <span className="text-[5px] md:text-[8px] font-black uppercase tracking-[0.2em]">Official</span>
                         </div>
                     </motion.div>
 
-                    {/* Artist Name Stack */}
                     <div className="flex flex-col items-center md:items-start leading-none z-10">
                         <motion.h1 
                             initial={{ opacity: 0, x: 25 }}
@@ -153,7 +143,6 @@ export const Home: React.FC<HomeProps> = ({
                     </div>
                 </div>
 
-                {/* SKILLS CHIPS */}
                 <div className="flex flex-wrap justify-center items-center gap-1.5 md:gap-2 mb-6 md:mb-10 px-4 max-w-3xl mt-2">
                     {sortedHeroSkills.map((skill, i) => (
                         <motion.span 
@@ -161,7 +150,7 @@ export const Home: React.FC<HomeProps> = ({
                             initial={{ opacity: 0, y: 10 }}
                             animate={isImageLoaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
                             transition={{ delay: 0.9 + (0.05 * i), duration: 0.5 }}
-                            className="flex items-center bg-white/5 border border-white/10 rounded-lg md:rounded-xl px-3 py-1.5 md:px-5 md:py-2.5 text-[7px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest transition-all duration-500 hover:text-white hover:bg-red-600/20 hover:border-red-600/50 hover:-translate-y-1"
+                            className="flex items-center bg-white/5 border border-white/10 rounded-lg md:rounded-xl px-3 py-1.5 md:px-5 md:py-2.5 text-[7px] md:text-[9px] font-black text-zinc-400 uppercase tracking-widest transition-all duration-500 hover:text-white hover:bg-red-600/20 hover:border-red-600/50 hover:-translate-y-1"
                         >
                             {skill}
                             {proSkills.includes(skill) && (
@@ -180,7 +169,6 @@ export const Home: React.FC<HomeProps> = ({
                     </motion.button>
                 </div>
 
-                {/* CTA & STATS */}
                 <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12 w-full justify-center px-6">
                     <motion.button 
                         initial={{ opacity: 0, scale: 0.9 }}
@@ -189,8 +177,7 @@ export const Home: React.FC<HomeProps> = ({
                         onClick={(e) => { e.stopPropagation(); onOrderNow(); }}
                         className="relative overflow-hidden bg-white text-black text-xs md:text-sm font-black px-10 py-4 md:px-16 md:py-6 rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-[0.4em] flex-shrink-0 group/order"
                     >
-                        <span className="relative z-10">Order Now</span>
-                        <div className="absolute inset-0 bg-gradient-to-r from-red-600/0 via-red-600/10 to-red-600/0 translate-x-[-100%] group-hover/order:translate-x-[100%] transition-transform duration-1000"></div>
+                        <span className="relative z-10">Get a Quote</span>
                     </motion.button>
                     
                     <motion.div 
@@ -206,7 +193,7 @@ export const Home: React.FC<HomeProps> = ({
                                 </div>
                                 <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-red-600 rounded-full animate-pulse"></div>
                             </div>
-                            <span className="text-[8px] md:text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em] group-hover:text-red-600 transition-colors whitespace-nowrap">Subs</span>
+                            <span className="text-[8px] md:text-[10px] text-zinc-500 font-bold uppercase tracking-[0.3em] group-hover:text-red-600 transition-colors whitespace-nowrap">Followers</span>
                         </div>
 
                         <div className="text-left border-l border-white/10 pl-6 sm:pl-10 md:pl-12 cursor-pointer group/stat flex-shrink-0" onClick={onYouTubeClick}>
@@ -216,10 +203,22 @@ export const Home: React.FC<HomeProps> = ({
                                 </div>
                                 <YouTubeIcon className="w-4 h-4 md:w-6 md:h-6 text-red-600 opacity-60 group-hover:opacity-100 transition-all" />
                             </div>
-                            <span className="text-[8px] md:text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em] group-hover:text-red-600 transition-colors whitespace-nowrap">Views</span>
+                            <span className="text-[8px] md:text-[10px] text-zinc-500 font-bold uppercase tracking-[0.3em] group-hover:text-red-600 transition-colors whitespace-nowrap">Views</span>
                         </div>
                     </motion.div>
                 </div>
+                
+                {/* Scroll Down Navigation Button */}
+                <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={isImageLoaded ? { opacity: 1 } : { opacity: 0 }}
+                    transition={{ delay: 2.2, duration: 1 }}
+                    onClick={() => document.getElementById('portfolio')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="mt-16 flex flex-col items-center gap-3 group animate-bounce"
+                >
+                    <span className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-white transition-colors">See My Work</span>
+                    <div className="w-px h-12 bg-gradient-to-b from-red-600 to-transparent"></div>
+                </motion.button>
             </motion.div>
         </section>
     );

@@ -78,12 +78,12 @@ const IMDbRating: React.FC<{ rating: number; count: number; onRate?: (val: numbe
                     ))}
                 </div>
                 <div className="flex flex-col items-start leading-none">
-                    <span className="text-white font-black text-lg tracking-tighter">{displayRating}<span className="text-gray-500 text-xs ml-0.5">/5.0</span></span>
+                    <span className="text-white font-black text-lg tracking-tighter">{displayRating}<span className="text-zinc-500 text-xs ml-0.5">/5.0</span></span>
                 </div>
             </div>
             <div className="flex items-center gap-2">
                 <span className="w-1 h-1 bg-red-600 rounded-full animate-pulse"></span>
-                <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">{count.toLocaleString()} Global Verified Ratings</span>
+                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{count.toLocaleString()} Global Verified Ratings</span>
             </div>
         </div>
     );
@@ -107,13 +107,13 @@ const SocialListViewer: React.FC<{
                 </div>
                 <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 min-h-0 pr-1">
                     {listUsers.length === 0 ? (
-                        <div className="text-center py-10 opacity-20"><p className="text-[10px] uppercase font-black tracking-widest">No matching agents found</p></div>
+                        <div className="text-center py-10 opacity-20"><p className="text-[10px] uppercase font-black tracking-widest">No matching users found</p></div>
                     ) : listUsers.map(u => (
                         <button key={u.id} onClick={() => { onSelectUser(u); onClose(); }} className="w-full flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-red-600/30 transition-all text-left">
                             <img src={u.avatar} className="w-10 h-10 rounded-xl object-cover flex-shrink-0" alt="" />
                             <div className="min-w-0 flex-1">
                                 <p className="text-[11px] font-black uppercase text-white tracking-widest truncate">{u.name}</p>
-                                <p className="text-[9px] font-bold text-gray-600 truncate">@{u.username}</p>
+                                <p className="text-[9px] font-bold text-zinc-600 truncate">@{u.username}</p>
                             </div>
                         </button>
                     ))}
@@ -244,10 +244,14 @@ const AgentProfileModal: React.FC<{
       }
   };
 
+  const copyUsername = () => {
+    navigator.clipboard.writeText(user.username);
+  };
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-6 overflow-y-auto" onClick={onClose}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-6 overflow-y-auto" onClick={onClose}>
       <motion.div initial={{ scale: 0.9, y: 40 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 40 }} className="relative w-full max-w-[500px] bg-[#0a0a0a] border border-white/10 rounded-[3rem] shadow-[0_50px_150px_rgba(0,0,0,1)] overflow-hidden flex flex-col my-auto" onClick={e => e.stopPropagation()}>
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10 flex flex-col items-center min-h-0">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10 flex flex-col items-center min-h-0 max-h-[85vh]">
             <div className="relative mb-6 flex-shrink-0">
                 <div className={`w-28 h-28 md:w-32 md:h-32 rounded-[3rem] overflow-hidden border-4 ${isOwner ? 'border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.4)]' : isAdmin ? 'border-blue-600 shadow-[0_0_30px_rgba(37,99,235,0.4)]' : 'border-white/10'} p-1 bg-black`}>
                     <img src={user.avatar} className="w-full h-full object-cover rounded-[2.4rem]" alt="" />
@@ -257,10 +261,10 @@ const AgentProfileModal: React.FC<{
             </div>
 
             <div className="text-center mb-6 flex-shrink-0 w-full px-2">
-                <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-1 break-words">{user.name}</h2>
+                <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-1 break-words leading-tight">{user.name}</h2>
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isOwner ? 'text-red-500 neon-glow-red' : isAdmin ? 'text-blue-500 neon-glow-blue' : 'text-gray-500'}`}>@{user.username}</p>
-                  <button onClick={() => { navigator.clipboard.writeText(user.username); }} className="p-1.5 bg-white/5 rounded-lg hover:bg-white/10 transition-all"><i className="fa-regular fa-copy text-[10px] text-gray-400"></i></button>
+                  <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isOwner ? 'text-red-500 neon-glow-red' : isAdmin ? 'text-blue-500 neon-glow-blue' : 'text-zinc-500'}`}>@{user.username}</p>
+                  <button onClick={copyUsername} className="p-1.5 bg-white/5 rounded-lg hover:bg-white/10 transition-all" title="Copy Username"><i className="fa-regular fa-copy text-[10px] text-zinc-400"></i></button>
                 </div>
                 
                 <div className="mb-8">
@@ -269,21 +273,21 @@ const AgentProfileModal: React.FC<{
 
                 {!user.profile?.hideSocialStats && (
                     <div className="flex gap-3 md:gap-6 mb-8 justify-center bg-white/5 p-4 rounded-3xl border border-white/5">
-                        <button onClick={() => onOpenList('followers')} className="text-center group flex-1"><p className="text-white font-black text-lg group-hover:text-red-500 transition-colors">{socialState.stats.followers}</p><p className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Followers</p></button>
+                        <button onClick={() => onOpenList('followers')} className="text-center group flex-1"><p className="text-white font-black text-lg group-hover:text-red-500 transition-colors">{socialState.stats.followers}</p><p className="text-[8px] text-zinc-500 uppercase font-black tracking-widest">Followers</p></button>
                         <div className="w-px h-8 bg-white/10 self-center"></div>
-                        <button onClick={() => onOpenList('following')} className="text-center group flex-1"><p className="text-white font-black text-lg group-hover:text-red-500 transition-colors">{socialState.stats.following}</p><p className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Following</p></button>
+                        <button onClick={() => onOpenList('following')} className="text-center group flex-1"><p className="text-white font-black text-lg group-hover:text-red-500 transition-colors">{socialState.stats.following}</p><p className="text-[8px] text-zinc-500 uppercase font-black tracking-widest">Following</p></button>
                         <div className="w-px h-8 bg-white/10 self-center"></div>
-                        <button onClick={() => onOpenList('friends')} className="text-center group flex-1"><p className="text-white font-black text-lg group-hover:text-red-500 transition-colors">{socialState.stats.friends}</p><p className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Handshakes</p></button>
+                        <button onClick={() => onOpenList('friends')} className="text-center group flex-1"><p className="text-white font-black text-lg group-hover:text-red-500 transition-colors">{socialState.stats.friends}</p><p className="text-[8px] text-zinc-500 uppercase font-black tracking-widest">Handshakes</p></button>
                     </div>
                 )}
 
                 {currentUser?.id !== user.id && !isBlocked && (
                     <div className="flex flex-col sm:flex-row gap-3 justify-center w-full max-w-xs mx-auto">
                         <button onClick={handleFollow} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white shadow-xl hover:bg-red-700'}`}>
-                            {socialState.isFollowing ? 'Unsync Grid' : 'Sync Grid'}
+                            {socialState.isFollowing ? 'Unsync' : 'Sync Up'}
                         </button>
                         <button onClick={handleFriendAction} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest bg-white/5 border border-white/10 hover:bg-white/10 text-white`}>
-                            {socialState.friendStatus === 'accepted' ? 'Linked' : socialState.friendStatus === 'pending' ? 'Accept Signal' : socialState.friendStatus === 'requested' ? 'Pending Revoke' : 'Neural Handshake'}
+                            {socialState.friendStatus === 'accepted' ? 'Linked' : socialState.friendStatus === 'pending' ? 'Accept' : socialState.friendStatus === 'requested' ? 'Pending' : 'Add Friend'}
                         </button>
                     </div>
                 )}
@@ -291,20 +295,20 @@ const AgentProfileModal: React.FC<{
 
             <div className="w-full space-y-4 mb-8">
                 <div className="p-6 bg-white/5 rounded-[2rem] border border-white/5">
-                    <h4 className="text-red-600 font-black text-[9px] uppercase tracking-[0.3em] mb-3">Transmission Bio</h4>
-                    <p className="text-[12px] text-gray-300 font-medium leading-relaxed italic" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
-                        "{user.profile?.bio || 'No public identity record synchronized.'}"
+                    <h4 className="text-red-600 font-black text-[9px] uppercase tracking-[0.3em] mb-3">About Agent</h4>
+                    <p className="text-[12px] text-zinc-300 font-medium leading-relaxed italic" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
+                        "{user.profile?.bio || 'No public bio synchronized.'}"
                     </p>
                 </div>
 
                 {currentUser?.id !== user.id && !isImmune && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <button onClick={onToggleBlock} className={`py-4 rounded-2xl font-black uppercase text-[9px] tracking-widest border transition-all ${isBlocked ? 'bg-red-600 text-white border-red-500 shadow-xl' : 'bg-white/5 text-gray-500 border-white/5 hover:bg-red-600/10 hover:text-red-500'}`}>
-                           {isBlocked ? 'Restore Signal' : 'Block Signal'}
+                        <button onClick={onToggleBlock} className={`py-4 rounded-2xl font-black uppercase text-[9px] tracking-widest border transition-all ${isBlocked ? 'bg-red-600 text-white border-red-500 shadow-xl' : 'bg-white/5 text-zinc-500 border-white/5 hover:bg-red-600/10 hover:text-red-500'}`}>
+                           {isBlocked ? 'Unblock' : 'Block'}
                         </button>
                         {!isBlocked && (
-                            <button onClick={onToggleMute} className={`py-4 rounded-2xl font-black uppercase text-[9px] tracking-widest border transition-all ${isMuted ? 'bg-blue-600 text-white border-blue-500 shadow-xl' : 'bg-white/5 text-gray-500 border-white/5 hover:bg-blue-600/10 hover:text-blue-500'}`}>
-                               {isMuted ? 'Audio Resumed' : 'Audio Muted'}
+                            <button onClick={onToggleMute} className={`py-4 rounded-2xl font-black uppercase text-[9px] tracking-widest border transition-all ${isMuted ? 'bg-blue-600 text-white border-blue-500 shadow-xl' : 'bg-white/5 text-zinc-500 border-white/5 hover:bg-blue-600/10 hover:text-blue-500'}`}>
+                               {isMuted ? 'Unmute' : 'Mute'}
                             </button>
                         )}
                     </div>
@@ -313,11 +317,11 @@ const AgentProfileModal: React.FC<{
 
             {!isBlocked && (
                 <button onClick={() => { onMessage(); onClose(); }} className="w-full py-6 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl shadow-2xl transition-all active:scale-95 flex-shrink-0">
-                    Initialize Transmission
+                    Send Signal
                 </button>
             )}
         </div>
-        <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-white/5 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-all active:scale-90"><CloseIcon className="w-6 h-6" /></button>
+        <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-white/5 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-all active:scale-90"><CloseIcon className="w-6 h-6" /></button>
       </motion.div>
     </motion.div>
   );
@@ -477,7 +481,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
     if (!myProfile?.chatPassword || unlockPassword === myProfile.chatPassword) {
         setIsUnlocked(true);
     } else {
-        alert("Authorization Key Signal Failure.");
+        alert("Incorrect Vault Key.");
     }
   };
 
@@ -513,30 +517,30 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[80000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4">
                 <div className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 flex flex-col max-h-[85vh] shadow-[0_40px_100px_rgba(0,0,0,1)] overflow-hidden">
                     <div className="flex justify-between items-center mb-6 flex-shrink-0">
-                        <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter truncate pr-4">Agent Identification</h3>
-                        <button onClick={() => { setIsSearchOpen(false); setSearchQuery(''); setSearchTab('all'); }} className="p-2.5 bg-white/5 rounded-full hover:bg-white/10 transition-colors flex-shrink-0"><CloseIcon className="w-5 h-5 md:w-6 md:h-6 text-gray-400" /></button>
+                        <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter truncate pr-4">Find People</h3>
+                        <button onClick={() => { setIsSearchOpen(false); setSearchQuery(''); setSearchTab('all'); }} className="p-2.5 bg-white/5 rounded-full hover:bg-white/10 transition-colors flex-shrink-0"><CloseIcon className="w-5 h-5 md:w-6 md:h-6 text-zinc-400" /></button>
                     </div>
 
                     <div className="flex gap-2 mb-6 bg-white/5 p-1 rounded-2xl border border-white/5 flex-shrink-0">
-                        <button onClick={() => setSearchTab('all')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${searchTab === 'all' ? 'bg-red-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}>Grid Search</button>
-                        <button onClick={() => setSearchTab('blocked')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${searchTab === 'blocked' ? 'bg-red-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}>Blacklist</button>
+                        <button onClick={() => setSearchTab('all')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${searchTab === 'all' ? 'bg-red-600 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>All Users</button>
+                        <button onClick={() => setSearchTab('blocked')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${searchTab === 'blocked' ? 'bg-red-600 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>Blocked</button>
                     </div>
 
                     <div className="relative mb-6 flex-shrink-0">
-                        <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
-                        <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={searchTab === 'all' ? "Scan Agent ID..." : "Review Restricted Signals..."} className="w-full bg-black border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white text-sm outline-none focus:border-red-600 transition-all" />
+                        <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
+                        <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={searchTab === 'all' ? "Search by username..." : "Find blocked users..."} className="w-full bg-black border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white text-sm outline-none focus:border-red-600 transition-all" />
                     </div>
                     <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 min-h-0 pr-1">
                         {searchResults.length === 0 ? (
-                            <div className="text-center py-10 opacity-20"><p className="text-xs uppercase font-black tracking-widest">{searchTab === 'all' ? 'No matches found' : 'Blacklist clear'}</p></div>
+                            <div className="text-center py-10 opacity-20"><p className="text-xs uppercase font-black tracking-widest">{searchTab === 'all' ? 'No matches found' : 'No blocked users'}</p></div>
                         ) : searchResults.map(u => (
                             <button key={u.id} onClick={() => { setViewingProfile(u); setIsSearchOpen(false); }} className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-red-600/30 transition-all group text-left">
                                 <img src={u.avatar} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" alt="" />
                                 <div className="min-w-0 flex-1">
                                     <p className="text-[11px] font-black uppercase text-white tracking-widest truncate">{u.name}</p>
-                                    <p className="text-[9px] font-bold text-gray-600 truncate">@{u.username}</p>
+                                    <p className="text-[9px] font-bold text-zinc-600 truncate">@{u.username}</p>
                                 </div>
-                                {searchTab === 'blocked' && <span className="text-[8px] font-black text-red-500 uppercase group-hover:underline flex-shrink-0 ml-2">Restore Link</span>}
+                                {searchTab === 'blocked' && <span className="text-[8px] font-black text-red-500 uppercase group-hover:underline flex-shrink-0 ml-2">Restore</span>}
                             </button>
                         ))}
                     </div>
@@ -547,11 +551,11 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
         {showSetup && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[70000] flex items-center justify-center p-4 bg-black/98 backdrop-blur-3xl overflow-hidden">
              <div className="w-full max-w-lg bg-[#080808] border border-white/10 rounded-[3rem] p-8 md:p-12 shadow-2xl overflow-y-auto max-h-[85vh] custom-scrollbar">
-                <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Record Init</h3>
-                <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-10">Synchronize your identity within the zone</p>
+                <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Create Profile</h3>
+                <p className="text-zinc-500 text-[10px] uppercase font-bold tracking-widest mb-10">Set up your presence in the community</p>
                 <form onSubmit={async (e) => { e.preventDefault(); if (clerkUser) { await update(ref(db, `users/${clerkUser.id}/profile`), setupData); setShowSetup(false); } }} className="space-y-6">
                    <div>
-                      <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block ml-1">Identity Class</label>
+                      <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-2 block ml-1">I am a...</label>
                       <select value={setupData.role} onChange={e => setSetupData({...setupData, role: e.target.value as any})} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm text-white focus:border-red-600 outline-none appearance-none">
                          <option value="Client">Client</option>
                          <option value="Designer">Designer</option>
@@ -560,19 +564,19 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                    {setupData.role !== 'Client' && (
                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block ml-1">Work Experience</label>
+                                <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-2 block ml-1">Years of Experience</label>
                                 <input type="text" value={setupData.experience} placeholder="e.g. 3" onChange={e => setSetupData({...setupData, experience: e.target.value.replace(/[^0-9]/g, '')})} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm text-white focus:border-red-600 outline-none" />
                             </div>
                             <div className="relative">
-                                <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block ml-1">Domain Specialty</label>
-                                <input type="text" value={setupData.profession} onFocus={() => setIsProfDropdownOpen(true)} placeholder="Scan Specializations..." onChange={e => { setSetupData({...setupData, profession: e.target.value}); setProfSearch(e.target.value); }} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm text-white focus:border-red-600 outline-none" />
+                                <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-2 block ml-1">Specialty</label>
+                                <input type="text" value={setupData.profession} onFocus={() => setIsProfDropdownOpen(true)} placeholder="VFX, Graphics, etc." onChange={e => { setSetupData({...setupData, profession: e.target.value}); setProfSearch(e.target.value); }} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm text-white focus:border-red-600 outline-none" />
                                 <AnimatePresence>
                                     {isProfDropdownOpen && (
                                         <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0}} className="absolute left-0 right-0 top-full mt-2 bg-[#111] border border-white/10 rounded-xl z-50 overflow-hidden shadow-2xl max-h-[200px] overflow-y-auto custom-scrollbar">
                                             {RECOMMENDED_PROFESSIONS.filter(p => p.toLowerCase().includes(profSearch.toLowerCase())).map(p => (
-                                                <button key={p} type="button" onClick={() => { setSetupData({...setupData, profession: p}); setIsProfDropdownOpen(false); }} className="w-full text-left px-5 py-3 text-xs text-gray-400 hover:bg-red-600 hover:text-white border-b border-white/5 last:border-0">{p}</button>
+                                                <button key={p} type="button" onClick={() => { setSetupData({...setupData, profession: p}); setIsProfDropdownOpen(false); }} className="w-full text-left px-5 py-3 text-xs text-zinc-400 hover:bg-red-600 hover:text-white border-b border-white/5 last:border-0">{p}</button>
                                             ))}
-                                            <button type="button" onClick={() => setIsProfDropdownOpen(false)} className="w-full text-center py-2 bg-black text-[8px] text-gray-500 uppercase font-black">Close Filter</button>
+                                            <button type="button" onClick={() => setIsProfDropdownOpen(false)} className="w-full text-center py-2 bg-black text-[8px] text-zinc-500 uppercase font-black">Close</button>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -580,14 +584,14 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                        </div>
                    )}
                    <div>
-                      <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block ml-1">Identity Bio</label>
-                      <textarea required rows={3} value={setupData.bio} onChange={e => setSetupData({...setupData, bio: e.target.value})} placeholder="Broadcast your creative background..." className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm text-white resize-none focus:border-red-600 outline-none" />
+                      <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-2 block ml-1">Short Bio</label>
+                      <textarea required rows={3} value={setupData.bio} onChange={e => setSetupData({...setupData, bio: e.target.value})} placeholder="Tell us about yourself..." className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm text-white resize-none focus:border-red-600 outline-none" />
                    </div>
                    <div>
-                      <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block ml-1">Vault Key (Optional)</label>
-                      <input type="password" value={setupData.chatPassword} placeholder="Leave blank for public link" onChange={e => setSetupData({...setupData, chatPassword: e.target.value})} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm text-white focus:border-red-600 outline-none" />
+                      <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-2 block ml-1">Private Key (Optional)</label>
+                      <input type="password" value={setupData.chatPassword} placeholder="Add a password for your DMs" onChange={e => setSetupData({...setupData, chatPassword: e.target.value})} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm text-white focus:border-red-600 outline-none" />
                    </div>
-                   <button type="submit" className="w-full py-6 bg-red-600 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl shadow-xl hover:bg-red-700 active:scale-95 transition-all">Establish Identity</button>
+                   <button type="submit" className="w-full py-6 bg-red-600 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl shadow-xl hover:bg-red-700 active:scale-95 transition-all">Save Profile</button>
                 </form>
              </div>
           </motion.div>
@@ -599,27 +603,27 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
           
           <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-white/5 flex flex-col bg-[#050505]/50 flex-shrink-0 min-h-0 ${showConversationOnMobile ? 'hidden md:flex' : 'flex'}`}>
             <div className="p-6 md:p-8 border-b border-white/5 bg-black/30 flex-shrink-0">
-               <span className="text-[10px] font-black text-white uppercase tracking-widest">Global Signals</span>
+               <span className="text-[10px] font-black text-white uppercase tracking-widest">Chat Rooms</span>
             </div>
             
             <div className="p-3 md:p-4 space-y-2 flex-shrink-0 border-b border-white/5">
                 <button onClick={() => { setIsGlobal(true); setSelectedUser(null); setShowConversationOnMobile(true); }} className={`w-full flex items-center gap-4 p-4 rounded-[1.8rem] md:rounded-[2.2rem] transition-all border ${isGlobal ? 'bg-red-600/10 border-red-600/20' : 'border-transparent hover:bg-white/5'}`}>
-                    <div className={`w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center border flex-shrink-0 ${isGlobal ? 'bg-red-600 border-red-500 text-white shadow-lg' : 'bg-white/5 border-white/10 text-gray-500'}`}>
+                    <div className={`w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center border flex-shrink-0 ${isGlobal ? 'bg-red-600 border-red-500 text-white shadow-lg' : 'bg-white/5 border-white/10 text-zinc-500'}`}>
                         <GlobeAltIcon className="w-5 h-5" />
                     </div>
                     <div className="text-left min-w-0 flex-1">
-                        <p className={`text-[11px] font-black uppercase tracking-widest truncate ${isGlobal ? 'text-white' : 'text-gray-500'}`}>Public Grid</p>
-                        <p className="text-[8px] text-gray-600 font-bold uppercase truncate">Sync Live</p>
+                        <p className={`text-[11px] font-black uppercase tracking-widest truncate ${isGlobal ? 'text-white' : 'text-zinc-500'}`}>Public Chat</p>
+                        <p className="text-[8px] text-zinc-600 font-bold uppercase truncate">Everyone</p>
                     </div>
                 </button>
 
                 <button onClick={() => setIsSearchOpen(true)} className="w-full flex items-center gap-4 p-4 rounded-[1.8rem] md:rounded-[2.2rem] transition-all border border-transparent hover:bg-white/5">
-                    <div className="w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center border bg-white/5 border-white/10 text-gray-500 flex-shrink-0">
+                    <div className="w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center border bg-white/5 border-white/10 text-zinc-500 flex-shrink-0">
                         <SearchIcon className="w-5 h-5" />
                     </div>
                     <div className="text-left min-w-0 flex-1">
-                        <p className="text-[11px] font-black uppercase tracking-widest text-gray-500 truncate">Scan Agents</p>
-                        <p className="text-[8px] text-gray-600 font-bold uppercase truncate">Find Signals</p>
+                        <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500 truncate">Find User</p>
+                        <p className="text-[8px] text-zinc-600 font-bold uppercase truncate">Search</p>
                     </div>
                 </button>
             </div>
@@ -637,7 +641,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                         {u.username === OWNER_HANDLE && <span className="owner-badge scale-[0.6] origin-left">OWNER</span>}
                         {u.username === ADMIN_HANDLE && <span className="owner-badge bg-blue-600 scale-[0.6] origin-left border-blue-400 shadow-blue-600/50">ADMIN</span>}
                     </p>
-                    <p className="text-[9px] text-gray-600 font-bold uppercase truncate">@{u.username}</p>
+                    <p className="text-[9px] text-zinc-600 font-bold uppercase truncate">@{u.username}</p>
                   </div>
                 </button>
               ))}
@@ -646,7 +650,6 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
 
           <div className={`flex-1 flex flex-col bg-black min-h-0 min-w-0 relative ${showConversationOnMobile ? 'flex' : 'hidden md:flex'}`}>
             <div className="p-6 md:p-8 border-b border-white/5 flex items-center gap-4 bg-black/40 backdrop-blur-xl flex-shrink-0 z-10">
-               {/* Mobile Back Button */}
                <button onClick={() => setShowConversationOnMobile(false)} className="md:hidden p-2 text-white hover:text-red-500 transition-colors">
                   <ChevronLeftIcon className="w-6 h-6" />
                </button>
@@ -655,8 +658,8 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                   {isGlobal ? <GlobeAltIcon className="w-6 h-6 text-red-600" /> : <img src={selectedUser?.avatar} className="w-full h-full object-cover rounded-2xl cursor-pointer" onClick={() => selectedUser && setViewingProfile(selectedUser)} />}
                </div>
                <div className="min-w-0 flex-1">
-                  <h4 className="text-[14px] md:text-[16px] font-black text-white uppercase tracking-widest truncate">{isGlobal ? 'Sector Grid' : selectedUser?.name}</h4>
-                  <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest truncate">{isGlobal ? 'Active Satellite Link' : `@${selectedUser?.username}`}</p>
+                  <h4 className="text-[14px] md:text-[16px] font-black text-white uppercase tracking-widest truncate">{isGlobal ? 'Group Chat' : selectedUser?.name}</h4>
+                  <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest truncate">{isGlobal ? 'Online Now' : `@${selectedUser?.username}`}</p>
                </div>
             </div>
 
@@ -666,11 +669,11 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                       <div className="w-16 h-16 bg-red-600/10 rounded-full flex items-center justify-center mb-6 border border-red-600/30 shadow-2xl">
                           <i className="fa-solid fa-lock text-red-500 text-xl"></i>
                       </div>
-                      <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter mb-4">Channel Protected</h3>
-                      <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-10 max-w-[200px]">Verification signature required to synchronize signal history</p>
+                      <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter mb-4">Password Protected</h3>
+                      <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-10 max-w-[200px]">Enter the private key to see messages</p>
                       <div className="w-full max-w-sm space-y-4">
-                          <input type="password" value={unlockPassword} onChange={e => setUnlockPassword(e.target.value)} placeholder="Authorization Signature" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 md:py-5 px-6 text-white text-center outline-none focus:border-red-600 text-sm transition-all" />
-                          <button onClick={handleChatUnlock} className="w-full py-4 md:py-5 bg-red-600 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all">Unlock Channel</button>
+                          <input type="password" value={unlockPassword} onChange={e => setUnlockPassword(e.target.value)} placeholder="Private Key" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 md:py-5 px-6 text-white text-center outline-none focus:border-red-600 text-sm transition-all" />
+                          <button onClick={handleChatUnlock} className="w-full py-4 md:py-5 bg-red-600 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all">Unlock</button>
                       </div>
                   </div>
               ) : (
@@ -678,15 +681,15 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                     {filteredMessages.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center opacity-10 py-20">
                              <ChatBubbleIcon className="w-16 h-16 mb-4" />
-                             <p className="text-[11px] font-black uppercase tracking-[0.3em]">No activity detected</p>
+                             <p className="text-[11px] font-black uppercase tracking-[0.3em]">No messages yet</p>
                         </div>
                     ) : (
                         filteredMessages.map(msg => (
                             <div key={msg.id} className={`flex gap-3 md:gap-5 ${msg.senderId === clerkUser?.id ? 'flex-row-reverse' : 'flex-row'} items-end min-w-0`}>
                             <img src={msg.senderAvatar} className="w-8 h-8 md:w-10 md:h-10 rounded-xl border border-white/5 object-cover cursor-pointer flex-shrink-0 shadow-lg active:scale-90" alt="" onClick={() => { const u = users.find(usr => usr.id === msg.senderId); if(u) setViewingProfile(u); }} />
                             <div className={`max-w-[85%] ${msg.senderId === clerkUser?.id ? 'items-end' : 'items-start'} flex flex-col min-w-0`}>
-                                <span className="text-[9px] font-black text-gray-600 uppercase mb-2 truncate max-w-full px-1">{msg.senderName}</span>
-                                <div className={`p-3 md:p-4 rounded-[1.5rem] text-[12px] md:text-[13px] font-medium border whitespace-pre-wrap ${msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-gray-300 rounded-tl-none shadow-lg'}`} style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{msg.text}</div>
+                                <span className="text-[9px] font-black text-zinc-600 uppercase mb-2 truncate max-w-full px-1">{msg.senderName}</span>
+                                <div className={`p-3 md:p-4 rounded-[1.5rem] text-[12px] md:text-[13px] font-medium border whitespace-pre-wrap ${msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-zinc-300 rounded-tl-none shadow-lg'}`} style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{msg.text}</div>
                             </div>
                             </div>
                         ))
@@ -698,15 +701,29 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
 
             <div className="p-4 md:p-10 border-t border-white/5 flex-shrink-0 bg-black/40 z-10">
               {isSignedIn ? (
-                <form onSubmit={handleSendMessage} className={`flex gap-3 bg-white/5 border border-white/10 rounded-[1.5rem] md:rounded-[2rem] p-1.5 md:p-2 transition-all shadow-inner ${needsUnlock ? 'opacity-20 pointer-events-none grayscale' : ''}`}>
-                    <input value={inputValue} onChange={e => setInputValue(e.target.value)} disabled={needsUnlock} placeholder={isGlobal ? "Broadcast..." : "Signal..."} className="flex-1 bg-transparent px-3 md:px-6 py-3 md:py-4 text-sm font-bold text-white outline-none min-w-0 placeholder:opacity-50" />
+                <form onSubmit={handleSendMessage} className={`flex gap-3 bg-white/5 border border-white/10 rounded-[1.5rem] md:rounded-[2rem] p-1.5 md:p-2 transition-all shadow-inner ${needsUnlock ? 'opacity-20 pointer-events-none' : ''}`}>
+                    <input value={inputValue} onChange={e => setInputValue(e.target.value)} disabled={needsUnlock} placeholder={isGlobal ? "Type a message..." : "Signal..."} className="flex-1 bg-transparent px-3 md:px-6 py-3 md:py-4 text-sm font-bold text-white outline-none min-w-0 placeholder:opacity-50" />
                     <button type="submit" disabled={!inputValue.trim() || needsUnlock} className="bg-red-600 text-white w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-xl md:rounded-2xl active:scale-90 transition-all shadow-2xl flex-shrink-0 disabled:opacity-50"><SendIcon className="w-5 h-5" /></button>
                 </form>
-              ) : <div className="text-center py-2 md:py-4"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-4 md:py-5 px-8 md:px-16 rounded-2xl uppercase text-[10px] tracking-[0.4em] shadow-2xl active:scale-95 transition-all">Establish Credentials</button></SignInButton></div>}
+              ) : <div className="text-center py-2 md:py-4"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-4 md:py-5 px-8 md:px-16 rounded-2xl uppercase text-[10px] tracking-[0.4em] shadow-2xl active:scale-95 transition-all">Sign In to Chat</button></SignInButton></div>}
             </div>
           </div>
         </div>
       </div>
+      
+      {!isModalMode && (
+          <div className="container mx-auto px-6 max-w-6xl mt-20 flex justify-center">
+             <button 
+                onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                className="group flex flex-col items-center gap-4 transition-all hover:scale-105"
+            >
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-white">Get Your Own Work Done</span>
+                <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-red-600 group-hover:bg-red-600/10 transition-all">
+                    <ChevronRightIcon className="w-5 h-5 rotate-90 text-zinc-500 group-hover:text-red-500" />
+                </div>
+            </button>
+          </div>
+      )}
     </section>
   );
 };
