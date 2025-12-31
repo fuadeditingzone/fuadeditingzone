@@ -62,7 +62,7 @@ export default function App() {
     else document.body.style.overflow = 'unset';
   }, [isAnyOverlayActive]);
 
-  // Dynamic Routing Logic
+  // Routing Handler for /@username and /marketplace
   useEffect(() => {
     const handleRouting = async () => {
       const path = window.location.pathname;
@@ -76,7 +76,9 @@ export default function App() {
             if (foundUser) setViewingProfileId(foundUser.id);
           }
         }
-      } 
+      } else if (path === '/marketplace') {
+          handleScrollTo('explore');
+      }
     };
     handleRouting();
     window.addEventListener('popstate', handleRouting);
@@ -84,13 +86,25 @@ export default function App() {
   }, []);
 
   const handleOpenProfile = (userId: string, tab: any = 'identity', openUpload = false) => {
-    setViewingProfileId(userId);
-    setProfileInitialTab(tab);
-    setProfileAutoOpenUpload(openUpload);
-    get(ref(db, `users/${userId}/username`)).then((snap) => {
-      const uname = snap.val();
-      if (uname) window.history.pushState(null, '', `/@${uname}`);
-    });
+    // If we get a username instead of an ID (mentions), we must resolve it
+    if (!userId.includes('user_')) {
+        get(ref(db, 'users')).then(snap => {
+            const users = snap.val();
+            const found = Object.values(users || {}).find((u: any) => u.username === userId) as any;
+            if (found) {
+                setViewingProfileId(found.id);
+                window.history.pushState(null, '', `/@${found.username}`);
+            }
+        });
+    } else {
+        setViewingProfileId(userId);
+        setProfileInitialTab(tab);
+        setProfileAutoOpenUpload(openUpload);
+        get(ref(db, `users/${userId}/username`)).then((snap) => {
+          const uname = snap.val();
+          if (uname) window.history.pushState(null, '', `/@${uname}`);
+        });
+    }
   };
 
   const handleCloseProfile = () => {
@@ -121,7 +135,9 @@ export default function App() {
   }, []);
 
   const handleScrollTo = (target: string) => {
-    document.getElementById(target)?.scrollIntoView({ behavior: 'smooth' });
+    const el = document.getElementById(target);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (target === 'explore') window.history.pushState(null, '', '/marketplace');
   };
 
   return (
@@ -136,13 +152,14 @@ export default function App() {
           <main className="main-content relative z-10 pb-20 md:pb-0">
               <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
               
-              <section id="explore" className="py-20 bg-black/50 backdrop-blur-sm">
+              <section id="explore" className="py-20 bg-black/50 backdrop-blur-sm relative border-y border-white/5">
                   <div className="container mx-auto">
                     <div className="text-center mb-16">
-                        <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-4 block">Visual Discovery</span>
-                        <h2 className="text-white text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none">Explore Feed</h2>
+                        <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-4 block">Visual Marketplace</span>
+                        <h2 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">The Market</h2>
+                        <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4">Discover, Connect & Mention</p>
                     </div>
-                    <ExploreFeed />
+                    <ExploreFeed onOpenProfile={handleOpenProfile} />
                   </div>
               </section>
 
