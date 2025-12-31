@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
@@ -77,6 +78,40 @@ const StarRating: React.FC<{ rating: number; onRate?: (val: number) => void; siz
     );
 };
 
+const SocialListViewer: React.FC<{ 
+    title: string; 
+    ids: string[]; 
+    users: ChatUser[]; 
+    onClose: () => void; 
+    onSelectUser: (user: ChatUser) => void;
+}> = ({ title, ids, users, onClose, onSelectUser }) => {
+    const listUsers = useMemo(() => users.filter(u => ids.includes(u.id)), [ids, users]);
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100000] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-8 flex flex-col max-h-[70vh] shadow-2xl">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-black text-white uppercase tracking-widest">{title}</h3>
+                    <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-red-600 transition-colors"><CloseIcon className="w-5 h-5" /></button>
+                </div>
+                <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+                    {listUsers.length === 0 ? (
+                        <div className="text-center py-10 opacity-20"><p className="text-[10px] uppercase font-black tracking-widest">No entries found</p></div>
+                    ) : listUsers.map(u => (
+                        <button key={u.id} onClick={() => { onSelectUser(u); onClose(); }} className="w-full flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-red-600/30 transition-all">
+                            <img src={u.avatar} className="w-10 h-10 rounded-xl object-cover" alt="" />
+                            <div className="text-left">
+                                <p className="text-[11px] font-black uppercase text-white tracking-widest">{u.name}</p>
+                                <p className="text-[9px] font-bold text-gray-600">@{u.username}</p>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
 const AgentProfileModal: React.FC<{ 
   user: ChatUser; 
   currentUser: any; 
@@ -85,8 +120,9 @@ const AgentProfileModal: React.FC<{
   isBlocked: boolean; 
   isMuted: boolean; 
   onToggleBlock: () => void; 
-  onToggleMute: () => void 
-}> = ({ user, currentUser, onClose, onMessage, isBlocked, isMuted, onToggleBlock, onToggleMute }) => {
+  onToggleMute: () => void;
+  onOpenList: (type: 'followers' | 'following' | 'friends') => void;
+}> = ({ user, currentUser, onClose, onMessage, isBlocked, isMuted, onToggleBlock, onToggleMute, onOpenList }) => {
   const isOwner = user.username === OWNER_HANDLE;
   const isAdmin = user.username === ADMIN_HANDLE;
   const isImmune = isOwner || isAdmin;
@@ -96,11 +132,29 @@ const AgentProfileModal: React.FC<{
     if (!currentUser) return;
     const followRef = ref(db, `social/${currentUser.id}/following/${user.id}`);
     const friendRef = ref(db, `social/${currentUser.id}/friends/${user.id}`);
-    const statsRef = ref(db, `users/${user.id}/social_stats`);
+    
+    // Live counts from the social node directly
+    const followersRef = ref(db, `social/${user.id}/followers`);
+    const followingRef = ref(db, `social/${user.id}/following`);
+    const friendsRef = ref(db, `social/${user.id}/friends`);
 
     onValue(followRef, (snap) => setSocialState(prev => ({ ...prev, isFollowing: snap.exists() })));
     onValue(friendRef, (snap) => setSocialState(prev => ({ ...prev, friendStatus: snap.val() || 'none' })));
-    onValue(statsRef, (snap) => { if(snap.exists()) setSocialState(prev => ({ ...prev, stats: snap.val() })); });
+    
+    // Aggregate live stats
+    const unsubF = onValue(followersRef, (snap) => setSocialState(prev => ({ ...prev, stats: { ...prev.stats, followers: snap.exists() ? Object.keys(snap.val()).length : 0 } })));
+    const unsubFg = onValue(followingRef, (snap) => setSocialState(prev => ({ ...prev, stats: { ...prev.stats, following: snap.exists() ? Object.keys(snap.val()).length : 0 } })));
+    const unsubFr = onValue(friendsRef, (snap) => {
+        if (!snap.exists()) {
+            setSocialState(prev => ({ ...prev, stats: { ...prev.stats, friends: 0 } }));
+            return;
+        }
+        const data = snap.val();
+        const acceptedCount = Object.values(data).filter(status => status === 'accepted').length;
+        setSocialState(prev => ({ ...prev, stats: { ...prev.stats, friends: acceptedCount } }));
+    });
+
+    return () => { unsubF(); unsubFg(); unsubFr(); };
   }, [currentUser, user.id]);
 
   useEffect(() => {
@@ -172,9 +226,10 @@ const AgentProfileModal: React.FC<{
                 </div>
 
                 {!user.profile?.hideSocialStats && (
-                    <div className="flex gap-4 mb-6 justify-center">
-                        <div className="text-center"><p className="text-white font-black text-lg">{socialState.stats.followers}</p><p className="text-[8px] text-gray-500 uppercase font-black">Followers</p></div>
-                        <div className="text-center"><p className="text-white font-black text-lg">{socialState.stats.friends}</p><p className="text-[8px] text-gray-500 uppercase font-black">Friends</p></div>
+                    <div className="flex gap-6 mb-6 justify-center">
+                        <button onClick={() => onOpenList('followers')} className="text-center hover:scale-105 transition-transform"><p className="text-white font-black text-lg">{socialState.stats.followers}</p><p className="text-[8px] text-gray-500 uppercase font-black">Followers</p></button>
+                        <button onClick={() => onOpenList('following')} className="text-center hover:scale-105 transition-transform"><p className="text-white font-black text-lg">{socialState.stats.following}</p><p className="text-[8px] text-gray-500 uppercase font-black">Following</p></button>
+                        <button onClick={() => onOpenList('friends')} className="text-center hover:scale-105 transition-transform"><p className="text-white font-black text-lg">{socialState.stats.friends}</p><p className="text-[8px] text-gray-500 uppercase font-black">Friends</p></button>
                     </div>
                 )}
 
@@ -201,10 +256,10 @@ const AgentProfileModal: React.FC<{
                 {currentUser?.id !== user.id && !isImmune && (
                     <div className="grid grid-cols-2 gap-3">
                         <button onClick={onToggleBlock} className={`py-4 rounded-2xl font-black uppercase text-[9px] tracking-widest border transition-all ${isBlocked ? 'bg-red-600 text-white border-red-500' : 'bg-white/5 text-gray-500 border-white/5 hover:bg-red-600/10 hover:text-red-500'}`}>
-                           {isBlocked ? 'Unblock' : 'Block'}
+                           {isBlocked ? 'Unblock Agent' : 'Block Agent'}
                         </button>
                         <button onClick={onToggleMute} className={`py-4 rounded-2xl font-black uppercase text-[9px] tracking-widest border transition-all ${isMuted ? 'bg-blue-600 text-white border-blue-500' : 'bg-white/5 text-gray-500 border-white/5 hover:bg-blue-600/10 hover:text-blue-500'}`}>
-                           {isMuted ? 'Unmute' : 'Mute'}
+                           {isMuted ? 'Unmute' : 'Mute Signals'}
                         </button>
                     </div>
                 )}
@@ -229,6 +284,9 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
   const [isGlobal, setIsGlobal] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchTab, setSearchTab] = useState<'all' | 'blocked'>('all');
+  const [socialListView, setSocialListView] = useState<{ type: string; ids: string[] } | null>(null);
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [blockedIds, setBlockedIds] = useState<string[]>([]);
@@ -243,9 +301,9 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isSearchOpen || viewingProfile) document.body.style.overflow = 'hidden';
+    if (isSearchOpen || viewingProfile || socialListView) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = 'unset';
-  }, [isSearchOpen, viewingProfile]);
+  }, [isSearchOpen, viewingProfile, socialListView]);
 
   useEffect(() => {
     if (!clerkUser) return;
@@ -333,26 +391,39 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
     }
   };
 
+  const handleOpenSocialList = async (type: 'followers' | 'following' | 'friends', targetUserId: string) => {
+      const socialRef = ref(db, `social/${targetUserId}/${type}`);
+      const snap = await get(socialRef);
+      if (snap.exists()) {
+          const data = snap.val();
+          const ids = type === 'friends' 
+            ? Object.entries(data).filter(([_, status]) => status === 'accepted').map(([id]) => id)
+            : Object.keys(data);
+          setSocialListView({ type: type.charAt(0).toUpperCase() + type.slice(1), ids });
+      } else {
+          setSocialListView({ type: type.charAt(0).toUpperCase() + type.slice(1), ids: [] });
+      }
+  };
+
   const inboxUsers = useMemo(() => {
     const list = users.filter(u => u.id !== clerkUser?.id && !blockedIds.includes(u.id));
-    const owner = list.find(u => u.username === OWNER_HANDLE);
-    const admin = list.find(u => u.username === ADMIN_HANDLE);
-    const others = list.filter(u => u.username !== OWNER_HANDLE && u.username !== ADMIN_HANDLE);
-    const sorted = [];
-    if (owner) sorted.push(owner);
-    if (admin) sorted.push(admin);
-    sorted.push(...others);
+    const sorted = [...list].sort((a,b) => {
+        if (a.username === OWNER_HANDLE) return -1;
+        if (b.username === OWNER_HANDLE) return 1;
+        return 0;
+    });
     return sorted;
   }, [users, clerkUser, blockedIds]);
 
   const searchResults = useMemo(() => {
-      if (!searchQuery.trim()) return [];
-      return users.filter(u => 
+      const sourceList = searchTab === 'all' ? users : users.filter(u => blockedIds.includes(u.id));
+      if (!searchQuery.trim()) return sourceList.filter(u => u.id !== clerkUser?.id);
+      return sourceList.filter(u => 
         (u.username?.toLowerCase().includes(searchQuery.toLowerCase()) || 
          u.name?.toLowerCase().includes(searchQuery.toLowerCase())) &&
          u.id !== clerkUser?.id
       );
-  }, [searchQuery, users, clerkUser]);
+  }, [searchQuery, users, clerkUser, searchTab, blockedIds]);
 
   const handleChatUnlock = () => {
     const myProfile = users.find(u => u.id === clerkUser?.id)?.profile;
@@ -383,6 +454,17 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                 isMuted={mutedIds.includes(viewingProfile.id)}
                 onToggleBlock={() => toggleBlock(viewingProfile.id)}
                 onToggleMute={() => toggleMute(viewingProfile.id)}
+                onOpenList={(type) => handleOpenSocialList(type, viewingProfile.id)}
+            />
+        )}
+
+        {socialListView && (
+            <SocialListViewer 
+                title={socialListView.type} 
+                ids={socialListView.ids} 
+                users={users} 
+                onClose={() => setSocialListView(null)} 
+                onSelectUser={(u) => setViewingProfile(u)} 
             />
         )}
 
@@ -391,22 +473,29 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                 <div className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col max-h-[85vh] shadow-[0_40px_100px_rgba(0,0,0,1)]">
                     <div className="flex justify-between items-center mb-8">
                         <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Search Agents</h3>
-                        <button onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }} className="p-3 bg-white/5 rounded-full hover:bg-white/10 transition-colors"><CloseIcon className="w-6 h-6 text-gray-400" /></button>
+                        <button onClick={() => { setIsSearchOpen(false); setSearchQuery(''); setSearchTab('all'); }} className="p-3 bg-white/5 rounded-full hover:bg-white/10 transition-colors"><CloseIcon className="w-6 h-6 text-gray-400" /></button>
                     </div>
+
+                    <div className="flex gap-2 mb-6 bg-white/5 p-1 rounded-2xl border border-white/5">
+                        <button onClick={() => setSearchTab('all')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${searchTab === 'all' ? 'bg-red-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}>Global Sync</button>
+                        <button onClick={() => setSearchTab('blocked')} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${searchTab === 'blocked' ? 'bg-red-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}>Blocked Signals</button>
+                    </div>
+
                     <div className="relative mb-8">
                         <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
-                        <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Username or Agent Name..." className="w-full bg-black border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white text-sm outline-none focus:border-red-600 transition-all" />
+                        <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={searchTab === 'all' ? "Username or Agent Name..." : "Search Blocked Accounts..."} className="w-full bg-black border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white text-sm outline-none focus:border-red-600 transition-all" />
                     </div>
                     <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
-                        {searchResults.length === 0 && searchQuery.trim() !== '' ? (
-                            <div className="text-center py-10 opacity-20"><p className="text-xs uppercase font-black tracking-widest">No matching agents found</p></div>
+                        {searchResults.length === 0 ? (
+                            <div className="text-center py-10 opacity-20"><p className="text-xs uppercase font-black tracking-widest">{searchTab === 'all' ? 'No matching agents found' : 'No blocked accounts'}</p></div>
                         ) : searchResults.map(u => (
-                            <button key={u.id} onClick={() => { setViewingProfile(u); setIsSearchOpen(false); }} className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-red-600/30 transition-all">
-                                <img src={u.avatar} className="w-12 h-12 rounded-xl object-cover" />
-                                <div className="text-left">
+                            <button key={u.id} onClick={() => { setViewingProfile(u); setIsSearchOpen(false); }} className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-red-600/30 transition-all group">
+                                <img src={u.avatar} className="w-12 h-12 rounded-xl object-cover" alt="" />
+                                <div className="text-left flex-1">
                                     <p className="text-[11px] font-black uppercase text-white tracking-widest">{u.name}</p>
                                     <p className="text-[9px] font-bold text-gray-600">@{u.username}</p>
                                 </div>
+                                {searchTab === 'blocked' && <span className="text-[8px] font-black text-red-500 uppercase group-hover:underline">Unblock</span>}
                             </button>
                         ))}
                     </div>
