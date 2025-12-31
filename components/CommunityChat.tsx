@@ -2,9 +2,8 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, push, onChildAdded, onValue, set, update, get, remove, runTransaction, query, limitToLast } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, ref, push, onChildAdded, onValue, set, update, get, remove, runTransaction, query, limitToLast, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { SparklesIcon, SendIcon, UserCircleIcon, GlobeAltIcon, CheckCircleIcon, CloseIcon, ChatBubbleIcon, VolumeOffIcon, VolumeOnIcon, EyeIcon, HandThumbUpIcon, ChevronRightIcon, SearchIcon, ChevronLeftIcon, GalleryIcon, PhotoManipulationIcon } from './Icons';
-import { ProfileModal } from './ProfileModal';
 import { siteConfig } from '../config';
 
 const firebaseConfig = {
@@ -58,17 +57,20 @@ const AgentProfileModal: React.FC<{
 }> = ({ user, currentUser, onClose, onMessage, onShowFullProfile }) => {
   const isOwner = user.username === OWNER_HANDLE;
   const isAdmin = user.username === ADMIN_HANDLE;
-  const [socialState, setSocialState] = useState({ isFollowing: false, friendStatus: 'none' });
+  const [socialState, setSocialState] = useState({ isFollowing: false, friendStatus: 'none', followers: 0, following: 0 });
+  const [recentPosts, setRecentPosts] = useState<any[]>([]);
   
   useEffect(() => {
     if (!user) return;
-    document.title = `${user.name} (@${user.username}) | Fuad Editing Zone`;
-    document.body.style.overflow = 'hidden';
-    return () => {
-        document.title = siteConfig.seo.title;
-        document.body.style.overflow = 'unset';
-    };
-  }, [user]);
+    const postsQuery = query(ref(db, 'explore_posts'), orderByChild('userId'), equalTo(user.id), limitToLast(3));
+    onValue(postsQuery, (snap) => {
+        const data = snap.val();
+        setRecentPosts(data ? Object.values(data).reverse() : []);
+    });
+
+    onValue(ref(db, `social/${user.id}/followers`), s => setSocialState(p => ({...p, followers: s.exists() ? Object.keys(s.val()).length : 0})));
+    onValue(ref(db, `social/${user.id}/following`), s => setSocialState(p => ({...p, following: s.exists() ? Object.keys(s.val()).length : 0})));
+  }, [user.id]);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -109,63 +111,44 @@ const AgentProfileModal: React.FC<{
       }
   };
 
-  const handleFriendAction = async () => {
-      if (!currentUser) return;
-      if (socialState.friendStatus === 'accepted') {
-          if (window.confirm(`Unfriend @${user.username}?`)) {
-              await remove(ref(db, `social/${currentUser.id}/friends/${user.id}`));
-              await remove(ref(db, `social/${user.id}/friends/${currentUser.id}`));
-          }
-      } else if (socialState.friendStatus === 'none') {
-          await set(ref(db, `social/${currentUser.id}/requests/sent/${user.id}`), { timestamp: Date.now() });
-          await set(ref(db, `social/${user.id}/requests/received/${currentUser.id}`), { timestamp: Date.now() });
-          await push(ref(db, `notifications/${user.id}`), {
-              type: 'friend_request', fromId: currentUser.id, fromName: currentUser.username || currentUser.fullName, fromAvatar: currentUser.imageUrl, timestamp: Date.now(), read: false
-          });
-      } else if (socialState.friendStatus === 'pending') {
-          await remove(ref(db, `social/${currentUser.id}/requests/received/${user.id}`));
-          await remove(ref(db, `social/${user.id}/requests/sent/${currentUser.id}`));
-          await set(ref(db, `social/${currentUser.id}/friends/${user.id}`), true);
-          await set(ref(db, `social/${user.id}/friends/${currentUser.id}`), true);
-          await set(ref(db, `social/${currentUser.id}/following/${user.id}`), true);
-          await set(ref(db, `social/${user.id}/followers/${currentUser.id}`), true);
-          await set(ref(db, `social/${user.id}/following/${currentUser.id}`), true);
-          await set(ref(db, `social/${currentUser.id}/followers/${user.id}`), true);
-          await push(ref(db, `notifications/${user.id}`), {
-              type: 'friend_accepted', fromId: currentUser.id, fromName: currentUser.username || currentUser.fullName, fromAvatar: currentUser.imageUrl, timestamp: Date.now(), read: false
-          });
-      }
-  };
-
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={onClose}>
-      <div className="w-full max-w-[450px] bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col items-center shadow-2xl max-h-[90dvh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
-        <div className="relative mb-6 flex-shrink-0 cursor-pointer" onClick={() => onShowFullProfile?.(user.id)}>
-            <img src={user.avatar} className={`w-32 h-32 rounded-[3rem] border-4 p-1 ${isOwner ? 'border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.5)]' : isAdmin ? 'border-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'border-white/10'} object-cover`} alt="" />
-            {isOwner && <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Owner</span>}
-        </div>
-        <div className="text-center w-full mb-8 flex-shrink-0">
-            <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-1 cursor-pointer" onClick={() => onShowFullProfile?.(user.id)}>{user.name}</h2>
-            <p className={`font-black uppercase text-[10px] tracking-[0.3em] ${isOwner ? 'text-red-500' : 'text-zinc-500'}`}>@{user.username}</p>
-        </div>
-        
-        <div className="w-full space-y-4 mb-10 flex-shrink-0">
-            <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
-                <p className="text-[12px] text-zinc-400 italic">"{user.profile?.bio || 'No status signal.'}"</p>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4" onClick={onClose}>
+      <div className="w-full max-w-[380px] bg-[#0f0f0f] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-3xl" onClick={e => e.stopPropagation()}>
+        <div className="p-8 pb-6">
+            <div className="flex items-center gap-5 mb-8">
+                <div className={`w-16 h-16 rounded-full p-1 border-2 flex-shrink-0 cursor-pointer ${isOwner ? 'border-red-600' : 'border-white/10'}`} onClick={() => onShowFullProfile?.(user.id)}>
+                    <img src={user.avatar} className="w-full h-full rounded-full object-cover" alt="" />
+                </div>
+                <div className="min-w-0">
+                    <h3 className="text-white font-black text-lg truncate flex items-center gap-1 cursor-pointer" onClick={() => onShowFullProfile?.(user.id)}>
+                        {user.username} {isOwner && <i className="fa-solid fa-circle-check text-red-500 text-xs"></i>}
+                    </h3>
+                    <p className="text-zinc-500 text-xs font-bold truncate">@{user.username}</p>
+                </div>
             </div>
-            <div className="flex gap-3">
-                <button onClick={handleFollow} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white shadow-xl hover:bg-red-700'}`}>
-                    {socialState.isFollowing ? 'Unfollow' : 'Follow'}
-                </button>
-                <button onClick={handleFriendAction} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${socialState.friendStatus === 'accepted' ? 'bg-green-600/10 border border-green-600/20 text-green-500' : 'bg-white/5 border border-white/10 text-white'}`}>
-                    {socialState.friendStatus === 'accepted' ? 'Friends' : socialState.friendStatus === 'pending' ? 'Accept' : socialState.friendStatus === 'requested' ? 'Pending' : 'Add Friend'}
+
+            <div className="flex justify-between items-center mb-8 px-2">
+                <div className="text-center"><p className="text-white font-black text-base">{recentPosts.length}</p><p className="text-[8px] text-zinc-600 uppercase font-black tracking-widest">posts</p></div>
+                <div className="text-center"><p className="text-white font-black text-base">{socialState.followers}</p><p className="text-[8px] text-zinc-600 uppercase font-black tracking-widest">followers</p></div>
+                <div className="text-center"><p className="text-white font-black text-base">{socialState.following}</p><p className="text-[8px] text-zinc-600 uppercase font-black tracking-widest">following</p></div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5 mb-8 rounded-2xl overflow-hidden">
+                {recentPosts.length > 0 ? recentPosts.map((p, i) => (
+                    <div key={i} className="aspect-square bg-black">
+                        {p.mediaType === 'video' ? <video src={p.mediaUrl} className="w-full h-full object-cover" /> : <img src={p.mediaUrl} className="w-full h-full object-cover" alt="" />}
+                    </div>
+                )) : [...Array(3)].map((_, i) => <div key={i} className="aspect-square bg-white/5 animate-pulse" />)}
+            </div>
+
+            <div className="flex flex-col gap-2">
+                <button onClick={() => { onMessage(); onClose(); }} className="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[0.3em] text-[10px] rounded-2xl shadow-xl transition-all">Message</button>
+                <button onClick={handleFollow} className={`w-full py-3.5 border font-black uppercase tracking-[0.3em] text-[10px] rounded-2xl transition-all ${socialState.isFollowing ? 'bg-white/5 border-white/10 text-white' : 'bg-white text-black border-transparent'}`}>
+                    {socialState.isFollowing ? 'Following' : 'Follow'}
                 </button>
             </div>
         </div>
-        <div className="flex flex-col gap-2 w-full">
-            <button onClick={() => { onMessage(); onClose(); }} className="w-full py-5 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl shadow-2xl transition-all">Message</button>
-            <button onClick={() => { onShowFullProfile?.(user.id); onClose(); }} className="w-full py-4 bg-white/5 text-zinc-500 hover:text-white font-black uppercase tracking-[0.2em] text-[9px] rounded-xl transition-all">View Profile</button>
-        </div>
+        <button onClick={() => { onShowFullProfile?.(user.id); onClose(); }} className="w-full py-4 bg-black/40 text-[9px] font-black uppercase tracking-widest text-zinc-500 border-t border-white/5 hover:text-white transition-colors">View Master Profile</button>
       </div>
     </motion.div>
   );
@@ -239,7 +222,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
     if (!isGlobal && !isFriend) {
         const sentCount = messages.filter(m => m.senderId === clerkUser.id).length;
         if (sentCount >= 3) {
-            alert("Message Request Limit: You can send only 3 private messages until @"+selectedUser?.username+" adds you as a Friend.");
+            alert("Security Protocol: Unfriend communication limited to 3 signals. Request connection via Profile.");
             return;
         }
     }
@@ -257,12 +240,12 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[80000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4">
                 <div className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col max-h-[80dvh]">
                     <div className="flex justify-between items-center mb-8 flex-shrink-0">
-                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Find Operator</h3>
+                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Scan Network</h3>
                         <button onClick={() => setIsSearchOpen(false)} className="p-2 bg-white/5 rounded-full"><CloseIcon className="w-6 h-6 text-zinc-500" /></button>
                     </div>
                     <div className="relative mb-8 flex-shrink-0">
                         <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
-                        <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Username Search..." className="w-full bg-black border border-white/10 rounded-2xl py-5 pl-14 text-white outline-none focus:border-red-600 transition-all shadow-inner" />
+                        <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Signal Search..." className="w-full bg-black border border-white/10 rounded-2xl py-5 pl-14 text-white outline-none focus:border-red-600 transition-all shadow-inner" />
                     </div>
                     <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar min-h-0">
                         {users.filter(u => u.username?.toLowerCase().includes(searchQuery.toLowerCase()) && u.id !== clerkUser?.id).map(u => (
@@ -282,7 +265,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
           
           <div className={`w-full md:w-72 border-r border-white/5 flex flex-col bg-[#050505]/50 flex-shrink-0 min-h-0 ${showConversationOnMobile ? 'hidden md:flex' : 'flex'}`}>
             <div className="p-4 md:p-6 border-b border-white/5 bg-black/30 flex items-center flex-shrink-0">
-               <span className="text-[9px] font-black text-white uppercase tracking-widest">Network Nodes</span>
+               <span className="text-[9px] font-black text-white uppercase tracking-widest">Core Interface</span>
             </div>
             
             <div className="p-3 space-y-1.5 border-b border-white/5 flex-shrink-0">
@@ -292,11 +275,11 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                 </button>
                 <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id, 'posts', true)} className="w-full flex items-center gap-3 p-3 rounded-[1.2rem] hover:bg-white/5 transition-all group">
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0 group-hover:bg-red-600 group-hover:text-white transition-all"><PhotoManipulationIcon className="w-4 h-4" /></div>
-                    <div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Upload Post</p></div>
+                    <div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Broadcast</p></div>
                 </button>
                 <button onClick={() => setIsSearchOpen(true)} className="w-full flex items-center gap-3 p-3 rounded-[1.2rem] hover:bg-white/5 transition-all">
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0"><SearchIcon className="w-4 h-4" /></div>
-                    <div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Scan Ops</p></div>
+                    <div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Scan</p></div>
                 </button>
             </div>
 
@@ -320,13 +303,13 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                   {isGlobal ? <GlobeAltIcon className="w-5 h-5 text-red-600" /> : <img src={selectedUser?.avatar} className="w-full h-full object-cover" />}
                </div>
                <div className="flex-1 truncate">
-                  <h4 className="text-[12px] font-black text-white uppercase tracking-widest truncate">{isGlobal ? 'Global Hub' : selectedUser?.name}</h4>
+                  <h4 className="text-[12px] font-black text-white uppercase tracking-widest truncate">{isGlobal ? 'Global Sync' : selectedUser?.name}</h4>
                   <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest">{isGlobal ? 'Public Frequency' : `@${selectedUser?.username}`}</p>
                </div>
                {!isGlobal && (
                  <div className="ml-auto flex items-center">
                     <span className={`text-[9px] font-black uppercase px-3 py-1 rounded-full border ${isFriend ? 'border-green-600/30 text-green-500 bg-green-600/5' : 'border-yellow-600/30 text-yellow-500 bg-yellow-600/5'}`}>
-                        {isFriend ? 'Friends' : 'Message Request'}
+                        {isFriend ? 'Connected' : 'Sync Request'}
                     </span>
                  </div>
                )}
@@ -352,16 +335,16 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
               {isSignedIn ? (
                 <form onSubmit={handleSendMessage} className="flex flex-col gap-2">
                     <div className="flex gap-2 bg-white/5 border border-white/10 rounded-[1.8rem] p-1.5">
-                        <input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="Type a message..." className="flex-1 bg-transparent px-4 py-2 text-sm font-bold text-white outline-none min-w-0" />
+                        <input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="Signal incoming..." className="flex-1 bg-transparent px-4 py-2 text-sm font-bold text-white outline-none min-w-0" />
                         <button type="submit" disabled={!inputValue.trim()} className="bg-red-600 text-white w-10 h-10 flex items-center justify-center rounded-2xl active:scale-90 transition-all shadow-2xl disabled:opacity-50 flex-shrink-0"><SendIcon className="w-4 h-4" /></button>
                     </div>
                     {!isGlobal && !isFriend && (
                         <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest text-center px-4">
-                           Unconfirmed Connection: {3 - messages.filter(m => m.senderId === clerkUser?.id).length} message credits remaining.
+                           Link Protocol: {3 - messages.filter(m => m.senderId === clerkUser?.id).length} credits remaining.
                         </p>
                     )}
                 </form>
-              ) : <div className="text-center py-2"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-3 px-10 rounded-2xl uppercase text-[9px] tracking-widest shadow-2xl transition-all hover:bg-red-700 active:scale-95">Log in to Chat</button></SignInButton></div>}
+              ) : <div className="text-center py-2"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-3 px-10 rounded-2xl uppercase text-[9px] tracking-widest shadow-2xl transition-all hover:bg-red-700 active:scale-95">Initiate Sync</button></SignInButton></div>}
             </div>
           </div>
         </div>
