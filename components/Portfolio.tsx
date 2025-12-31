@@ -1,15 +1,17 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getDatabase, ref, onValue, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, ref, onValue, query, orderByChild, equalTo, update, set, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { useUser } from '@clerk/clerk-react';
 import type { GraphicWork, VideoWork, ContentSection } from '../hooks/types';
 import { siteConfig } from '../config';
 import { 
-    PlayIcon, VolumeOnIcon, VolumeOffIcon, SparklesIcon, PhotoManipulationIcon, YouTubeIcon, ChevronRightIcon, VfxIcon, BannerIcon, ThumbnailIcon
+    PlayIcon, VolumeOnIcon, VolumeOffIcon, SparklesIcon, PhotoManipulationIcon, YouTubeIcon, ChevronRightIcon, VfxIcon, BannerIcon, ThumbnailIcon, CloseIcon
 } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
-import { InteractiveCard } from './InteractiveCard';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { useAnimatedCounter } from '../hooks/useAnimatedCounter';
+
+const OWNER_HANDLE = 'fuadeditingzone';
 
 const PortfolioSection: React.FC<{ 
     title: string; 
@@ -21,7 +23,9 @@ const PortfolioSection: React.FC<{
     aspectRatio?: 'square' | 'video' | 'banner';
     nextSectionId?: string;
     nextSectionTitle?: string;
-}> = ({ title, subtitle, icon, works, onItemClick, id, aspectRatio = 'square', nextSectionId, nextSectionTitle }) => {
+    isOwner?: boolean;
+    onDeleteItem?: (work: any) => void;
+}> = ({ title, subtitle, icon, works, onItemClick, id, aspectRatio = 'square', nextSectionId, isOwner, onDeleteItem }) => {
     const [ref, inView] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
 
     const containerVariants = {
@@ -48,14 +52,21 @@ const PortfolioSection: React.FC<{
 
     return (
         <div id={id} ref={ref as any} className="mb-24 md:mb-32 last:mb-0 px-4 md:px-0 overflow-visible">
-            <div className="flex items-center gap-4 mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
-                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
-                    {icon}
+            <div className="flex items-center justify-between mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
+                        {icon}
+                    </div>
+                    <div>
+                        <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">{subtitle}</span>
+                        <h3 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter leading-none">{title}</h3>
+                    </div>
                 </div>
-                <div>
-                    <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">{subtitle}</span>
-                    <h3 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter leading-none">{title}</h3>
-                </div>
+                {isOwner && (
+                    <button onClick={() => window.location.pathname = '/marketplace'} className="bg-red-600/10 border border-red-600/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all">
+                        + Add Work
+                    </button>
+                )}
             </div>
 
             <motion.div 
@@ -68,20 +79,32 @@ const PortfolioSection: React.FC<{
                     <motion.div 
                         key={work.id}
                         variants={itemVariants}
-                        onClick={() => onItemClick(works, index)}
-                        className={`group relative ${aspectClass} bg-black rounded-[1.2rem] md:rounded-[2rem] overflow-hidden border border-white/10 cursor-pointer hover:border-red-600/50 transition-all duration-500 shadow-xl`}
+                        className={`group relative ${aspectClass} bg-black rounded-[1.2rem] md:rounded-[2rem] overflow-hidden border border-white/10 shadow-xl`}
                     >
-                        <img 
-                            src={work.imageUrl || work.thumbnailUrl || (work.mediaUrl && work.mediaType === 'image' ? work.mediaUrl : `https://i.ytimg.com/vi/${work.videoId}/mqdefault.jpg`)} 
-                            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
-                            alt=""
-                        />
-                        {work.mediaType === 'video' && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                <PlayIcon className="w-8 h-8 text-white/80" />
-                            </div>
+                        <div className="w-full h-full cursor-pointer" onClick={() => onItemClick(works, index)}>
+                            <img 
+                                src={work.imageUrl || work.thumbnailUrl || (work.mediaUrl && work.mediaType === 'image' ? work.mediaUrl : `https://i.ytimg.com/vi/${work.videoId}/mqdefault.jpg`)} 
+                                className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                                alt=""
+                            />
+                            {work.mediaType === 'video' && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                    <PlayIcon className="w-8 h-8 text-white/80" />
+                                </div>
+                            )}
+                        </div>
+
+                        {isOwner && (
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); onDeleteItem?.(work); }}
+                                className="absolute top-4 right-4 z-50 p-2 bg-black/80 hover:bg-red-600 text-white rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Remove from Portfolio"
+                            >
+                                <CloseIcon className="w-4 h-4" />
+                            </button>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4 md:p-6">
+
+                        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4 md:p-6">
                             <h4 className="text-white font-black uppercase tracking-widest text-[8px] md:text-xs leading-tight truncate">{work.title || 'Portfolio Work'}</h4>
                         </div>
                     </motion.div>
@@ -114,7 +137,9 @@ const VfxVideoPlayer: React.FC<{
     currentTime: number;
     setCurrentTime: (time: number) => void;
     variants?: any;
-}> = ({ video, currentlyPlaying, pipVideo, onPlayRequest, setPipVideo, currentTime, setCurrentTime, variants }) => {
+    isOwner?: boolean;
+    onDeleteItem?: (work: any) => void;
+}> = ({ video, currentlyPlaying, pipVideo, onPlayRequest, setPipVideo, currentTime, setCurrentTime, variants, isOwner, onDeleteItem }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [containerRef] = useIntersectionObserver({ threshold: 0.5 });
     const [isMuted, setIsMuted] = useState(true);
@@ -135,8 +160,8 @@ const VfxVideoPlayer: React.FC<{
     }, [isPlaying, isThisVideoInPip]);
 
     return (
-        <motion.div ref={containerRef as any} variants={variants} className="group relative aspect-square bg-black rounded-[1.2rem] md:rounded-[2.5rem] overflow-hidden border border-white/10 cursor-pointer hover:border-red-600/50 transition-all duration-500">
-            <figure className="w-full h-full m-0 p-0" onClick={() => onPlayRequest(isPlaying ? null : video)}>
+        <motion.div ref={containerRef as any} variants={variants} className="group relative aspect-square bg-black rounded-[1.2rem] md:rounded-[2.5rem] overflow-hidden border border-white/10 hover:border-red-600/50 transition-all duration-500">
+            <figure className="w-full h-full m-0 p-0 cursor-pointer" onClick={() => onPlayRequest(isPlaying ? null : video)}>
                 <video ref={videoRef} src={videoUrl} loop muted={isMuted} playsInline className="w-full h-full object-contain" onCanPlay={() => setIsLoading(false)} />
                 <div className={`absolute inset-0 bg-black/20 transition-opacity flex items-center justify-center ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
                      {!isPlaying && !isLoading && <PlayIcon className="w-10 h-10 text-white/80 drop-shadow-lg" />}
@@ -147,6 +172,15 @@ const VfxVideoPlayer: React.FC<{
                     </div>
                 )}
             </figure>
+            {isOwner && (
+                <button 
+                    onClick={(e) => { e.stopPropagation(); onDeleteItem?.(video); }}
+                    className="absolute top-4 right-4 z-50 p-2 bg-black/80 hover:bg-red-600 text-white rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Remove from Portfolio"
+                >
+                    <CloseIcon className="w-4 h-4" />
+                </button>
+            )}
         </motion.div>
     );
 };
@@ -155,12 +189,16 @@ export const Portfolio: React.FC<any> = ({
     openModal, isYouTubeApiReady, playingVfxVideo, setPlayingVfxVideo, pipVideo, setPipVideo,
     activeYouTubeId, setActiveYouTubeId, isYtPlaying, setIsYtPlaying, currentTime, setCurrentTime
 }) => {
+    const { user } = useUser();
     const db = getDatabase();
     const { videos: youtubeVideos, stats, loading, formatNumber } = useYouTubeChannelStats();
     const [currentVideoStats, setCurrentVideoStats] = useState<any>(null);
     const [promotedPosts, setPromotedPosts] = useState<any[]>([]);
+    const [hiddenStaticWorks, setHiddenStaticWorks] = useState<string[]>([]);
     const playerRef = useRef<any>(null);
     const [vfxRef, vfxInView] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
+
+    const isOwner = user?.username === OWNER_HANDLE;
 
     useEffect(() => {
         const postsRef = query(ref(db, 'explore_posts'), orderByChild('targetSection'));
@@ -173,7 +211,14 @@ export const Portfolio: React.FC<any> = ({
                 setPromotedPosts(list);
             }
         });
-        return () => unsub();
+
+        const hiddenRef = ref(db, 'system/hidden_portfolio_items');
+        const unsubHidden = onValue(hiddenRef, (snap) => {
+            const data = snap.val() || {};
+            setHiddenStaticWorks(Object.keys(data));
+        });
+
+        return () => { unsub(); unsubHidden(); };
     }, []);
 
     useEffect(() => {
@@ -201,18 +246,37 @@ export const Portfolio: React.FC<any> = ({
         return () => { if (playerRef.current) playerRef.current.destroy(); };
     }, [isYouTubeApiReady, activeYouTubeId]);
 
+    const handleHideOrDelete = async (work: any) => {
+        if (!isOwner) return;
+        const confirmation = window.confirm("Are you sure you want to remove this item from the portfolio?");
+        if (!confirmation) return;
+
+        if (work.id && typeof work.id === 'string' && work.userId) {
+            // This is a dynamic post from marketplace
+            await update(ref(db, `explore_posts/${work.id}`), { targetSection: 'Marketplace Only' });
+        } else {
+            // This is a static hardcoded item, hide it
+            await set(ref(db, `system/hidden_portfolio_items/${work.id}`), true);
+        }
+    };
+
+    const handleRestoreWork = async (id: string) => {
+        await remove(ref(db, `system/hidden_portfolio_items/${id}`));
+    };
+
     const animatedLikes = useAnimatedCounter(currentVideoStats?.likes || 0, 2000, activeYouTubeId);
     const animatedViews = useAnimatedCounter(currentVideoStats?.rawViews || 0, 3000, activeYouTubeId);
 
     const getWorksForSection = (sectionName: ContentSection, hardcoded: any[]) => {
         const dynamic = promotedPosts.filter(p => p.targetSection === sectionName);
-        return [...hardcoded, ...dynamic].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        const filteredHardcoded = hardcoded.filter(w => !hiddenStaticWorks.includes(String(w.id)));
+        return [...filteredHardcoded, ...dynamic].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     };
 
-    const photoManipWorks = useMemo(() => getWorksForSection('Photo Manipulation', siteConfig.content.portfolio.graphicWorks.filter(w => w.category === 'Photo Manipulation')), [promotedPosts]);
-    const thumbnailWorks = useMemo(() => getWorksForSection('Thumbnail Designs', siteConfig.content.portfolio.graphicWorks.filter(w => w.category === 'Thumbnail Designs')), [promotedPosts]);
-    const bannerWorks = useMemo(() => getWorksForSection('Banner Designs', siteConfig.content.portfolio.graphicWorks.filter(w => w.category === 'Banner Designs')), [promotedPosts]);
-    const vfxWorks = useMemo(() => getWorksForSection('VFX', siteConfig.content.portfolio.vfxEdits), [promotedPosts]);
+    const photoManipWorks = useMemo(() => getWorksForSection('Photo Manipulation', siteConfig.content.portfolio.graphicWorks.filter(w => w.category === 'Photo Manipulation')), [promotedPosts, hiddenStaticWorks]);
+    const thumbnailWorks = useMemo(() => getWorksForSection('Thumbnail Designs', siteConfig.content.portfolio.graphicWorks.filter(w => w.category === 'Thumbnail Designs')), [promotedPosts, hiddenStaticWorks]);
+    const bannerWorks = useMemo(() => getWorksForSection('Banner Designs', siteConfig.content.portfolio.graphicWorks.filter(w => w.category === 'Banner Designs')), [promotedPosts, hiddenStaticWorks]);
+    const vfxWorks = useMemo(() => getWorksForSection('VFX', siteConfig.content.portfolio.vfxEdits), [promotedPosts, hiddenStaticWorks]);
 
     const animeEdits = siteConfig.content.portfolio.animeEdits;
 
@@ -249,7 +313,8 @@ export const Portfolio: React.FC<any> = ({
                     onItemClick={(items, index) => openModal(items, index)}
                     aspectRatio="square"
                     nextSectionId="thumbnail-designs"
-                    nextSectionTitle="Thumbnails"
+                    isOwner={isOwner}
+                    onDeleteItem={handleHideOrDelete}
                 />
 
                 <PortfolioSection 
@@ -261,7 +326,8 @@ export const Portfolio: React.FC<any> = ({
                     onItemClick={(items, index) => openModal(items, index)}
                     aspectRatio="video"
                     nextSectionId="banner-designs"
-                    nextSectionTitle="Banners"
+                    isOwner={isOwner}
+                    onDeleteItem={handleHideOrDelete}
                 />
 
                 <PortfolioSection 
@@ -273,7 +339,8 @@ export const Portfolio: React.FC<any> = ({
                     onItemClick={(items, index) => openModal(items, index)}
                     aspectRatio="banner"
                     nextSectionId="video-editing"
-                    nextSectionTitle="Edits"
+                    isOwner={isOwner}
+                    onDeleteItem={handleHideOrDelete}
                 />
 
                 <div id="video-editing" className="mb-24 md:mb-32 px-6 md:px-0">
@@ -339,10 +406,39 @@ export const Portfolio: React.FC<any> = ({
                     </div>
                     <motion.div variants={containerVariants} initial="hidden" animate={vfxInView ? "visible" : "hidden"} className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-7xl mx-auto px-2 md:px-0">
                         {vfxWorks.map((video: any) => (
-                            <VfxVideoPlayer key={video.id} video={video} currentlyPlaying={playingVfxVideo} pipVideo={pipVideo} onPlayRequest={setPlayingVfxVideo} setPipVideo={setPipVideo} currentTime={currentTime} setCurrentTime={setCurrentTime} variants={itemVariants} />
+                            <VfxVideoPlayer 
+                                key={video.id} 
+                                video={video} 
+                                currentlyPlaying={playingVfxVideo} 
+                                pipVideo={pipVideo} 
+                                onPlayRequest={setPlayingVfxVideo} 
+                                setPipVideo={setPipVideo} 
+                                currentTime={currentTime} 
+                                setCurrentTime={setCurrentTime} 
+                                variants={itemVariants} 
+                                isOwner={isOwner}
+                                onDeleteItem={handleHideOrDelete}
+                            />
                         ))}
                     </motion.div>
                 </div>
+
+                {isOwner && hiddenStaticWorks.length > 0 && (
+                    <div className="mt-20 p-10 bg-white/5 border border-white/5 rounded-[3rem]">
+                        <h3 className="text-red-500 font-black uppercase tracking-[0.3em] text-sm mb-6">Owner Console: Hidden Works</h3>
+                        <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
+                            {hiddenStaticWorks.map(id => (
+                                <button 
+                                    key={id} 
+                                    onClick={() => handleRestoreWork(id)}
+                                    className="p-3 bg-red-600/20 text-red-500 rounded-xl font-black text-[9px] uppercase tracking-widest border border-red-600/20 hover:bg-red-600 hover:text-white transition-all"
+                                >
+                                    Restore {id}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </section>
     );

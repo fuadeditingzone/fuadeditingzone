@@ -27,6 +27,15 @@ const ADMIN_HANDLE = 'studiomuzammil';
 
 type TabType = 'posts' | 'identity' | 'credentials' | 'networks';
 
+const NETWORK_ICONS: Record<string, any> = {
+    'Facebook': FacebookIcon,
+    'Instagram': InstagramIcon,
+    'YouTube': YouTubeIcon,
+    'TikTok': TikTokIcon,
+    'Behance': BehanceIcon,
+    'Portfolio': GlobeAltIcon
+};
+
 export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; viewingUserId?: string | null }> = ({ isOpen, onClose, viewingUserId }) => {
     const { user: clerkUser, isLoaded } = useUser();
     const [activeTab, setActiveTab] = useState<TabType>('posts');
@@ -51,9 +60,34 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
         if (isOpen && currentProfileId) {
             const userRef = ref(db, `users/${currentProfileId}`);
             const unsubUser = onValue(userRef, (snap) => {
-                const data = snap.val();
+                const data = snap.val() || {};
                 setTargetUser(data);
-                if (data) setEditData(data);
+                
+                // Initialize default profile data if missing
+                const initializedData = {
+                    ...data,
+                    profile: {
+                        bio: 'Intelligence identity established.',
+                        origin: 'Sylhet, Bangladesh',
+                        profession: 'Visual Architecture',
+                        skills: ['After Effects Master', 'Photoshop Expert', 'Premiere Pro', 'Cinema 4D', 'AI Integration', 'Color Science', 'Cinematography'],
+                        experience: [
+                            { role: 'Senior VFX Editor @ FEZ', years: '2020 - Present', desc: 'Leading visual synchronization for high-tier creators globally.' },
+                            { role: 'Lead Graphic Architect', years: '2018 - 2020', desc: 'Crafting digital experiences.' }
+                        ],
+                        networks: [
+                            { name: 'Facebook', url: 'https://facebook.com/fuadeditingzone' },
+                            { name: 'Instagram', url: 'https://instagram.com/fuadeditingzone' },
+                            { name: 'YouTube', url: 'https://youtube.com/@fuadeditingzone' },
+                            { name: 'TikTok', url: 'https://tiktok.com/@fuadeditingzone' },
+                            { name: 'Behance', url: 'https://behance.net/fuadeditingzone' },
+                            { name: 'Portfolio', url: 'https://fuadeditingzone.pages.dev' }
+                        ],
+                        ...data.profile
+                    }
+                };
+                
+                if (!isEditing) setEditData(initializedData);
             });
 
             const unsubFollowers = onValue(ref(db, `social/${currentProfileId}/followers`), (snap) => {
@@ -78,7 +112,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                 unsubPosts();
             };
         }
-    }, [isOpen, currentProfileId]);
+    }, [isOpen, currentProfileId, isEditing]);
 
     // Live list resolver
     useEffect(() => {
@@ -181,7 +215,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                     initial={{ opacity: 0, x: 100 }} 
                                     animate={{ opacity: 1, x: 0 }} 
                                     exit={{ opacity: 0, x: 100 }}
-                                    className="absolute inset-0 z-50 bg-[#050505] p-8"
+                                    className="absolute inset-0 z-[60] bg-[#050505] p-8"
                                 >
                                     <div className="flex items-center gap-4 mb-10">
                                         <button onClick={() => setUserListMode(null)} className="p-2 rounded-full bg-white/5 text-white"><ChevronLeftIcon className="w-6 h-6" /></button>
@@ -200,7 +234,6 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                                         <p className="text-white font-black uppercase text-sm truncate">{u.name}</p>
                                                         <p className="text-zinc-500 font-bold text-[10px] uppercase">@{u.username}</p>
                                                     </div>
-                                                    <button className="px-4 py-2 bg-red-600/10 border border-red-600/20 text-red-500 rounded-lg font-black text-[9px] uppercase tracking-widest">View</button>
                                                 </div>
                                             ))
                                         )}
@@ -322,11 +355,19 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="p-6 bg-[#080808] border border-white/5 rounded-2xl">
                                                 <span className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-2 block">Operator Origin</span>
-                                                <p className="text-white font-bold">{targetUser?.profile?.origin || 'Sylhet, Bangladesh'}</p>
+                                                {isEditing ? (
+                                                    <input value={editData.profile?.origin || ''} onChange={e => setEditData({...editData, profile: {...editData.profile, origin: e.target.value}})} className="w-full bg-black border border-white/5 p-2 rounded text-white" />
+                                                ) : (
+                                                    <p className="text-white font-bold">{targetUser?.profile?.origin || 'Sylhet, Bangladesh'}</p>
+                                                )}
                                             </div>
                                             <div className="p-6 bg-[#080808] border border-white/5 rounded-2xl">
                                                 <span className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-2 block">Current Focus</span>
-                                                <p className="text-white font-bold">{targetUser?.profile?.profession || 'Visual Architecture'}</p>
+                                                {isEditing ? (
+                                                    <input value={editData.profile?.profession || ''} onChange={e => setEditData({...editData, profile: {...editData.profile, profession: e.target.value}})} className="w-full bg-black border border-white/5 p-2 rounded text-white" />
+                                                ) : (
+                                                    <p className="text-white font-bold">{targetUser?.profile?.profession || 'Visual Architecture'}</p>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -340,15 +381,37 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                                     <BriefcaseIcon className="w-4 h-4 text-red-600" /> Professional Experience
                                                 </h4>
                                                 <div className="space-y-4">
-                                                    <div className="p-5 bg-white/5 rounded-2xl border-l-2 border-red-600">
-                                                        <p className="text-white font-black text-sm uppercase">Senior VFX Editor @ FEZ</p>
-                                                        <p className="text-zinc-500 text-[10px] font-bold uppercase mt-1">2020 - Present</p>
-                                                        <p className="text-zinc-400 text-xs mt-3 leading-relaxed font-medium">Leading visual synchronization for high-tier creators globally.</p>
-                                                    </div>
-                                                    <div className="p-5 bg-white/5 rounded-2xl border-l-2 border-white/10">
-                                                        <p className="text-white font-black text-sm uppercase">Lead Graphic Architect</p>
-                                                        <p className="text-zinc-500 text-[10px] font-bold uppercase mt-1">2018 - 2020</p>
-                                                    </div>
+                                                    {(isEditing ? (editData.profile?.experience || []) : (targetUser?.profile?.experience || [])).map((exp: any, i: number) => (
+                                                        <div key={i} className="p-5 bg-white/5 rounded-2xl border-l-2 border-red-600 relative">
+                                                            {isEditing ? (
+                                                                <div className="space-y-2">
+                                                                    <input value={exp.role} onChange={e => {
+                                                                        const newExp = [...editData.profile.experience];
+                                                                        newExp[i].role = e.target.value;
+                                                                        setEditData({...editData, profile: {...editData.profile, experience: newExp}});
+                                                                    }} className="w-full bg-black border border-white/5 p-1 rounded text-xs text-white uppercase font-black" placeholder="Role" />
+                                                                    <input value={exp.years} onChange={e => {
+                                                                        const newExp = [...editData.profile.experience];
+                                                                        newExp[i].years = e.target.value;
+                                                                        setEditData({...editData, profile: {...editData.profile, experience: newExp}});
+                                                                    }} className="w-full bg-black border border-white/5 p-1 rounded text-[10px] text-zinc-500 uppercase" placeholder="Years" />
+                                                                    <button onClick={() => {
+                                                                        const newExp = editData.profile.experience.filter((_: any, idx: number) => idx !== i);
+                                                                        setEditData({...editData, profile: {...editData.profile, experience: newExp}});
+                                                                    }} className="absolute top-2 right-2 text-red-500">×</button>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <p className="text-white font-black text-sm uppercase">{exp.role}</p>
+                                                                    <p className="text-zinc-500 text-[10px] font-bold uppercase mt-1">{exp.years}</p>
+                                                                    <p className="text-zinc-400 text-xs mt-3 leading-relaxed font-medium">{exp.desc}</p>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                    {isEditing && (
+                                                        <button onClick={() => setEditData({...editData, profile: {...editData.profile, experience: [...(editData.profile.experience || []), {role: '', years: '', desc: ''}]}})} className="w-full py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase text-zinc-500">+ Add Position</button>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -357,48 +420,65 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                                     <SparklesIcon className="w-4 h-4 text-red-600" /> Verified Skillsets
                                                 </h4>
                                                 <div className="flex flex-wrap gap-3">
-                                                    {['After Effects Master', 'Photoshop Expert', 'Premiere Pro', 'Cinema 4D', 'AI Integration', 'Color Science', 'Cinematography'].map(skill => (
-                                                        <span key={skill} className="px-5 py-2.5 bg-black border border-white/5 text-zinc-300 font-black text-[9px] uppercase tracking-widest rounded-xl hover:border-red-600/50 transition-colors">{skill}</span>
+                                                    {(isEditing ? (editData.profile?.skills || []) : (targetUser?.profile?.skills || [])).map((skill: string, i: number) => (
+                                                        <span key={i} className="px-5 py-2.5 bg-black border border-white/5 text-zinc-300 font-black text-[9px] uppercase tracking-widest rounded-xl hover:border-red-600/50 transition-colors relative">
+                                                            {skill}
+                                                            {isEditing && <button onClick={() => setEditData({...editData, profile: {...editData.profile, skills: editData.profile.skills.filter((_: any, idx: number) => idx !== i)}})} className="ml-2 text-red-500">×</button>}
+                                                        </span>
                                                     ))}
+                                                    {isEditing && (
+                                                        <button onClick={() => {
+                                                            const s = window.prompt('Enter skill name:');
+                                                            if (s) setEditData({...editData, profile: {...editData.profile, skills: [...(editData.profile.skills || []), s]}});
+                                                        }} className="px-5 py-2.5 bg-white/5 text-zinc-500 font-black text-[9px] uppercase rounded-xl">+ Add Skill</button>
+                                                    )}
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <div className="p-10 bg-red-600/5 border border-red-600/10 rounded-[3rem] text-center">
-                                            <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.5em] mb-4">Master Accomplishment</p>
-                                            <h3 className="text-2xl md:text-5xl font-black text-white uppercase tracking-tighter">1.5M+ Network Reach</h3>
-                                            <p className="text-zinc-500 text-xs mt-4 font-bold uppercase tracking-widest">Across all collaborative visual assets</p>
                                         </div>
                                     </div>
                                 )}
 
                                 {activeTab === 'networks' && (
-                                    <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {[
-                                            { name: 'Facebook', icon: FacebookIcon, url: 'https://facebook.com/fuadeditingzone', color: 'blue' },
-                                            { name: 'Instagram', icon: InstagramIcon, url: 'https://instagram.com/fuadeditingzone', color: 'pink' },
-                                            { name: 'YouTube', icon: YouTubeIcon, url: 'https://youtube.com/@fuadeditingzone', color: 'red' },
-                                            { name: 'TikTok', icon: TikTokIcon, url: 'https://tiktok.com/@fuadeditingzone', color: 'white' },
-                                            { name: 'Behance', icon: BehanceIcon, url: 'https://behance.net/fuadeditingzone', color: 'blue' },
-                                            { name: 'Portfolio Link', icon: GlobeAltIcon, url: 'https://fuadeditingzone.pages.dev', color: 'red' }
-                                        ].map((net, i) => (
-                                            <a 
-                                                key={i} 
-                                                href={net.url} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer" 
-                                                className="group flex items-center gap-4 p-5 bg-[#080808] border border-white/5 rounded-2xl hover:border-red-600/30 hover:bg-white/5 transition-all"
-                                            >
-                                                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
-                                                    <net.icon className="w-6 h-6 text-zinc-400 group-hover:text-red-500" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-white font-black uppercase text-xs tracking-widest">{net.name}</p>
-                                                    <p className="text-zinc-600 text-[8px] font-bold uppercase truncate max-w-[150px]">{net.url.replace('https://', '')}</p>
-                                                </div>
-                                                <ChevronRightIcon className="w-4 h-4 text-zinc-800 group-hover:text-white" />
-                                            </a>
-                                        ))}
+                                    <div className="max-w-2xl mx-auto space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {(isEditing ? (editData.profile?.networks || []) : (targetUser?.profile?.networks || [])).map((net: any, i: number) => {
+                                                const Icon = NETWORK_ICONS[net.name] || GlobeAltIcon;
+                                                return (
+                                                    <div key={i} className="group relative flex items-center gap-4 p-5 bg-[#080808] border border-white/5 rounded-2xl hover:border-red-600/30 hover:bg-white/5 transition-all">
+                                                        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
+                                                            <Icon className="w-6 h-6 text-zinc-400 group-hover:text-red-500" />
+                                                        </div>
+                                                        <div className="flex-1 overflow-hidden">
+                                                            {isEditing ? (
+                                                                <div className="space-y-1">
+                                                                    <input value={net.name} onChange={e => {
+                                                                        const newNet = [...editData.profile.networks];
+                                                                        newNet[i].name = e.target.value;
+                                                                        setEditData({...editData, profile: {...editData.profile, networks: newNet}});
+                                                                    }} className="w-full bg-black border border-white/5 p-1 rounded text-[10px] text-white font-black uppercase" />
+                                                                    <input value={net.url} onChange={e => {
+                                                                        const newNet = [...editData.profile.networks];
+                                                                        newNet[i].url = e.target.value;
+                                                                        setEditData({...editData, profile: {...editData.profile, networks: newNet}});
+                                                                    }} className="w-full bg-black border border-white/5 p-1 rounded text-[8px] text-zinc-500" />
+                                                                </div>
+                                                            ) : (
+                                                                <a href={net.url} target="_blank" rel="noopener noreferrer" className="block">
+                                                                    <p className="text-white font-black uppercase text-xs tracking-widest">{net.name}</p>
+                                                                    <p className="text-zinc-600 text-[8px] font-bold uppercase truncate">{net.url.replace('https://', '')}</p>
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                        {isEditing ? (
+                                                            <button onClick={() => setEditData({...editData, profile: {...editData.profile, networks: editData.profile.networks.filter((_: any, idx: number) => idx !== i)}})} className="text-red-500">×</button>
+                                                        ) : <ChevronRightIcon className="w-4 h-4 text-zinc-800 group-hover:text-white" />}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                        {isEditing && (
+                                            <button onClick={() => setEditData({...editData, profile: {...editData.profile, networks: [...(editData.profile.networks || []), {name: 'New Link', url: 'https://'}]}})} className="w-full py-3 bg-white/5 rounded-2xl text-[10px] font-black uppercase text-zinc-500">+ Add Network Link</button>
+                                        )}
                                     </div>
                                 )}
                             </div>
