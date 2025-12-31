@@ -104,16 +104,20 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
                     <SignInButton mode="modal"><button className="w-full bg-red-600 py-6 rounded-2xl font-black uppercase tracking-[0.6em] text-[11px] shadow-xl hover:bg-red-700 transition-all active:scale-95">Sign in to Order</button></SignInButton>
                 ) : (
                     <>
-                        {selectedTier === 'custom' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {selectedTier === 'custom' && (
                                 <input required value={formData.customName} onChange={e => setFormData({...formData, customName: e.target.value})} placeholder="Service Title" className="w-full bg-black border border-white/10 rounded-xl px-5 py-4 text-xs text-white outline-none focus:border-red-600" />
-                                <div className="space-y-1">
-                                    <input required type="text" value={formData.customPrice} onChange={e => setFormData({...formData, customPrice: e.target.value.replace(/[^0-9]/g, '')})} placeholder="Budget ($)" className={`w-full bg-black border ${priceError ? 'border-red-600' : 'border-white/10'} rounded-xl px-5 py-4 text-xs text-white outline-none focus:border-red-600`} />
-                                    {priceError && <p className="text-[8px] text-red-500 font-bold uppercase ml-2">{priceError}</p>}
-                                </div>
-                                <input required type="text" value={formData.customTime} onChange={e => setFormData({...formData, customTime: e.target.value.replace(/[^0-9]/g, '')})} placeholder="Delivery Days" className="w-full bg-black border border-white/10 rounded-xl px-5 py-4 text-xs text-white outline-none focus:border-red-600" />
+                            )}
+                            <div className="space-y-1">
+                                <label className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1 block ml-1">Budget ($)</label>
+                                <input required type="text" value={formData.customPrice} onChange={e => setFormData({...formData, customPrice: e.target.value.replace(/[^0-9]/g, '')})} placeholder="min $5" className={`w-full bg-black border ${priceError ? 'border-red-600' : 'border-white/10'} rounded-xl px-5 py-4 text-xs text-white outline-none focus:border-red-600`} />
+                                {priceError && <p className="text-[8px] text-red-500 font-bold uppercase ml-2">{priceError}</p>}
                             </div>
-                        )}
+                            <div className="space-y-1">
+                                <label className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1 block ml-1">Delivery Time (Days)</label>
+                                <input required type="text" value={formData.customTime} onChange={e => setFormData({...formData, customTime: e.target.value.replace(/[^0-9]/g, '')})} placeholder="e.g. 3" className="w-full bg-black border border-white/10 rounded-xl px-5 py-4 text-xs text-white outline-none focus:border-red-600" />
+                            </div>
+                        </div>
                         <textarea required rows={4} value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} className="w-full bg-black border border-white/10 rounded-2xl px-6 py-5 text-sm text-white focus:border-red-600 outline-none resize-none shadow-lg" placeholder="Brief Description of Your Requirements..." />
                         <button type="submit" disabled={status === 'submitting' || !selectedTier || !!priceError} className={`w-full py-6 rounded-2xl text-[11px] font-black uppercase tracking-[0.6em] transition-all flex items-center justify-center gap-4 ${!selectedTier || !!priceError ? 'bg-white/5 text-gray-600 cursor-not-allowed border border-white/5' : 'bg-red-600 text-white shadow-xl hover:bg-red-700 active:scale-95'}`}>
                             {status === 'submitting' ? <SparklesIcon className="w-5 h-5 animate-spin" /> : 'Confirm Order'}

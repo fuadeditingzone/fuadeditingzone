@@ -253,10 +253,16 @@ const AgentProfileModal: React.FC<{
                     <img src={user.avatar} className="w-full h-full object-cover rounded-[2.4rem]" alt="" />
                 </div>
                 {isOwner && <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-3 py-1 rounded-full font-black tracking-widest shadow-lg">OWNER</span>}
+                {isAdmin && <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-[8px] px-3 py-1 rounded-full font-black tracking-widest shadow-lg">ADMIN</span>}
             </div>
 
             <div className="text-center mb-6 flex-shrink-0 w-full px-2">
-                <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-4 break-words">{user.name}</h2>
+                <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-1 break-words">{user.name}</h2>
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isOwner ? 'text-red-500 neon-glow-red' : isAdmin ? 'text-blue-500 neon-glow-blue' : 'text-gray-500'}`}>@{user.username}</p>
+                  <button onClick={() => { navigator.clipboard.writeText(user.username); }} className="p-1.5 bg-white/5 rounded-lg hover:bg-white/10 transition-all"><i className="fa-regular fa-copy text-[10px] text-gray-400"></i></button>
+                </div>
+                
                 <div className="mb-8">
                     <IMDbRating rating={user.profile?.rating?.average || 0} count={user.profile?.rating?.count || 0} onRate={currentUser?.id !== user.id ? handleRate : undefined} />
                 </div>
@@ -327,7 +333,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTab, setSearchTab] = useState<'all' | 'blocked'>('all');
   const [socialListView, setSocialListView] = useState<{ type: string; ids: string[] } | null>(null);
-  const [showConverationOnMobile, setShowConversationOnMobile] = useState(false);
+  const [showConversationOnMobile, setShowConversationOnMobile] = useState(false);
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -449,6 +455,8 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
     const sorted = [...list].sort((a,b) => {
         if (a.username === OWNER_HANDLE) return -1;
         if (b.username === OWNER_HANDLE) return 1;
+        if (a.username === ADMIN_HANDLE) return -1;
+        if (b.username === ADMIN_HANDLE) return 1;
         return 0;
     });
     return sorted;
@@ -552,7 +560,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                    {setupData.role !== 'Client' && (
                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block ml-1">Experience (Cycles)</label>
+                                <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2 block ml-1">Work Experience</label>
                                 <input type="text" value={setupData.experience} placeholder="e.g. 3" onChange={e => setSetupData({...setupData, experience: e.target.value.replace(/[^0-9]/g, '')})} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm text-white focus:border-red-600 outline-none" />
                             </div>
                             <div className="relative">
@@ -589,7 +597,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
       <div className={`${isModalMode ? 'h-full max-w-full px-0' : 'container mx-auto px-4 md:px-6 max-w-6xl h-[85vh] md:h-[800px] my-6 md:my-0'}`}>
         <div className="w-full bg-[#080808] border border-white/5 rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-2xl flex flex-col md:flex-row h-full min-h-0">
           
-          <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-white/5 flex flex-col bg-[#050505]/50 flex-shrink-0 min-h-0 ${showConverationOnMobile ? 'hidden md:flex' : 'flex'}`}>
+          <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-white/5 flex flex-col bg-[#050505]/50 flex-shrink-0 min-h-0 ${showConversationOnMobile ? 'hidden md:flex' : 'flex'}`}>
             <div className="p-6 md:p-8 border-b border-white/5 bg-black/30 flex-shrink-0">
                <span className="text-[10px] font-black text-white uppercase tracking-widest">Global Signals</span>
             </div>
@@ -636,7 +644,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
             </div>
           </div>
 
-          <div className={`flex-1 flex flex-col bg-black min-h-0 min-w-0 relative ${showConverationOnMobile ? 'flex' : 'hidden md:flex'}`}>
+          <div className={`flex-1 flex flex-col bg-black min-h-0 min-w-0 relative ${showConversationOnMobile ? 'flex' : 'hidden md:flex'}`}>
             <div className="p-6 md:p-8 border-b border-white/5 flex items-center gap-4 bg-black/40 backdrop-blur-xl flex-shrink-0 z-10">
                {/* Mobile Back Button */}
                <button onClick={() => setShowConversationOnMobile(false)} className="md:hidden p-2 text-white hover:text-red-500 transition-colors">

@@ -81,7 +81,7 @@ const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void }>
             </button>
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-[90px] md:top-full mt-4 w-auto md:w-[380px] bg-[#0a0a0a] border border-white/10 rounded-[2rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden z-[200]">
+                    <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-[90px] md:top-full mt-4 w-auto md:w-[380px] bg-[#0a0a0a] border border-white/10 rounded-[2rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden z-[9999]">
                         <div className="p-6 border-b border-white/5 bg-black/40 flex justify-between items-center">
                             <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Neural Handshakes</span>
                             <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors"><CloseIcon className="w-5 h-5 text-gray-500" /></button>
@@ -173,7 +173,7 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
             </button>
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-[90px] md:top-full mt-4 w-auto md:w-[380px] bg-[#0a0a0a] border border-white/10 rounded-[2rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden z-[200]">
+                    <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-[90px] md:top-full mt-4 w-auto md:w-[380px] bg-[#0a0a0a] border border-white/10 rounded-[2rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden z-[9999]">
                         <div className="p-6 border-b border-white/5 bg-black/40 flex justify-between items-center">
                             <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Live Activity Hub</span>
                             <button onClick={clearAll} className="text-[9px] font-black text-gray-500 uppercase hover:text-red-500 tracking-widest transition-colors">Clear Feed</button>
@@ -286,7 +286,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
     }, []);
 
     return (
-        <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-20 px-6 select-none bg-black/60 backdrop-blur-xl border-b border-white/5">
+        <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-[100] h-20 px-6 select-none bg-black/60 backdrop-blur-xl border-b border-white/5">
             <div onClick={() => { setIsSpinning(true); onScrollTo('home'); setTimeout(() => setIsSpinning(false), 2000); }} className="flex items-center gap-3">
                 <img src={siteConfig.branding.logoUrl} alt="Logo" className={`h-9 w-9 rounded-full ${isSpinning ? 'logo-3d-spin' : ''}`} />
                 <span className="font-black text-white tracking-widest text-[10px] uppercase leading-none">FEZ GRID</span>

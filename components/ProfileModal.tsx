@@ -154,7 +154,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                                                 </select>
                                             </div>
                                             <div className="space-y-2 md:space-y-3">
-                                                <label className="text-[9px] md:text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Cycle Duration</label>
+                                                <label className="text-[9px] md:text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Work Experience</label>
                                                 <input value={profileData.experience} onChange={e => setProfileData({...profileData, experience: e.target.value.replace(/[^0-9]/g, '')})} placeholder="Mastery Years" className="w-full bg-white/5 border border-white/10 rounded-xl md:rounded-2xl py-4 md:py-5 px-5 md:px-6 text-[12px] md:text-sm text-white focus:border-red-600 outline-none transition-all shadow-inner" />
                                             </div>
                                         </div>
