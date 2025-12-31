@@ -131,28 +131,35 @@ const AgentProfileModal: React.FC<{
     if (!currentUser) return;
     const followRef = ref(db, `social/${currentUser.id}/following/${user.id}`);
     const friendRef = ref(db, `social/${currentUser.id}/friends/${user.id}`);
+    const reqSentRef = ref(db, `social/${currentUser.id}/requests/sent/${user.id}`);
+    const reqRecRef = ref(db, `social/${currentUser.id}/requests/received/${user.id}`);
     
-    // Live counts
     const followersRef = ref(db, `social/${user.id}/followers`);
     const followingRef = ref(db, `social/${user.id}/following`);
     const friendsRef = ref(db, `social/${user.id}/friends`);
 
-    const unsubFollow = onValue(followRef, (snap) => setSocialState(prev => ({ ...prev, isFollowing: snap.exists() })));
-    const unsubFriend = onValue(friendRef, (snap) => setSocialState(prev => ({ ...prev, friendStatus: snap.val() || 'none' })));
+    onValue(followRef, (snap) => setSocialState(prev => ({ ...prev, isFollowing: snap.exists() })));
+    
+    const unsubFriends = onValue(friendRef, (snap) => {
+        if (snap.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'accepted' }));
+        else {
+            onValue(reqSentRef, (s1) => {
+                if (s1.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'requested' }));
+                else {
+                    onValue(reqRecRef, (s2) => {
+                        if (s2.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'pending' }));
+                        else setSocialState(prev => ({ ...prev, friendStatus: 'none' }));
+                    });
+                }
+            });
+        }
+    });
     
     const unsubFCount = onValue(followersRef, (snap) => setSocialState(prev => ({ ...prev, stats: { ...prev.stats, followers: snap.exists() ? Object.keys(snap.val()).length : 0 } })));
     const unsubFgCount = onValue(followingRef, (snap) => setSocialState(prev => ({ ...prev, stats: { ...prev.stats, following: snap.exists() ? Object.keys(snap.val()).length : 0 } })));
-    const unsubFrCount = onValue(friendsRef, (snap) => {
-        if (!snap.exists()) {
-            setSocialState(prev => ({ ...prev, stats: { ...prev.stats, friends: 0 } }));
-            return;
-        }
-        const data = snap.val();
-        const acceptedCount = Object.values(data).filter(status => status === 'accepted').length;
-        setSocialState(prev => ({ ...prev, stats: { ...prev.stats, friends: acceptedCount } }));
-    });
+    const unsubFrCount = onValue(friendsRef, (snap) => setSocialState(prev => ({ ...prev, stats: { ...prev.stats, friends: snap.exists() ? Object.keys(snap.val()).length : 0 } })));
 
-    return () => { unsubFollow(); unsubFriend(); unsubFCount(); unsubFgCount(); unsubFrCount(); };
+    return () => { unsubFriends(); unsubFCount(); unsubFgCount(); unsubFrCount(); };
   }, [currentUser, user.id]);
 
   const handleFollow = async () => {
@@ -164,20 +171,51 @@ const AgentProfileModal: React.FC<{
       } else {
           await set(ref(db, path), true);
           await set(ref(db, `social/${user.id}/followers/${currentUser.id}`), true);
+          // Notify
+          await push(ref(db, `notifications/${user.id}`), {
+              type: 'follow',
+              fromId: currentUser.id,
+              fromName: currentUser.fullName || currentUser.username,
+              fromAvatar: currentUser.imageUrl,
+              timestamp: Date.now(),
+              read: false
+          });
       }
   };
 
-  const handleFriendRequest = async () => {
+  const handleFriendAction = async () => {
       if (!currentUser) return;
       if (socialState.friendStatus === 'none') {
-          await set(ref(db, `social/${currentUser.id}/friends/${user.id}`), 'requested');
-          await set(ref(db, `social/${user.id}/friends/${currentUser.id}`), 'pending');
+          await set(ref(db, `social/${currentUser.id}/requests/sent/${user.id}`), true);
+          await set(ref(db, `social/${user.id}/requests/received/${currentUser.id}`), true);
+          // Notify
+          await push(ref(db, `notifications/${user.id}`), {
+              type: 'friend_request',
+              fromId: currentUser.id,
+              fromName: currentUser.fullName || currentUser.username,
+              fromAvatar: currentUser.imageUrl,
+              timestamp: Date.now(),
+              read: false
+          });
       } else if (socialState.friendStatus === 'pending') {
-          await set(ref(db, `social/${currentUser.id}/friends/${user.id}`), 'accepted');
-          await set(ref(db, `social/${user.id}/friends/${currentUser.id}`), 'accepted');
+          // Accept
+          await remove(ref(db, `social/${currentUser.id}/requests/received/${user.id}`));
+          await remove(ref(db, `social/${user.id}/requests/sent/${currentUser.id}`));
+          await set(ref(db, `social/${currentUser.id}/friends/${user.id}`), true);
+          await set(ref(db, `social/${user.id}/friends/${currentUser.id}`), true);
+          // Notify
+          await push(ref(db, `notifications/${user.id}`), {
+              type: 'request_accepted',
+              fromId: currentUser.id,
+              fromName: currentUser.fullName || currentUser.username,
+              fromAvatar: currentUser.imageUrl,
+              timestamp: Date.now(),
+              read: false
+          });
       } else if (socialState.friendStatus === 'requested') {
-          await remove(ref(db, `social/${currentUser.id}/friends/${user.id}`));
-          await remove(ref(db, `social/${user.id}/friends/${currentUser.id}`));
+          // Cancel
+          await remove(ref(db, `social/${currentUser.id}/requests/sent/${user.id}`));
+          await remove(ref(db, `social/${user.id}/requests/received/${currentUser.id}`));
       }
   };
 
@@ -234,7 +272,7 @@ const AgentProfileModal: React.FC<{
                         <button onClick={handleFollow} className={`flex-1 py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white shadow-xl hover:bg-red-700'}`}>
                             {socialState.isFollowing ? 'Unfollow' : 'Follow'}
                         </button>
-                        <button onClick={handleFriendRequest} className={`flex-1 py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-widest bg-white/5 border border-white/10 hover:bg-white/10 text-white`}>
+                        <button onClick={handleFriendAction} className={`flex-1 py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-widest bg-white/5 border border-white/10 hover:bg-white/10 text-white`}>
                             {socialState.friendStatus === 'accepted' ? 'Friends' : socialState.friendStatus === 'pending' ? 'Accept Request' : socialState.friendStatus === 'requested' ? 'Requested' : 'Add Friend'}
                         </button>
                     </div>
@@ -395,10 +433,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
       const socialRef = ref(db, `social/${targetUserId}/${type}`);
       const snap = await get(socialRef);
       if (snap.exists()) {
-          const data = snap.val();
-          const ids = type === 'friends' 
-            ? Object.entries(data).filter(([_, status]) => status === 'accepted').map(([id]) => id)
-            : Object.keys(data);
+          const ids = Object.keys(snap.val());
           setSocialListView({ type: type.charAt(0).toUpperCase() + type.slice(1), ids });
       } else {
           setSocialListView({ type: type.charAt(0).toUpperCase() + type.slice(1), ids: [] });
