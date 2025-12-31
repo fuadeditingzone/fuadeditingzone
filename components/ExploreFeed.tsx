@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@clerk/clerk-react';
 import { getDatabase, ref, push, onValue, query, limitToLast, orderByChild } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { siteConfig } from '../config';
-// Added CheckCircleIcon to the imports from ./Icons
 import { PhotoManipulationIcon, VfxIcon, SendIcon, CopyIcon, PlayIcon, SparklesIcon, CloseIcon, CheckCircleIcon } from './Icons';
 
 const db = getDatabase();
@@ -53,7 +52,8 @@ export const ExploreFeed: React.FC = () => {
             formData.append('file', selectedFile);
             formData.append('folder', 'UserPosts');
 
-            const uploadRes = await fetch('https://fuadeditingzone.pages.dev/api/upload', {
+            // UPDATED WORKER URL
+            const uploadRes = await fetch('https://quiet-haze-1898.fuadeditingzone.workers.dev', {
                 method: 'POST',
                 body: formData
             });
@@ -61,7 +61,6 @@ export const ExploreFeed: React.FC = () => {
             if (!uploadRes.ok) throw new Error('Upload failed');
             const { url } = await uploadRes.json();
 
-            // Extract tags from caption
             const tags = caption.match(/#\w+/g) || [];
 
             const postData = {
@@ -78,14 +77,13 @@ export const ExploreFeed: React.FC = () => {
 
             await push(ref(db, 'explore_posts'), postData);
             
-            // Cleanup
             setTitle('');
             setCaption('');
             setSelectedFile(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
         } catch (err) {
             console.error(err);
-            alert("Upload failed. Ensure worker is active.");
+            alert("Upload failed. Ensure Cloudflare Worker is active.");
         } finally {
             setIsUploading(false);
         }
@@ -109,7 +107,7 @@ export const ExploreFeed: React.FC = () => {
                             <input 
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                placeholder="Post Title"
+                                placeholder="Project Title"
                                 className="w-full bg-black border border-white/5 rounded-xl p-4 text-white text-sm outline-none focus:border-red-600/50 transition-all"
                             />
                             <textarea 
@@ -135,16 +133,16 @@ export const ExploreFeed: React.FC = () => {
                                 className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedFile ? 'bg-green-600/20 text-green-500 border border-green-500/30' : 'bg-white/5 text-zinc-400 hover:bg-white/10'}`}
                             >
                                 {selectedFile ? <CheckCircleIcon className="w-4 h-4" /> : <PhotoManipulationIcon className="w-4 h-4" />}
-                                {selectedFile ? 'Ready' : 'Add Media'}
+                                {selectedFile ? 'Ready' : 'Choose Media'}
                             </button>
                         </div>
                         
                         <button 
-                            disabled={isUploading || !selectedFile || !title || !caption}
+                            disabled={isUploading || !selectedFile || !title}
                             onClick={handleUpload}
                             className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-10 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl transition-all flex items-center gap-2 active:scale-95"
                         >
-                            {isUploading ? 'Uploading...' : 'Deploy'}
+                            {isUploading ? 'Uploading...' : 'Upload Post'}
                             <SendIcon className="w-3.5 h-3.5" />
                         </button>
                     </div>
@@ -156,7 +154,7 @@ export const ExploreFeed: React.FC = () => {
                 {posts.length === 0 ? (
                     <div className="text-center py-20 opacity-20 flex flex-col items-center gap-4">
                         <SparklesIcon className="w-16 h-16" />
-                        <p className="font-black uppercase tracking-[0.4em] text-xs">Awaiting First Transmission</p>
+                        <p className="font-black uppercase tracking-[0.4em] text-xs">No Transmissions Found</p>
                     </div>
                 ) : (
                     posts.map((post) => (
