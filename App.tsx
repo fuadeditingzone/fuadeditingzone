@@ -150,7 +150,7 @@ export default function App() {
 
   return (
     <ParallaxProvider>
-      <div className="text-white min-h-screen bg-black overflow-x-hidden">
+      <div className="text-white min-h-screen bg-black overflow-x-hidden flex flex-col">
           <VFXBackground /><MediaGridBackground />
           <div className="fixed top-0 left-0 right-0 z-[100]">
             <DesktopHeader 
@@ -170,9 +170,9 @@ export default function App() {
             />
           </div>
           
-          <main className="relative z-10 pt-20">
+          <main className="relative z-10 pt-20 flex-1 flex flex-col min-h-0">
             {route === 'home' && (
-              <>
+              <div className="flex flex-col">
                 <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
                 <Portfolio openModal={(items, index) => setModalState({ items, currentIndex: index })} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
                 <div className="py-20 text-center">
@@ -183,12 +183,12 @@ export default function App() {
                 </div>
                 <Contact onStartOrder={() => {}} />
                 <AboutAndFooter />
-              </>
+              </div>
             )}
             
             {route === 'marketplace' && (
-              <div className="container mx-auto px-4 py-10 min-h-[90vh]">
-                <div className="text-center mb-12">
+              <div className="container mx-auto px-4 py-6 md:py-10 flex flex-col min-h-0">
+                <div className="text-center mb-8 md:mb-12 flex-shrink-0">
                     <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-4 block">Visual Ecosystem</span>
                     <h2 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">Marketplace</h2>
                     <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4">Discover & Collaborate Sequentially</p>
@@ -198,11 +198,11 @@ export default function App() {
             )}
 
             {route === 'community' && (
-              <div className="container mx-auto px-4 py-10 min-h-[90vh]">
-                <div className="text-center mb-12">
-                    <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-4 block">Network Infrastructure</span>
-                    <h2 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">Community Hub</h2>
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4">Real-time collaboration node</p>
+              <div className="flex-1 flex flex-col min-h-0 container mx-auto px-4 py-6 md:py-10">
+                <div className="text-center mb-6 md:mb-8 flex-shrink-0">
+                    <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-2 md:mb-4 block">Network Infrastructure</span>
+                    <h2 className="text-white text-4xl md:text-8xl font-black uppercase tracking-tighter leading-none">Community Hub</h2>
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-2 md:mt-4">Real-time collaboration node</p>
                 </div>
                 <CommunityChat onShowProfile={handleOpenProfile} initialTargetUserId={targetUserId} />
               </div>

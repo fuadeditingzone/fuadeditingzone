@@ -140,7 +140,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketp
                 <img src={siteConfig.branding.logoUrl} alt="Logo" className="h-9 w-9 rounded-full shadow-lg" />
                 <div className="flex items-center gap-1">
                     <span className="font-black text-white tracking-widest text-[10px] uppercase">FEZ ZONE</span>
-                    <i className="fa-solid fa-circle-check text-[11px] verified-badge-owner"></i>
+                    {isVerified(OWNER_HANDLE) && <i className="fa-solid fa-circle-check text-[11px] verified-badge-owner"></i>}
                 </div>
             </div>
             <div className="flex items-center gap-3">

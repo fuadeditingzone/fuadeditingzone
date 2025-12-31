@@ -216,7 +216,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
   };
 
   return (
-    <section id="community" className={`${isModalMode ? 'h-full w-full' : 'py-12 md:py-24 bg-black relative z-10 overflow-hidden'}`}>
+    <section id="community" className={`flex-1 flex flex-col min-h-0 bg-black relative z-10 overflow-hidden ${isModalMode ? 'h-full' : 'py-6 md:py-12'}`}>
       <AnimatePresence>
         {viewingProfile && <AgentProfileModal user={viewingProfile} currentUser={clerkUser} onClose={() => setViewingProfile(null)} onMessage={() => { setIsGlobal(false); setSelectedUser(viewingProfile); setShowConversationOnMobile(true); }} onShowFullProfile={(id) => onShowProfile?.(id)} />}
         {isSearchOpen && (
@@ -224,7 +224,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                 <div className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col max-h-[80dvh]">
                     <div className="flex justify-between items-center mb-8 flex-shrink-0">
                         <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Find Operator</h3>
-                        <button onClick={() => setIsSearchOpen(false)} className="p-2 bg-white/5 rounded-full"><CloseIcon className="w-6 h-6" /></button>
+                        <button onClick={() => setIsSearchOpen(false)} className="p-2 bg-white/5 rounded-full"><CloseIcon className="w-6 h-6 text-zinc-500" /></button>
                     </div>
                     <div className="relative mb-8 flex-shrink-0">
                         <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
@@ -243,8 +243,8 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
         )}
       </AnimatePresence>
 
-      <div className={`${isModalMode ? 'h-full px-0' : 'container mx-auto px-4 max-w-6xl h-[80dvh] md:h-[800px]'}`}>
-        <div className="w-full bg-[#080808] border border-white/5 rounded-[2rem] md:rounded-[3.5rem] overflow-hidden shadow-2xl flex flex-col md:flex-row h-full min-h-0">
+      <div className={`flex-1 flex flex-col min-h-0 ${isModalMode ? 'h-full px-0' : 'container mx-auto px-4 max-w-6xl'}`}>
+        <div className="flex-1 flex flex-col md:flex-row bg-[#080808] border border-white/5 rounded-[2rem] md:rounded-[3.5rem] overflow-hidden shadow-2xl min-h-0">
           
           <div className={`w-full md:w-80 border-r border-white/5 flex flex-col bg-[#050505]/50 flex-shrink-0 min-h-0 ${showConversationOnMobile ? 'hidden md:flex' : 'flex'}`}>
             <div className="p-6 md:p-8 border-b border-white/5 bg-black/30 flex items-center flex-shrink-0">

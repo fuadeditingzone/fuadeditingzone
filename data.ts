@@ -61,35 +61,35 @@ export const graphicWorks: GraphicWork[] = [
         imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/0mc1y78tdg0qq2yrsm8lz/6434f9234092365.Y3JvcCwxMzgwLDEwODAsMjcwLDA.jpg?rlkey=qfhr7z9vwuquacnbcb2q5pv3u&raw=1', 
         category: 'Thumbnail Designs',
         title: 'Anime VFX Masterclass | Edit Breakdown',
-        description: 'Professional YouTube thumbnail design for: Anime VFX Masterclass'
+        description: 'Professional YouTube thumbnail design for high-tier creators.'
     },
     { 
         id: 16, 
         imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/bzhrxzvxv8mpv7ldad6o4/2025-09-16-7.jpg?rlkey=chpubk19uennb7yw4xnssr90f&raw=1', 
         category: 'Thumbnail Designs',
         title: 'VFX Tutorial Thumbnail',
-        description: 'High CTR thumbnail for After Effects tutorials.'
+        description: 'High CTR thumbnail concept for educational design content.'
     },
     { 
         id: 17, 
         imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/m5o840ywi39vm56n2chlp/2025-09-16-8.jpg?rlkey=kjk0gt52gowqx1n52ts0t6p5m&raw=1', 
         category: 'Thumbnail Designs',
         title: 'Gaming Montage Thumbnail',
-        description: 'Vibrant gaming thumbnail with high-intensity graphics.'
+        description: 'Vibrant, action-packed gaming thumbnail with custom typography.'
     },
     { 
         id: 18, 
         imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/81jlduf6n6ih32b6yfpmg/2025-09-18.jpg?rlkey=f9qgajdy0wycg2araptlpqi2r&raw=1', 
         category: 'Thumbnail Designs',
-        title: 'Pro Design Concept',
-        description: 'Minimalist yet effective thumbnail for creative branding.'
+        title: 'Cinematic Breakdown',
+        description: 'Premium thumbnail design focusing on visual storytelling.'
     },
     { 
         id: 19, 
         imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/fvk2qlo8i0mer2n4sip1h/faeez-logo.png?rlkey=xiahu40vwixf0uf96wwnvqlw2&raw=1', 
         category: 'Thumbnail Designs',
         title: 'FEZ Brand Identity',
-        description: 'Official thumbnail for FEZ brand reveals.'
+        description: 'Official branding thumbnail for Fuad Editing Zone reveals.'
     },
 
     // Banner Designs
