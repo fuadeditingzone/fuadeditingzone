@@ -30,12 +30,12 @@ interface NavProps {
   onNavigateMarketplace?: () => void;
   onOpenChatWithUser?: (userId: string) => void;
   onOpenProfile?: (userId: string) => void;
+  activeRoute?: string;
 }
 
 const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; onShowUser: (id: string) => void; onGoToInbox: (id: string) => void }> = ({ isOpen, setIsOpen, onShowUser, onGoToInbox }) => {
     const { user } = useUser();
     const [notifications, setNotifications] = useState<any[]>([]);
-    const isOwner = user?.username === OWNER_HANDLE;
 
     useEffect(() => {
         if (!user) return;
@@ -93,7 +93,7 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
     );
 };
 
-export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketplace, onOpenChatWithUser, onOpenProfile }) => {
+export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketplace, onOpenChatWithUser, onOpenProfile, activeRoute }) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   return (
@@ -102,10 +102,10 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarket
             <img src={siteConfig.branding.logoUrl} alt="Logo" className="h-10 w-10 rounded-full shadow-lg" />
              <h1 className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</h1>
         </div>
-        <nav className="flex items-center gap-4">
-            <button onClick={() => onScrollTo('home')} className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-all">Home</button>
+        <nav className="flex items-center gap-8">
+            <button onClick={() => onScrollTo('home')} className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeRoute === 'home' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>Home</button>
             <button onClick={() => onScrollTo('portfolio')} className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-all">Work</button>
-            <button onClick={onNavigateMarketplace} className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 hover:text-red-500 transition-all border border-red-600/20 px-4 py-1.5 rounded-lg bg-red-600/5">Marketplace</button>
+            <button onClick={onNavigateMarketplace} className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all border px-4 py-1.5 rounded-lg ${activeRoute === 'marketplace' ? 'text-red-500 bg-red-600/10 border-red-600/30 shadow-[0_0_15px_rgba(220,38,38,0.2)]' : 'text-red-600 bg-red-600/5 border-red-600/20 hover:text-white hover:bg-red-600'}`}>Marketplace</button>
             <button onClick={() => onScrollTo('contact')} className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-all">Order</button>
         </nav>
         <div className="flex items-center gap-4">
@@ -140,11 +140,23 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketp
     );
 };
 
-export const MobileFooterNav: React.FC<{ onScrollTo: (target: any) => void; onNavigateMarketplace: () => void }> = ({ onScrollTo, onNavigateMarketplace }) => (
-    <nav className="md:hidden fixed bottom-6 left-6 right-6 z-[100] bg-black/80 backdrop-blur-3xl rounded-[2rem] h-16 flex justify-around items-center shadow-2xl border border-white/10">
-        <button onClick={() => onScrollTo('home')} className="p-2 text-zinc-500 hover:text-white"><HomeIcon className="w-5 h-5" /></button>
-        <button onClick={onNavigateMarketplace} className="p-2 text-red-500"><GlobeAltIcon className="w-5 h-5" /></button>
-        <button onClick={() => onScrollTo('portfolio')} className="p-2 text-zinc-500 hover:text-white"><BriefcaseIcon className="w-5 h-5" /></button>
-        <button onClick={() => onScrollTo('contact')} className="p-2 text-zinc-500 hover:text-white"><ChatBubbleIcon className="w-5 h-5" /></button>
+export const MobileFooterNav: React.FC<{ onScrollTo: (target: any) => void; onNavigateMarketplace: () => void; activeRoute?: string }> = ({ onScrollTo, onNavigateMarketplace, activeRoute }) => (
+    <nav className="md:hidden fixed bottom-4 left-4 right-4 z-[100] bg-black/80 backdrop-blur-3xl rounded-[2.5rem] h-20 flex justify-around items-center shadow-2xl border border-white/10 px-2">
+        <button onClick={() => onScrollTo('home')} className={`flex flex-col items-center gap-1 transition-all ${activeRoute === 'home' ? 'text-red-500' : 'text-zinc-500 hover:text-white'}`}>
+            <HomeIcon className="w-5 h-5" />
+            <span className="text-[8px] font-black uppercase tracking-widest">Home</span>
+        </button>
+        <button onClick={onNavigateMarketplace} className={`flex flex-col items-center gap-1 transition-all ${activeRoute === 'marketplace' ? 'text-red-500' : 'text-zinc-500 hover:text-white'}`}>
+            <GlobeAltIcon className="w-5 h-5" />
+            <span className="text-[8px] font-black uppercase tracking-widest">Market</span>
+        </button>
+        <button onClick={() => onScrollTo('portfolio')} className="flex flex-col items-center gap-1 text-zinc-500 hover:text-white">
+            <BriefcaseIcon className="w-5 h-5" />
+            <span className="text-[8px] font-black uppercase tracking-widest">Work</span>
+        </button>
+        <button onClick={() => onScrollTo('contact')} className="flex flex-col items-center gap-1 text-zinc-500 hover:text-white">
+            <ChatBubbleIcon className="w-5 h-5" />
+            <span className="text-[8px] font-black uppercase tracking-widest">Order</span>
+        </button>
     </nav>
 );

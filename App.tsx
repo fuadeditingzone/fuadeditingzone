@@ -75,7 +75,6 @@ export default function App() {
           
           if (topPosts.length > 0) {
             await set(spotlightRef, { processed: true, top: topPosts.map(p => p.id) });
-            // Push notification to global feed or a system node
             topPosts.forEach(post => {
               push(ref(db, 'notifications/global'), {
                 type: 'daily_spotlight',
@@ -94,14 +93,6 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       setRoute(window.location.pathname === '/marketplace' ? 'marketplace' : 'home');
-      if (window.location.pathname.startsWith('/@')) {
-        const handle = window.location.pathname.replace('/@', '');
-        get(ref(db, 'users')).then(snap => {
-          const users = snap.val();
-          const found = Object.values(users || {}).find((u: any) => u.username === handle) as any;
-          if (found) setViewingProfileId(found.id);
-        });
-      }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -114,15 +105,7 @@ export default function App() {
   };
 
   const handleOpenProfile = (userId: string) => {
-    if (!userId.includes('user_')) { // Handle username mentions
-      get(ref(db, 'users')).then(snap => {
-        const users = snap.val();
-        const found = Object.values(users || {}).find((u: any) => u.username === userId) as any;
-        if (found) setViewingProfileId(found.id);
-      });
-    } else {
-      setViewingProfileId(userId);
-    }
+    setViewingProfileId(userId);
   };
 
   const handleScrollTo = (target: string) => {
@@ -158,6 +141,7 @@ export default function App() {
               onNavigateMarketplace={() => navigateTo('marketplace')}
               onOpenChatWithUser={(id) => { setTargetUserId(id); setIsCommunityChatOpen(true); }} 
               onOpenProfile={handleOpenProfile} 
+              activeRoute={route}
             />
             <MobileHeader 
               onScrollTo={handleScrollTo} 
@@ -177,11 +161,11 @@ export default function App() {
                 <AboutAndFooter />
               </>
             ) : (
-              <div className="container mx-auto px-4 py-10">
-                <div className="text-center mb-16">
-                    <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-4 block">Visual Marketplace</span>
-                    <h2 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">The Zone</h2>
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4">Sequentially Powered by Community</p>
+              <div className="container mx-auto px-4 py-10 min-h-[90vh]">
+                <div className="text-center mb-12">
+                    <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-4 block">Visual Ecosystem</span>
+                    <h2 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">Marketplace</h2>
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4">Discover & Collaborate Sequentially</p>
                 </div>
                 <ExploreFeed onOpenProfile={handleOpenProfile} />
               </div>
@@ -209,7 +193,7 @@ export default function App() {
           {isYouTubeRedirectOpen && <YouTubeRedirectPopup onClose={() => setIsYouTubeRedirectOpen(false)} onConfirm={() => { setIsYouTubeRedirectOpen(false); handleScrollTo('portfolio'); }} />}
           {pipVideo && <VideoPipPlayer video={pipVideo} onClose={() => setPipVideo(null)} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />}
           <PwaInstallPrompt />
-          <MobileFooterNav onScrollTo={handleScrollTo} onNavigateMarketplace={() => navigateTo('marketplace')} />
+          <MobileFooterNav onScrollTo={handleScrollTo} onNavigateMarketplace={() => navigateTo('marketplace')} activeRoute={route} />
       </div>
     </ParallaxProvider>
   );
