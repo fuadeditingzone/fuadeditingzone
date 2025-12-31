@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, push, onChildAdded, onValue, set, update, get, remove, runTransaction, query, limitToLast } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { SparklesIcon, SendIcon, SearchIcon, UserCircleIcon, GlobeAltIcon, CheckCircleIcon, CloseIcon, BriefcaseIcon, ChevronRightIcon, ChatBubbleIcon, VolumeOffIcon, VolumeOnIcon, EyeIcon } from './Icons';
+import { SparklesIcon, SendIcon, UserCircleIcon, GlobeAltIcon, CheckCircleIcon, CloseIcon, ChatBubbleIcon, VolumeOffIcon, VolumeOnIcon, EyeIcon, HandThumbUpIcon, ChevronRightIcon } from './Icons';
 
 const firebaseConfig = {
   databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
@@ -22,10 +21,22 @@ const db = getDatabase();
 const OWNER_HANDLE = 'fuadeditingzone';
 const ADMIN_HANDLE = 'studiomuzammil';
 
+// FIX: Added RECOMMENDED_PROFESSIONS constant to resolve "Cannot find name" error in Profile Setup.
 const RECOMMENDED_PROFESSIONS = [
     'VFX Editor', 'Motion Designer', 'YouTuber', 'Photo Artist', 
     'Logo Designer', '3D Modeler', 'Video Editor', 'Graphic Designer', 'Thumbnail Artist'
 ];
+
+interface RatingStats {
+    average: number;
+    count: number;
+}
+
+interface SocialStats {
+    followers: number;
+    following: number;
+    friends: number;
+}
 
 interface Profile {
   role: 'Client' | 'Designer' | 'Editor';
@@ -33,6 +44,7 @@ interface Profile {
   experience: string;
   bio: string;
   chatPassword?: string;
+  rating?: RatingStats;
 }
 
 interface ChatUser {
@@ -54,6 +66,23 @@ interface Message {
   timestamp: number;
 }
 
+const StarRating: React.FC<{ rating: number; onRate?: (val: number) => void; size?: string }> = ({ rating, onRate, size = "w-4 h-4" }) => {
+    return (
+        <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                    key={star}
+                    disabled={!onRate}
+                    onClick={() => onRate?.(star)}
+                    className={`transition-all ${star <= Math.round(rating) ? 'text-yellow-500' : 'text-gray-700'} ${onRate ? 'hover:scale-125' : 'cursor-default'}`}
+                >
+                    <i className={`${star <= Math.round(rating) ? 'fa-solid' : 'fa-regular'} fa-star ${size}`}></i>
+                </button>
+            ))}
+        </div>
+    );
+};
+
 const AgentProfileModal: React.FC<{ 
   user: ChatUser; 
   currentUser: any; 
@@ -68,63 +97,105 @@ const AgentProfileModal: React.FC<{
   const isAdmin = user.username === ADMIN_HANDLE;
   const isImmune = isOwner || isAdmin;
   const [copied, setCopied] = useState(false);
+  const [socialState, setSocialState] = useState({ isFollowing: false, friendStatus: 'none', stats: { followers: 0, following: 0, friends: 0 } });
   
+  useEffect(() => {
+    if (!currentUser) return;
+    const followRef = ref(db, `social/${currentUser.id}/following/${user.id}`);
+    const friendRef = ref(db, `social/${currentUser.id}/friends/${user.id}`);
+    const statsRef = ref(db, `users/${user.id}/social_stats`);
+
+    onValue(followRef, (snap) => setSocialState(prev => ({ ...prev, isFollowing: snap.exists() })));
+    onValue(friendRef, (snap) => setSocialState(prev => ({ ...prev, friendStatus: snap.val() || 'none' })));
+    onValue(statsRef, (snap) => { if(snap.exists()) setSocialState(prev => ({ ...prev, stats: snap.val() })); });
+  }, [currentUser, user.id]);
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = 'unset'; };
   }, []);
 
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(`@${user.username}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleFollow = async () => {
+      if (!currentUser) return;
+      const path = `social/${currentUser.id}/following/${user.id}`;
+      if (socialState.isFollowing) {
+          await remove(ref(db, path));
+          await remove(ref(db, `social/${user.id}/followers/${currentUser.id}`));
+      } else {
+          await set(ref(db, path), true);
+          await set(ref(db, `social/${user.id}/followers/${currentUser.id}`));
+      }
+  };
+
+  const handleFriendRequest = async () => {
+      if (!currentUser) return;
+      if (socialState.friendStatus === 'none') {
+          await set(ref(db, `social/${currentUser.id}/friends/${user.id}`), 'requested');
+          await set(ref(db, `social/${user.id}/friends/${currentUser.id}`), 'pending');
+      } else if (socialState.friendStatus === 'pending') {
+          await set(ref(db, `social/${currentUser.id}/friends/${user.id}`), 'accepted');
+          await set(ref(db, `social/${user.id}/friends/${currentUser.id}`), 'accepted');
+      }
+  };
+
+  const handleRate = async (val: number) => {
+      if (!currentUser) return;
+      const ratingRef = ref(db, `ratings/${user.id}/${currentUser.id}`);
+      await set(ratingRef, val);
+      
+      const allRatingsRef = ref(db, `ratings/${user.id}`);
+      const snap = await get(allRatingsRef);
+      if (snap.exists()) {
+          const ratings = Object.values(snap.val()) as number[];
+          const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+          await update(ref(db, `users/${user.id}/profile/rating`), { average: avg, count: ratings.length });
+      }
   };
 
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-6"
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-6"
       onClick={onClose}
     >
       <motion.div 
         initial={{ scale: 0.9, y: 40 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 40 }}
-        className="relative w-full max-w-[480px] bg-[#0a0a0a] border border-white/10 rounded-[3rem] shadow-[0_50px_150px_rgba(0,0,0,1)] overflow-hidden flex flex-col max-h-[85vh] mx-auto"
+        className="relative w-full max-w-[520px] bg-[#0a0a0a] border border-white/10 rounded-[3rem] shadow-[0_50px_150px_rgba(0,0,0,1)] overflow-hidden flex flex-col max-h-[90vh] mx-auto"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex-1 overflow-y-auto custom-scrollbar p-8 md:p-12 flex flex-col items-center min-h-0">
-            <div className="relative mb-8 flex-shrink-0">
+            <div className="relative mb-6 flex-shrink-0">
                 <div className={`w-32 h-32 rounded-[3rem] overflow-hidden border-4 ${isOwner ? 'border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.4)]' : isAdmin ? 'border-blue-600 shadow-[0_0_30px_rgba(37,99,235,0.4)]' : 'border-white/10'} p-1.5 bg-black`}>
                     <img src={user.avatar} className="w-full h-full object-cover rounded-[2.4rem]" alt="" />
                 </div>
                 {isOwner && <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-3 py-1 rounded-full font-black tracking-widest shadow-lg">OWNER</span>}
-                {isAdmin && <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-[8px] px-3 py-1 rounded-full font-black tracking-widest shadow-lg">ADMIN</span>}
             </div>
 
-            <div className="text-center mb-8 flex-shrink-0">
-                <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">{user.name}</h2>
-                <div className="flex items-center justify-center gap-2">
-                    <span className="text-red-500 font-black text-[11px] uppercase tracking-[0.4em]">@{user.username}</span>
-                    <button onClick={handleCopy} className="p-2 bg-white/5 rounded-lg hover:bg-white/10 text-gray-400 transition-colors">
-                        <i className={`fa-solid ${copied ? 'fa-check text-green-500' : 'fa-copy'} text-xs`}></i>
-                    </button>
+            <div className="text-center mb-6 flex-shrink-0">
+                <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-1">{user.name}</h2>
+                <div className="flex items-center justify-center gap-4 mb-4">
+                    <StarRating rating={user.profile?.rating?.average || 0} onRate={currentUser?.id !== user.id ? handleRate : undefined} />
+                    <span className="text-[10px] font-black text-gray-500 uppercase">({user.profile?.rating?.count || 0} Ratings)</span>
                 </div>
+                <div className="flex gap-4 mb-6">
+                    <div className="text-center"><p className="text-white font-black text-lg">{socialState.stats.followers}</p><p className="text-[8px] text-gray-500 uppercase font-black">Followers</p></div>
+                    <div className="text-center"><p className="text-white font-black text-lg">{socialState.stats.friends}</p><p className="text-[8px] text-gray-500 uppercase font-black">Friends</p></div>
+                </div>
+                {currentUser?.id !== user.id && (
+                    <div className="flex gap-3">
+                        <button onClick={handleFollow} className={`px-8 py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white shadow-lg'}`}>
+                            {socialState.isFollowing ? 'Unfollow' : 'Follow'}
+                        </button>
+                        <button onClick={handleFriendRequest} className={`px-8 py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest bg-white/5 border border-white/10 hover:bg-white/10 text-white`}>
+                            {socialState.friendStatus === 'accepted' ? 'Friends' : socialState.friendStatus === 'pending' ? 'Accept Request' : socialState.friendStatus === 'requested' ? 'Requested' : 'Add Friend'}
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className="w-full space-y-4 mb-8">
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="p-5 bg-white/5 rounded-3xl border border-white/5 text-center">
-                        <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1">Account</p>
-                        <p className="text-[11px] font-black text-white uppercase truncate">{user.profile?.role || 'Member'}</p>
-                    </div>
-                    <div className="p-5 bg-white/5 rounded-3xl border border-white/5 text-center">
-                        <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1">Work Experience</p>
-                        <p className="text-[11px] font-black text-white uppercase truncate">{user.profile?.experience || '1'} Year(s)</p>
-                    </div>
-                </div>
-
-                <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5">
-                    <h4 className="text-red-600 font-black text-[9px] uppercase tracking-[0.3em] mb-4">Professional Bio</h4>
+                <div className="p-6 bg-white/5 rounded-[2rem] border border-white/5">
+                    <h4 className="text-red-600 font-black text-[9px] uppercase tracking-[0.3em] mb-3">Professional Bio</h4>
                     <p className="text-[12px] text-gray-300 font-medium leading-relaxed italic" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
                         "{user.profile?.bio || 'Professional details pending registration.'}"
                     </p>
@@ -133,10 +204,10 @@ const AgentProfileModal: React.FC<{
                 {currentUser?.id !== user.id && !isImmune && (
                     <div className="grid grid-cols-2 gap-3">
                         <button onClick={onToggleBlock} className={`py-4 rounded-2xl font-black uppercase text-[9px] tracking-widest border transition-all ${isBlocked ? 'bg-red-600 text-white border-red-500' : 'bg-white/5 text-gray-500 border-white/5 hover:bg-red-600/10 hover:text-red-500'}`}>
-                           {isBlocked ? 'Unblock Agent' : 'Block Agent'}
+                           {isBlocked ? 'Unblock' : 'Block'}
                         </button>
                         <button onClick={onToggleMute} className={`py-4 rounded-2xl font-black uppercase text-[9px] tracking-widest border transition-all ${isMuted ? 'bg-blue-600 text-white border-blue-500' : 'bg-white/5 text-gray-500 border-white/5 hover:bg-blue-600/10 hover:text-blue-500'}`}>
-                           {isMuted ? 'Unmute' : 'Mute Signals'}
+                           {isMuted ? 'Unmute' : 'Mute'}
                         </button>
                     </div>
                 )}
@@ -185,16 +256,8 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
   useEffect(() => {
     if (isSignedIn && clerkUser) {
       const userRef = ref(db, `users/${clerkUser.id}`);
-      onValue(userRef, (snap) => { 
-        if (!snap.val()?.profile) setShowSetup(true); 
-      });
-      update(userRef, { 
-        online: true, 
-        name: clerkUser.fullName || clerkUser.username, 
-        avatar: clerkUser.imageUrl, 
-        username: clerkUser.username, 
-        id: clerkUser.id 
-      });
+      onValue(userRef, (snap) => { if (!snap.val()?.profile) setShowSetup(true); });
+      update(userRef, { online: true, name: clerkUser.fullName || clerkUser.username, avatar: clerkUser.imageUrl, username: clerkUser.username, id: clerkUser.id });
     }
   }, [isSignedIn, clerkUser]);
 
@@ -252,13 +315,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isSignedIn || !inputValue.trim() || !chatPath || !clerkUser) return;
-    const newMessage = { 
-      senderId: clerkUser.id, 
-      senderName: clerkUser.fullName || clerkUser.username, 
-      senderAvatar: clerkUser.imageUrl, 
-      text: inputValue.trim(), 
-      timestamp: Date.now() 
-    };
+    const newMessage = { senderId: clerkUser.id, senderName: clerkUser.fullName || clerkUser.username, senderAvatar: clerkUser.imageUrl, text: inputValue.trim(), timestamp: Date.now() };
     setInputValue('');
     await push(ref(db, chatPath), newMessage);
 
@@ -266,8 +323,8 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
         const timestamp = Date.now();
         const recipientInboxRef = ref(db, `inbox/${selectedUser.id}/${clerkUser.id}`);
         runTransaction(recipientInboxRef, (currentData) => {
-            if (currentData === null) return { timestamp, unreadCount: 1 };
-            return { ...currentData, timestamp, unreadCount: (currentData.unreadCount || 0) + 1 };
+            if (currentData === null) return { timestamp, unreadCount: 1, lastMessage: newMessage.text };
+            return { ...currentData, timestamp, unreadCount: (currentData.unreadCount || 0) + 1, lastMessage: newMessage.text };
         });
     }
   };
@@ -277,7 +334,6 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
     const owner = list.find(u => u.username === OWNER_HANDLE);
     const admin = list.find(u => u.username === ADMIN_HANDLE);
     const others = list.filter(u => u.username !== OWNER_HANDLE && u.username !== ADMIN_HANDLE);
-    
     const sorted = [];
     if (owner) sorted.push(owner);
     if (admin) sorted.push(admin);
@@ -299,7 +355,6 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
       setUnlockPassword('');
   }, [selectedUser, isGlobal]);
 
-  // FIX: Cast complex conditional to explicit boolean to prevent type mismatches in JSX attributes like 'disabled'.
   const needsUnlock = !!(!isGlobal && !isUnlocked && users.find(u => u.id === clerkUser?.id)?.profile?.chatPassword);
 
   return (
