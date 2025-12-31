@@ -73,7 +73,7 @@ const PortfolioSection: React.FC<{
                     >
                         <img 
                             src={work.imageUrl || work.thumbnailUrl || (work.mediaUrl && work.mediaType === 'image' ? work.mediaUrl : `https://i.ytimg.com/vi/${work.videoId}/mqdefault.jpg`)} 
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                             alt=""
                         />
                         {work.mediaType === 'video' && (
@@ -137,7 +137,7 @@ const VfxVideoPlayer: React.FC<{
     return (
         <motion.div ref={containerRef as any} variants={variants} className="group relative aspect-square bg-black rounded-[1.2rem] md:rounded-[2.5rem] overflow-hidden border border-white/10 cursor-pointer hover:border-red-600/50 transition-all duration-500">
             <figure className="w-full h-full m-0 p-0" onClick={() => onPlayRequest(isPlaying ? null : video)}>
-                <video ref={videoRef} src={videoUrl} loop muted={isMuted} playsInline className="w-full h-full object-cover" onCanPlay={() => setIsLoading(false)} />
+                <video ref={videoRef} src={videoUrl} loop muted={isMuted} playsInline className="w-full h-full object-contain" onCanPlay={() => setIsLoading(false)} />
                 <div className={`absolute inset-0 bg-black/20 transition-opacity flex items-center justify-center ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
                      {!isPlaying && !isLoading && <PlayIcon className="w-10 h-10 text-white/80 drop-shadow-lg" />}
                 </div>
