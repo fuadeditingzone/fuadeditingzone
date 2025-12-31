@@ -7,7 +7,7 @@ import {
   useUser
 } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, onValue, set, remove, push, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, ref, onValue, set, remove, push, update, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { siteConfig } from '../config';
 import { HomeIcon, BriefcaseIcon, VfxIcon, UserCircleIcon, ChatBubbleIcon, SparklesIcon, CloseIcon, CheckCircleIcon } from './Icons';
 import { ProfileModal } from './ProfileModal';
@@ -28,6 +28,7 @@ const OWNER_HANDLE = 'fuadeditingzone';
 interface NavProps {
   onScrollTo: (section: 'home' | 'portfolio' | 'graphic-design' | 'contact' | 'video-editing' | 'about') => void;
   onOpenChatWithUser?: (userId: string) => void;
+  onOpenProfile?: (userId: string) => void;
 }
 
 const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; onShowUser: (id: string) => void }> = ({ isOpen, setIsOpen, onShowUser }) => {
@@ -206,7 +207,17 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
 
     const handleOrderAction = async (notif: any, action: 'accept' | 'reject') => {
         if (!user) return;
-        await update(ref(db, `orders/${notif.fromId}/${notif.orderKey}`), { status: action === 'accept' ? 'Accepted' : 'Rejected' });
+        let reason = "";
+        if (action === 'reject') {
+            reason = prompt("Reason for rejection:") || "Capacity limits reached.";
+        }
+        
+        await update(ref(db, `orders/${notif.fromId}/${notif.orderKey}`), { 
+            status: action === 'accept' ? 'Accepted' : 'Rejected',
+            rejectionReason: reason || null,
+            acceptedAt: action === 'accept' ? Date.now() : null
+        });
+
         await push(ref(db, `notifications/${notif.fromId}`), {
             type: action === 'accept' ? 'order_accepted' : 'order_rejected',
             fromId: user.id,
@@ -214,8 +225,20 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
             fromAvatar: siteConfig.branding.logoUrl,
             timestamp: Date.now(),
             read: false,
-            orderName: notif.orderName
+            orderName: notif.orderName,
+            reason: reason || null
         });
+
+        const chatPath = `messages/${[user.id, notif.fromId].sort().join('_')}`;
+        const cardText = `[ORDER STATUS UPDATE]\nProject: ${notif.orderName}\nStatus: ${action === 'accept' ? 'ACCEPTED' : 'REJECTED'}${reason ? '\nReason: ' + reason : ''}\nTime: ${new Date().toLocaleString()}`;
+        await push(ref(db, chatPath), {
+            senderId: user.id,
+            senderName: "Fuad Editing Zone",
+            senderAvatar: siteConfig.branding.logoUrl,
+            text: cardText,
+            timestamp: Date.now()
+        });
+
         await remove(ref(db, `notifications/${user.id}/${notif.id}`));
     };
 
@@ -265,7 +288,7 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
                                                     {n.type === 'request_accepted' && 'accepted your friend request.'}
                                                     {n.type === 'new_order' && `placed a new order: "${n.orderName}"`}
                                                     {n.type === 'order_accepted' && `accepted your order for "${n.orderName}"`}
-                                                    {n.type === 'order_rejected' && `could not accept your order for "${n.orderName}"`}
+                                                    {n.type === 'order_rejected' && `could not accept your order for "${n.orderName}"${n.reason ? ': ' + n.reason : ''}`}
                                                 </p>
                                                 <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-2 flex items-center gap-2">
                                                     <i className="fa-solid fa-clock opacity-50"></i>
@@ -297,81 +320,76 @@ const NavLink: React.FC<{ onClick: () => void; children: React.ReactNode }> = ({
     </button>
 );
 
-export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUser }) => {
+export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUser, onOpenProfile }) => {
   const [isSpinning, setIsSpinning] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
-  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
 
   const handleGoToInbox = (targetId: string) => {
       if(onOpenChatWithUser) onOpenChatWithUser(targetId);
   };
 
+  const handleShowUser = (targetId: string) => {
+      if(onOpenProfile) onOpenProfile(targetId);
+  };
+
   return (
-    <>
-      <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-20 px-10 bg-black/40 backdrop-blur-md border-b border-white/5">
-          <div onClick={() => { setIsSpinning(true); onScrollTo('home'); setTimeout(() => setIsSpinning(false), 2000); }} className="cursor-pointer group flex items-center gap-4">
-              <div className="relative">
-                  <div className="absolute -inset-1 bg-red-600/20 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <img src={siteConfig.branding.logoUrl} alt="Logo" className={`h-10 w-10 rounded-full relative z-10 ${isSpinning ? 'logo-3d-spin' : ''}`} />
+    <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-20 px-10 bg-black/40 backdrop-blur-md border-b border-white/5">
+        <div onClick={() => { setIsSpinning(true); onScrollTo('home'); setTimeout(() => setIsSpinning(false), 2000); }} className="cursor-pointer group flex items-center gap-4">
+            <div className="relative">
+                <div className="absolute -inset-1 bg-red-600/20 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <img src={siteConfig.branding.logoUrl} alt="Logo" className={`h-10 w-10 rounded-full relative z-10 ${isSpinning ? 'logo-3d-spin' : ''}`} />
+            </div>
+             <h1 className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</h1>
+        </div>
+        <nav className="flex items-center gap-2">
+            <NavLink onClick={() => onScrollTo('home')}>Home</NavLink>
+            <NavLink onClick={() => onScrollTo('portfolio')}>Video</NavLink>
+            <NavLink onClick={() => onScrollTo('graphic-design')}>Graphic</NavLink>
+            <NavLink onClick={() => onScrollTo('video-editing')}>VFX</NavLink>
+            <NavLink onClick={() => onScrollTo('about')}>About</NavLink>
+            <NavLink onClick={() => onScrollTo('contact')}>Order</NavLink>
+        </nav>
+        <div className="flex items-center gap-4">
+            <SignedIn>
+              <div className="flex items-center gap-3 border-r border-white/10 pr-6">
+                  <RequestHub isOpen={isRequestsOpen} setIsOpen={(v) => { setIsRequestsOpen(v); if(v) setIsNotificationsOpen(false); }} onShowUser={handleShowUser} />
+                  <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); if(v) setIsRequestsOpen(false); }} onShowUser={handleShowUser} onGoToInbox={handleGoToInbox} />
               </div>
-               <h1 className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</h1>
-          </div>
-          <nav className="flex items-center gap-2">
-              <NavLink onClick={() => onScrollTo('home')}>Home</NavLink>
-              <NavLink onClick={() => onScrollTo('portfolio')}>Video</NavLink>
-              <NavLink onClick={() => onScrollTo('graphic-design')}>Graphic</NavLink>
-              <NavLink onClick={() => onScrollTo('video-editing')}>VFX</NavLink>
-              <NavLink onClick={() => onScrollTo('about')}>About</NavLink>
-              <NavLink onClick={() => onScrollTo('contact')}>Order</NavLink>
-          </nav>
-          <div className="flex items-center gap-4">
-              <SignedIn>
-                <div className="flex items-center gap-3 border-r border-white/10 pr-6">
-                    <RequestHub isOpen={isRequestsOpen} setIsOpen={(v) => { setIsRequestsOpen(v); if(v) setIsNotificationsOpen(false); }} onShowUser={setViewingUserId} />
-                    <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); if(v) setIsRequestsOpen(false); }} onShowUser={setViewingUserId} onGoToInbox={handleGoToInbox} />
-                </div>
-              </SignedIn>
-              <SignedOut>
-                <SignInButton mode="modal"><button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.4em] transition-all">Log In</button></SignInButton>
-                <button onClick={() => onScrollTo('contact')} className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2.5 uppercase tracking-[0.3em] transition-all shadow-lg">Order Now</button>
-              </SignedOut>
-              <SignedIn>
-                <UserButton appearance={{ elements: { userButtonAvatarBox: "w-11 h-11 border-[3px] border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.4)]" } }} />
-              </SignedIn>
-          </div>
-      </header>
-      <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
-    </>
+            </SignedIn>
+            <SignedOut>
+              <SignInButton mode="modal"><button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.4em] transition-all">Log In</button></SignInButton>
+              <button onClick={() => onScrollTo('contact')} className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2.5 uppercase tracking-[0.3em] transition-all shadow-lg">Order Now</button>
+            </SignedOut>
+            <SignedIn>
+              <UserButton appearance={{ elements: { userButtonAvatarBox: "w-11 h-11 border-[3px] border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.4)]" } }} />
+            </SignedIn>
+        </div>
+    </header>
   );
 };
 
-export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUser }) => {
+export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUser, onOpenProfile }) => {
     const [isSpinning, setIsSpinning] = useState(false);
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [isRequestsOpen, setIsRequestsOpen] = useState(false);
-    const [viewingUserId, setViewingUserId] = useState<string | null>(null);
 
     const toggleNotifications = (v: boolean) => {
         setIsNotificationsOpen(v);
-        if (v) {
-            setIsRequestsOpen(false);
-            setIsProfileOpen(false);
-        }
+        if (v) setIsRequestsOpen(false);
     };
 
     const toggleRequests = (v: boolean) => {
         setIsRequestsOpen(v);
-        if (v) {
-            setIsNotificationsOpen(false);
-            setIsProfileOpen(false);
-        }
+        if (v) setIsNotificationsOpen(false);
     };
 
     const handleGoToInbox = (targetId: string) => {
         if(onOpenChatWithUser) onOpenChatWithUser(targetId);
+    };
+
+    const handleShowUser = (targetId: string) => {
+        if(onOpenProfile) onOpenProfile(targetId);
     };
 
     return (
@@ -383,14 +401,13 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUse
             <div className="flex items-center gap-2.5">
                 <SignedIn>
                     <div className="flex items-center gap-2.5">
-                        <RequestHub isOpen={isRequestsOpen} setIsOpen={toggleRequests} onShowUser={setViewingUserId} />
-                        <NotificationHub isOpen={isNotificationsOpen} setIsOpen={toggleNotifications} onShowUser={setViewingUserId} onGoToInbox={handleGoToInbox} />
+                        <RequestHub isOpen={isRequestsOpen} setIsOpen={toggleRequests} onShowUser={handleShowUser} />
+                        <NotificationHub isOpen={isNotificationsOpen} setIsOpen={toggleNotifications} onShowUser={handleShowUser} onGoToInbox={handleGoToInbox} />
                         <UserButton appearance={{ elements: { userButtonAvatarBox: "w-10 h-10 border-2 border-red-600" } }} />
                     </div>
                 </SignedIn>
                 <SignedOut><SignInButton mode="modal"><button className="text-[9px] font-black text-red-500 uppercase tracking-widest bg-red-600/10 px-4 py-2 rounded-lg border border-red-600/30">Verify</button></SignInButton></SignedOut>
             </div>
-            <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
         </header>
     );
 };

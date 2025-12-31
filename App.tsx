@@ -25,6 +25,7 @@ import { VideoPipPlayer } from './components/VideoPipPlayer';
 import { ServiceSelectionModal } from './components/ServiceSelectionModal';
 import { YouTubeRedirectPopup } from './components/YouTubeRedirectPopup';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
+import { ProfileModal } from './components/ProfileModal';
 
 const firebaseConfig = {
   databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
@@ -88,6 +89,7 @@ export default function App() {
   const [isServicesPopupOpen, setIsServicesPopupOpen] = useState(false);
   const [isCommunityChatOpen, setIsCommunityChatOpen] = useState(false);
   const [targetUserId, setTargetUserId] = useState<string | null>(null);
+  const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   const [isYouTubeRedirectOpen, setIsYouTubeRedirectOpen] = useState(false);
   const [isNavVisible, setIsNavVisible] = useState(true);
   const idleTimeoutRef = useRef<number | null>(null);
@@ -97,7 +99,7 @@ export default function App() {
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
-  const isAnyOverlayActive = !!(modalState || isGalleryGridOpen || isServicesPopupOpen || isYouTubeRedirectOpen || contextMenu || isCommunityChatOpen);
+  const isAnyOverlayActive = !!(modalState || isGalleryGridOpen || isServicesPopupOpen || isYouTubeRedirectOpen || contextMenu || isCommunityChatOpen || viewingProfileId);
 
   useEffect(() => {
     if (!(window as any).YT) {
@@ -143,7 +145,8 @@ export default function App() {
       <div className="text-white min-h-screen bg-black" onContextMenu={e => { e.preventDefault(); if(!isAnyOverlayActive) setContextMenu({ x: e.clientX, y: e.clientY }); }}>
           <VFXBackground /><MediaGridBackground />
           <div className={`transition-all fixed top-0 left-0 right-0 z-50 ${(isNavVisible) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
-            <DesktopHeader onScrollTo={handleScrollTo} onOpenChatWithUser={handleOpenChat} /><MobileHeader onScrollTo={handleScrollTo} onOpenChatWithUser={handleOpenChat} />
+            <DesktopHeader onScrollTo={handleScrollTo} onOpenChatWithUser={handleOpenChat} onOpenProfile={setViewingProfileId} />
+            <MobileHeader onScrollTo={handleScrollTo} onOpenChatWithUser={handleOpenChat} onOpenProfile={setViewingProfileId} />
           </div>
           
           {isSignedIn && user && <MessageToaster userId={user.id} onOpenChat={handleOpenChat} />}
@@ -168,6 +171,8 @@ export default function App() {
                 </motion.div>
             )}
           </AnimatePresence>
+
+          <ProfileModal isOpen={!!viewingProfileId} onClose={() => setViewingProfileId(null)} viewingUserId={viewingProfileId} />
 
           {modalState && <ModalViewer state={modalState} onClose={() => setModalState(null)} onNext={() => setModalState(s => s ? {...s, currentIndex: (s.currentIndex+1)%s.items.length} : null)} onPrev={() => setModalState(s => s ? {...s, currentIndex: (s.currentIndex-1+s.items.length)%s.items.length} : null)} />}
           {isServicesPopupOpen && <ServicesListPopup onClose={() => setIsServicesPopupOpen(false)} />}
