@@ -1,10 +1,9 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, update, onValue, set, remove, push, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-// Added PlayIcon to the imports from ./Icons to fix the error on line 220
-import { CloseIcon, CheckCircleIcon, UserCircleIcon, SparklesIcon, GlobeAltIcon, CopyIcon, InstagramIcon, FacebookIcon, ChevronRightIcon, TikTokIcon, BehanceIcon, GalleryIcon, ChevronLeftIcon, PlayIcon } from './Icons';
+import { CloseIcon, CheckCircleIcon, UserCircleIcon, SparklesIcon, GlobeAltIcon, CopyIcon, InstagramIcon, FacebookIcon, ChevronRightIcon, TikTokIcon, BehanceIcon, GalleryIcon, ChevronLeftIcon, PlayIcon, PhotoManipulationIcon, SendIcon } from './Icons';
 import { siteConfig } from '../config';
 
 const firebaseConfig = {
@@ -31,6 +30,14 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
     const [targetUser, setTargetUser] = useState<any>(null);
     const [userPosts, setUserPosts] = useState<any[]>([]);
     const [socialState, setSocialState] = useState({ isFollowing: false, friendStatus: 'none', followers: 0, following: 0 });
+
+    // Upload state
+    const [showUploadForm, setShowUploadForm] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [postTitle, setPostTitle] = useState('');
+    const [postCaption, setPostCaption] = useState('');
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [profileData, setProfileData] = useState({
         role: 'Client',
@@ -65,7 +72,6 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                     setSocialState(prev => ({ ...prev, following: Object.keys(snap.val() || {}).length }));
                 });
 
-                // Fetch User's Posts
                 const postsQuery = query(ref(db, 'explore_posts'), orderByChild('userId'), equalTo(loadId));
                 onValue(postsQuery, (snap) => {
                     const data = snap.val();
@@ -93,9 +99,58 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
 
     const handleAction = async (type: 'follow' | 'friend') => {
         if (!clerkUser || !viewingUserId) return;
+        const isTargetAdmin = targetUser?.username === OWNER_HANDLE || targetUser?.username === ADMIN_HANDLE;
+        
         const path = type === 'follow' ? `social/${clerkUser.id}/following/${viewingUserId}` : `social/${clerkUser.id}/requests/sent/${viewingUserId}`;
         await set(ref(db, path), { timestamp: Date.now() });
         if (type === 'friend') setSocialState(prev => ({ ...prev, friendStatus: 'requested' }));
+    };
+
+    const handleUpload = async () => {
+        if (!clerkUser || !selectedFile || !postTitle.trim()) return;
+        setIsUploading(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('folder', 'Explore');
+
+            const uploadRes = await fetch('https://fuadeditingzone.pages.dev/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!uploadRes.ok) throw new Error('Upload failed');
+            const { url } = await uploadRes.json();
+
+            // Extract tags from caption (words starting with #)
+            const tags = postCaption.match(/#\w+/g) || [];
+
+            const postData = {
+                userId: clerkUser.id,
+                userName: clerkUser.fullName || clerkUser.username,
+                userAvatar: clerkUser.imageUrl,
+                mediaUrl: url,
+                mediaType: selectedFile.type.startsWith('video') ? 'video' : 'image',
+                title: postTitle.trim(),
+                caption: postCaption.trim(),
+                tags: tags,
+                timestamp: Date.now()
+            };
+
+            await push(ref(db, 'explore_posts'), postData);
+            
+            // Success cleanup
+            setPostTitle('');
+            setPostCaption('');
+            setSelectedFile(null);
+            setShowUploadForm(false);
+        } catch (err) {
+            console.error(err);
+            alert("Protocol Failure: Check R2 Worker Link.");
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     const copyProfileLink = () => {
@@ -180,9 +235,9 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                         </div>
 
                                         <div className="flex justify-center md:justify-start gap-12">
-                                            <div><p className="text-lg font-black text-white">{userPosts.length}</p><p className="text-[10px] text-zinc-500 uppercase font-black">Posts</p></div>
-                                            <div><p className="text-lg font-black text-white">{socialState.followers}</p><p className="text-[10px] text-zinc-500 uppercase font-black">Followers</p></div>
-                                            <div><p className="text-lg font-black text-white">{socialState.following}</p><p className="text-[10px] text-zinc-500 uppercase font-black">Following</p></div>
+                                            <div><p className="text-lg font-black text-white">{userPosts.length}</p><p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Posts</p></div>
+                                            <div><p className="text-lg font-black text-white">{socialState.followers}</p><p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Followers</p></div>
+                                            <div><p className="text-lg font-black text-white">{socialState.following}</p><p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Following</p></div>
                                         </div>
 
                                         <div className="space-y-1">
@@ -204,28 +259,89 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                 </div>
 
                                 {/* Tab Content Container */}
-                                <div className="min-h-[300px]">
+                                <div className="min-h-[300px] pb-10">
                                     {activeTab === 'posts' && (
-                                        <div className="grid grid-cols-3 gap-1 md:gap-4">
-                                            {userPosts.length === 0 ? (
-                                                <div className="col-span-3 py-20 text-center flex flex-col items-center gap-4 opacity-20">
-                                                    <GalleryIcon className="w-16 h-16" />
-                                                    <p className="text-xs font-black uppercase tracking-widest">No Signals Detected</p>
-                                                </div>
-                                            ) : (
-                                                userPosts.map((post, i) => (
-                                                    <div key={i} className="aspect-square bg-white/5 rounded-lg overflow-hidden group relative cursor-pointer border border-white/5">
-                                                        {post.mediaType === 'video' ? (
-                                                            <div className="w-full h-full relative">
-                                                                <video src={post.mediaUrl} className="w-full h-full object-cover" />
-                                                                <PlayIcon className="absolute top-2 right-2 w-4 h-4 text-white opacity-80" />
+                                        <div className="space-y-8">
+                                            {!isViewingOther && (
+                                                <div className="flex justify-center">
+                                                    {!showUploadForm ? (
+                                                        <button 
+                                                            onClick={() => setShowUploadForm(true)}
+                                                            className="flex items-center gap-3 bg-red-600 text-white font-black py-4 px-10 rounded-2xl uppercase text-[10px] tracking-widest shadow-2xl hover:bg-red-700 transition-all"
+                                                        >
+                                                            <SparklesIcon className="w-4 h-4" /> New Signal
+                                                        </button>
+                                                    ) : (
+                                                        <motion.div 
+                                                            initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+                                                            className="w-full max-w-md bg-white/5 border border-white/10 rounded-[2rem] p-6 space-y-4"
+                                                        >
+                                                            <div className="flex justify-between items-center mb-2">
+                                                                <span className="text-[10px] font-black text-white uppercase tracking-widest">Post Protocol</span>
+                                                                <button onClick={() => setShowUploadForm(false)} className="p-1 hover:bg-white/10 rounded-full transition-all"><CloseIcon className="w-4 h-4 text-zinc-500" /></button>
                                                             </div>
-                                                        ) : (
-                                                            <img src={post.mediaUrl} className="w-full h-full object-cover" />
-                                                        )}
-                                                    </div>
-                                                ))
+                                                            <input 
+                                                                value={postTitle} 
+                                                                onChange={e => setPostTitle(e.target.value)} 
+                                                                placeholder="Project Title" 
+                                                                className="w-full bg-black border border-white/10 rounded-xl p-4 text-sm text-white outline-none focus:border-red-600 transition-all"
+                                                            />
+                                                            <textarea 
+                                                                value={postCaption} 
+                                                                onChange={e => setPostCaption(e.target.value)} 
+                                                                placeholder="Caption & #tags..." 
+                                                                className="w-full bg-black border border-white/10 rounded-xl p-4 text-sm text-white outline-none resize-none h-24 focus:border-red-600 transition-all"
+                                                            />
+                                                            <div className="flex gap-2">
+                                                                <input type="file" hidden ref={fileInputRef} accept="image/*,video/*" onChange={e => setSelectedFile(e.target.files?.[0] || null)} />
+                                                                <button 
+                                                                    onClick={() => fileInputRef.current?.click()}
+                                                                    className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border transition-all text-[10px] font-black uppercase ${selectedFile ? 'bg-green-600/20 border-green-600/40 text-green-500' : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10'}`}
+                                                                >
+                                                                    <PhotoManipulationIcon className="w-4 h-4" /> {selectedFile ? 'Ready' : 'Choose Media'}
+                                                                </button>
+                                                                <button 
+                                                                    disabled={isUploading || !selectedFile || !postTitle}
+                                                                    onClick={handleUpload}
+                                                                    className="flex-1 bg-red-600 text-white p-4 rounded-xl font-black uppercase tracking-widest text-[10px] disabled:opacity-50 flex items-center justify-center gap-2"
+                                                                >
+                                                                    {isUploading ? 'Uploading...' : <><SendIcon className="w-3.5 h-3.5" /> Upload</>}
+                                                                </button>
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </div>
                                             )}
+
+                                            <div className="grid grid-cols-3 gap-1 md:gap-4">
+                                                {userPosts.length === 0 ? (
+                                                    <div className="col-span-3 py-20 text-center flex flex-col items-center gap-4 opacity-20">
+                                                        <GalleryIcon className="w-16 h-16" />
+                                                        <p className="text-xs font-black uppercase tracking-widest">No Signals Detected</p>
+                                                    </div>
+                                                ) : (
+                                                    userPosts.map((post, i) => (
+                                                        <div key={i} className="aspect-square bg-white/5 rounded-lg overflow-hidden group relative cursor-pointer border border-white/5">
+                                                            {post.mediaType === 'video' ? (
+                                                                <div className="w-full h-full relative">
+                                                                    <video src={post.mediaUrl} className="w-full h-full object-cover" />
+                                                                    <PlayIcon className="absolute top-2 right-2 w-4 h-4 text-white opacity-80" />
+                                                                </div>
+                                                            ) : (
+                                                                <img src={post.mediaUrl} className="w-full h-full object-cover" />
+                                                            )}
+                                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4 text-center">
+                                                                <p className="text-[10px] font-black text-white uppercase tracking-tighter line-clamp-2 mb-1">{post.title}</p>
+                                                                <div className="flex flex-wrap justify-center gap-1">
+                                                                    {post.tags?.slice(0, 2).map((tag: string) => (
+                                                                        <span key={tag} className="text-[7px] text-red-500 font-bold uppercase">{tag}</span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
                                         </div>
                                     )}
 
@@ -234,9 +350,9 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                             <div className="p-8 bg-white/5 rounded-[2rem] border border-white/10 shadow-inner">
                                                 <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-4">Identity Bio</p>
                                                 {isViewingOther ? (
-                                                    <p className="text-white text-lg italic italic leading-relaxed">"{profileData.bio || '...'}"</p>
+                                                    <p className="text-white text-lg italic leading-relaxed">"{profileData.bio || '...'}"</p>
                                                 ) : (
-                                                    <textarea value={profileData.bio} onChange={e => setProfileData({...profileData, bio: e.target.value})} className="bg-transparent text-white text-lg w-full resize-none outline-none italic" rows={4} placeholder="Establishing frequency..." />
+                                                    <textarea value={profileData.bio} onChange={e => setProfileData({...profileData, bio: e.target.value})} className="bg-transparent text-white text-lg w-full resize-none outline-none italic custom-scrollbar" rows={4} placeholder="Establishing frequency..." />
                                                 )}
                                             </div>
                                             {!isViewingOther && (
@@ -250,7 +366,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                             <div className="p-6 bg-white/5 rounded-2xl border border-white/10">
                                                 <p className="text-[10px] text-zinc-500 font-black uppercase mb-2">Category</p>
                                                 {!isViewingOther ? (
-                                                    <select value={profileData.role} onChange={e => setProfileData({...profileData, role: e.target.value})} className="bg-transparent text-white font-black w-full outline-none">
+                                                    <select value={profileData.role} onChange={e => setProfileData({...profileData, role: e.target.value})} className="bg-transparent text-white font-black w-full outline-none appearance-none">
                                                         <option value="Client">Client</option>
                                                         <option value="Designer">Designer</option>
                                                         <option value="Editor">Editor</option>
