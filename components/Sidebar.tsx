@@ -10,7 +10,6 @@ import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.
 import { getDatabase, ref, onValue, set, remove, push, update, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { siteConfig } from '../config';
 import { HomeIcon, BriefcaseIcon, VfxIcon, UserCircleIcon, ChatBubbleIcon, SparklesIcon, CloseIcon, CheckCircleIcon } from './Icons';
-import { ProfileModal } from './ProfileModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const firebaseConfig = {
@@ -57,15 +56,6 @@ const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; o
         });
     }, [user]);
 
-    useEffect(() => {
-        if (isOpen && window.innerWidth < 768) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => { document.body.style.overflow = 'unset'; };
-    }, [isOpen]);
-
     const handleAction = async (targetId: string, action: 'accept' | 'reject' | 'cancel') => {
         if (!user) return;
         if (action === 'accept') {
@@ -87,16 +77,11 @@ const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; o
                 timestamp: Date.now(),
                 read: false
             });
-        } else if (action === 'reject') {
-            await remove(ref(db, `social/${user.id}/requests/received/${targetId}`));
-            await remove(ref(db, `social/${targetId}/requests/sent/${user.id}`));
-        } else if (action === 'cancel') {
-            await remove(ref(db, `social/${user.id}/requests/sent/${targetId}`));
-            await remove(ref(db, `social/${targetId}/requests/received/${user.id}`));
+        } else {
+            await remove(ref(db, `social/${user.id}/requests/${action === 'reject' ? 'received' : 'sent'}/${targetId}`));
+            await remove(ref(db, `social/${targetId}/requests/${action === 'reject' ? 'sent' : 'received'}/${user.id}`));
         }
     };
-
-    const FIVE_HOURS = 5 * 60 * 60 * 1000;
 
     return (
         <div className="relative">
@@ -106,60 +91,28 @@ const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; o
             </button>
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-1/2 md:top-full -translate-y-1/2 md:translate-y-0 md:mt-4 w-auto md:w-[380px] bg-[#0a0a0a] border border-white/10 rounded-[2rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden z-[999999]">
-                        <div className="p-6 border-b border-white/5 bg-black/40 flex justify-between items-center">
-                            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Neural Handshakes</span>
-                            <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors"><CloseIcon className="w-5 h-5 text-gray-500" /></button>
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-1/2 md:top-full -translate-y-1/2 md:translate-y-0 md:mt-4 w-auto md:w-[320px] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[999999]">
+                        <div className="p-5 border-b border-white/5 bg-black flex justify-between items-center">
+                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Friend Requests</span>
+                            <button onClick={() => setIsOpen(false)}><CloseIcon className="w-5 h-5 text-gray-500" /></button>
                         </div>
-                        <div className="max-h-[60dvh] md:max-h-[450px] overflow-y-auto custom-scrollbar p-6 space-y-8 bg-[#080808]/50">
-                            <div>
-                                <h4 className="text-[9px] font-black text-red-600 uppercase tracking-[0.3em] mb-5 flex items-center gap-2">
-                                    <span className="w-8 h-px bg-red-600/30"></span> Incoming ({requests.received.length})
-                                </h4>
-                                {requests.received.length === 0 ? (
-                                    <div className="py-10 text-center opacity-20">
-                                        <i className="fa-solid fa-satellite-dish text-3xl mb-3"></i>
-                                        <p className="text-[10px] uppercase font-black tracking-widest leading-relaxed">No handshakes found</p>
-                                    </div>
-                                ) : (
-                                    requests.received.map(r => (
-                                        <div key={r.id} onClick={() => onShowUser(r.id)} className="flex items-center gap-4 mb-4 bg-white/5 p-4 rounded-3xl border border-white/5 shadow-inner cursor-pointer hover:border-red-600/30 transition-all">
-                                            <img src={r.avatar} className="w-12 h-12 rounded-2xl object-cover ring-2 ring-white/5 shadow-lg flex-shrink-0" />
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-[12px] font-black text-white uppercase truncate">{r.name}</p>
-                                                <p className="text-[10px] text-gray-500 font-bold">@{r.username}</p>
-                                            </div>
-                                            <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                                                <button onClick={() => handleAction(r.id, 'accept')} className="bg-red-600 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-red-700 transition-all shadow-lg active:scale-90 flex-shrink-0"><CheckCircleIcon className="w-5 h-5" /></button>
-                                                <button onClick={() => handleAction(r.id, 'reject')} className="bg-white/10 text-gray-400 w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-all active:scale-90 flex-shrink-0"><CloseIcon className="w-5 h-5" /></button>
-                                            </div>
+                        <div className="max-h-[350px] overflow-y-auto custom-scrollbar p-4 space-y-4">
+                            {requests.received.length === 0 ? (
+                                <p className="text-[9px] uppercase font-black tracking-widest text-zinc-600 text-center py-8">No Incoming Signals</p>
+                            ) : (
+                                requests.received.map(r => (
+                                    <div key={r.id} onClick={() => onShowUser(r.id)} className="flex items-center gap-3 bg-white/5 p-3 rounded-xl cursor-pointer hover:border-red-600/30 transition-all border border-transparent">
+                                        <img src={r.avatar} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[11px] font-black text-white uppercase truncate">{r.name}</p>
+                                            <p className="text-[9px] text-gray-500">@{r.username}</p>
                                         </div>
-                                    ))
-                                )}
-                            </div>
-                            {requests.sent.length > 0 && (
-                                <div className="border-t border-white/5 pt-6">
-                                    <h4 className="text-[9px] font-black text-gray-600 uppercase tracking-[0.3em] mb-5 flex items-center gap-2">
-                                        <span className="w-8 h-px bg-gray-700/50"></span> Sent Handshakes ({requests.sent.length})
-                                    </h4>
-                                    {requests.sent.map(s => {
-                                        const canRevoke = (Date.now() - s.timestamp) >= FIVE_HOURS;
-                                        return (
-                                            <div key={s.id} className="flex items-center gap-4 mb-4 opacity-70 hover:opacity-100 transition-opacity">
-                                                <img src={s.avatar} className="w-10 h-10 rounded-xl object-cover grayscale-[0.5] flex-shrink-0" />
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-[11px] font-black text-white uppercase truncate">{s.name}</p>
-                                                    <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">
-                                                        {canRevoke ? 'Signal Locked' : 'Locked for 5h'}
-                                                    </p>
-                                                </div>
-                                                {canRevoke && (
-                                                    <button onClick={() => handleAction(s.id, 'cancel')} className="text-[9px] font-black text-red-500 uppercase hover:underline tracking-widest">Revoke</button>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                        <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                                            <button onClick={() => handleAction(r.id, 'accept')} className="bg-red-600 text-white w-8 h-8 rounded-lg flex items-center justify-center"><CheckCircleIcon className="w-4 h-4" /></button>
+                                            <button onClick={() => handleAction(r.id, 'reject')} className="bg-white/10 text-gray-400 w-8 h-8 rounded-lg flex items-center justify-center"><CloseIcon className="w-4 h-4" /></button>
+                                        </div>
+                                    </div>
+                                ))
                             )}
                         </div>
                     </motion.div>
@@ -186,31 +139,15 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
         });
     }, [user]);
 
-    useEffect(() => {
-        if (isOpen && window.innerWidth < 768) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => { document.body.style.overflow = 'unset'; };
-    }, [isOpen]);
-
     const markAsRead = async (id: string) => {
         if (!user) return;
         await update(ref(db, `notifications/${user.id}/${id}`), { read: true });
     };
 
-    const clearAll = async () => {
-        if (!user) return;
-        await remove(ref(db, `notifications/${user.id}`));
-    };
-
     const handleOrderAction = async (notif: any, action: 'accept' | 'reject') => {
         if (!user) return;
         let reason = "";
-        if (action === 'reject') {
-            reason = prompt("Reason for rejection:") || "Capacity limits reached.";
-        }
+        if (action === 'reject') reason = prompt("Reason for rejection:") || "Policy violation.";
         
         await update(ref(db, `orders/${notif.fromId}/${notif.orderKey}`), { 
             status: action === 'accept' ? 'Accepted' : 'Rejected',
@@ -230,77 +167,53 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
         });
 
         const chatPath = `messages/${[user.id, notif.fromId].sort().join('_')}`;
-        const cardText = `[ORDER STATUS UPDATE]\nProject: ${notif.orderName}\nStatus: ${action === 'accept' ? 'ACCEPTED' : 'REJECTED'}${reason ? '\nReason: ' + reason : ''}\nTime: ${new Date().toLocaleString()}`;
         await push(ref(db, chatPath), {
-            senderId: user.id,
-            senderName: "Fuad Editing Zone",
-            senderAvatar: siteConfig.branding.logoUrl,
-            text: cardText,
+            senderId: user.id, senderName: "Fuad Editing Zone", senderAvatar: siteConfig.branding.logoUrl,
+            text: `[ORDER UPDATE]\nProject: ${notif.orderName}\nStatus: ${action === 'accept' ? 'ACCEPTED' : 'REJECTED'}${reason ? '\nReason: ' + reason : ''}`,
             timestamp: Date.now()
         });
-
         await remove(ref(db, `notifications/${user.id}/${notif.id}`));
     };
 
     const handleNotificationClick = (n: any) => {
-        if (n.type === 'request_accepted' || n.type === 'friend_request') {
-            onShowUser(n.fromId);
-        } else if (n.type === 'order_accepted' || n.type === 'order_rejected') {
-            onGoToInbox(OWNER_HANDLE);
-        } else if (n.type === 'new_order') {
-            onGoToInbox(n.fromId);
-        }
+        if (n.type === 'request_accepted' || n.type === 'friend_request') onShowUser(n.fromId);
+        else if (['order_accepted', 'order_rejected', 'new_order'].includes(n.type)) onGoToInbox(isOwner && n.type === 'new_order' ? n.fromId : OWNER_HANDLE);
         markAsRead(n.id);
         setIsOpen(false);
     };
-
-    const unreadCount = notifications.filter(n => !n.read).length;
 
     return (
         <div className="relative">
             <button onClick={() => setIsOpen(!isOpen)} className="relative p-2.5 rounded-xl bg-white/5 hover:bg-red-600/10 border border-white/5 transition-all text-gray-400 hover:text-red-500">
                 <i className="fa-solid fa-bell text-[16px]"></i>
-                {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full animate-pulse border-2 border-black"></span>}
+                {notifications.some(n => !n.read) && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border-2 border-black animate-pulse"></span>}
             </button>
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-1/2 md:top-full -translate-y-1/2 md:translate-y-0 md:mt-4 w-auto md:w-[380px] bg-[#0a0a0a] border border-white/10 rounded-[2rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden z-[999999]">
-                        <div className="p-6 border-b border-white/5 bg-black/40 flex justify-between items-center flex-shrink-0">
-                            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Notifications</span>
-                            <button onClick={clearAll} className="text-[9px] font-black text-gray-500 uppercase hover:text-red-500 tracking-widest transition-colors">Clear All</button>
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-1/2 md:top-full -translate-y-1/2 md:translate-y-0 md:mt-4 w-auto md:w-[320px] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[999999]">
+                        <div className="p-5 border-b border-white/5 bg-black flex justify-between items-center">
+                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Notifications</span>
+                            <button onClick={() => setIsOpen(false)}><CloseIcon className="w-5 h-5 text-gray-500" /></button>
                         </div>
-                        <div className="max-h-[60dvh] md:max-h-[450px] overflow-y-auto custom-scrollbar p-3 bg-[#080808]/50 min-h-0">
+                        <div className="max-h-[350px] overflow-y-auto custom-scrollbar p-3 space-y-2">
                             {notifications.length === 0 ? (
-                                <div className="p-16 text-center opacity-10 flex flex-col items-center gap-5">
-                                    <SparklesIcon className="w-12 h-12" />
-                                    <p className="text-[10px] font-black uppercase tracking-[0.4em]">Grid Silent</p>
-                                </div>
+                                <p className="text-[9px] uppercase font-black tracking-widest text-zinc-600 text-center py-8">Grid Silent</p>
                             ) : (
                                 notifications.map((n) => (
-                                    <div key={n.id} onClick={() => handleNotificationClick(n)} className={`p-5 mb-2 rounded-3xl transition-all cursor-pointer flex flex-col gap-4 border border-transparent ${!n.read ? 'bg-red-600/5 border-red-600/10' : 'hover:bg-white/5 opacity-60'}`}>
-                                        <div className="flex items-start gap-4 min-w-0">
-                                            <img src={n.fromAvatar} className="w-11 h-11 rounded-2xl object-cover flex-shrink-0 shadow-lg ring-2 ring-white/5" />
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-[12px] text-gray-200 leading-tight break-words">
-                                                    <span className="font-black text-white uppercase mr-1">{n.fromName}</span>
-                                                    {n.type === 'follow' && 'started following you.'}
-                                                    {n.type === 'friend_request' && 'sent you a friend request.'}
-                                                    {n.type === 'request_accepted' && 'accepted your friend request.'}
-                                                    {n.type === 'new_order' && `placed a new order: "${n.orderName}"`}
-                                                    {n.type === 'order_accepted' && `accepted your order for "${n.orderName}"`}
-                                                    {n.type === 'order_rejected' && `could not accept your order for "${n.orderName}"${n.reason ? ': ' + n.reason : ''}`}
+                                    <div key={n.id} onClick={() => handleNotificationClick(n)} className={`p-4 rounded-xl cursor-pointer transition-all ${!n.read ? 'bg-red-600/5' : 'opacity-50 hover:opacity-100'}`}>
+                                        <div className="flex gap-3">
+                                            <img src={n.fromAvatar} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[11px] text-gray-200 leading-tight">
+                                                    <span className="font-black text-white">{n.fromName}</span> {n.type.replace('_', ' ')}
                                                 </p>
-                                                <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-2 flex items-center gap-2">
-                                                    <i className="fa-solid fa-clock opacity-50"></i>
-                                                    {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </p>
+                                                <p className="text-[8px] text-zinc-600 mt-1 uppercase font-bold">{new Date(n.timestamp).toLocaleTimeString()}</p>
                                             </div>
-                                            {!n.read && <div className="w-2 h-2 bg-red-600 rounded-full mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(220,38,38,1)]"></div>}
                                         </div>
                                         {n.type === 'new_order' && isOwner && (
-                                            <div className="flex gap-2 w-full pt-1">
-                                                <button onClick={(e) => { e.stopPropagation(); handleOrderAction(n, 'accept'); }} className="flex-1 py-3 bg-red-600 text-white font-black uppercase text-[9px] tracking-widest rounded-xl hover:bg-red-700 transition-all">Accept</button>
-                                                <button onClick={(e) => { e.stopPropagation(); handleOrderAction(n, 'reject'); }} className="flex-1 py-3 bg-white/5 text-gray-400 font-black uppercase text-[9px] tracking-widest rounded-xl hover:bg-white/10 transition-all">Reject</button>
+                                            <div className="flex gap-2 mt-3" onClick={e => e.stopPropagation()}>
+                                                <button onClick={() => handleOrderAction(n, 'accept')} className="flex-1 py-2 bg-red-600 text-white text-[8px] font-black uppercase rounded-lg">Accept</button>
+                                                <button onClick={() => handleOrderAction(n, 'reject')} className="flex-1 py-2 bg-white/5 text-gray-400 text-[8px] font-black uppercase rounded-lg">Reject</button>
                                             </div>
                                         )}
                                     </div>
@@ -315,54 +228,40 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
 };
 
 const NavLink: React.FC<{ onClick: () => void; children: React.ReactNode }> = ({ onClick, children }) => (
-    <button onClick={onClick} className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-all duration-300 px-4 py-2 hover:translate-y-[-1px] active:translate-y-[1px]">
+    <button onClick={onClick} className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-all px-4 py-2 hover:translate-y-[-1px]">
         {children}
     </button>
 );
 
 export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUser, onOpenProfile }) => {
-  const [isSpinning, setIsSpinning] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
 
-  const handleGoToInbox = (targetId: string) => {
-      if(onOpenChatWithUser) onOpenChatWithUser(targetId);
-  };
-
-  const handleShowUser = (targetId: string) => {
-      if(onOpenProfile) onOpenProfile(targetId);
-  };
-
   return (
     <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-20 px-10 bg-black/40 backdrop-blur-md border-b border-white/5">
-        <div onClick={() => { setIsSpinning(true); onScrollTo('home'); setTimeout(() => setIsSpinning(false), 2000); }} className="cursor-pointer group flex items-center gap-4">
-            <div className="relative">
-                <div className="absolute -inset-1 bg-red-600/20 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <img src={siteConfig.branding.logoUrl} alt="Logo" className={`h-10 w-10 rounded-full relative z-10 ${isSpinning ? 'logo-3d-spin' : ''}`} />
-            </div>
+        <div onClick={() => onScrollTo('home')} className="cursor-pointer flex items-center gap-4">
+            <img src={siteConfig.branding.logoUrl} alt="Logo" className="h-10 w-10 rounded-full" />
              <h1 className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</h1>
         </div>
         <nav className="flex items-center gap-2">
             <NavLink onClick={() => onScrollTo('home')}>Home</NavLink>
-            <NavLink onClick={() => onScrollTo('portfolio')}>Video</NavLink>
-            <NavLink onClick={() => onScrollTo('graphic-design')}>Graphic</NavLink>
-            <NavLink onClick={() => onScrollTo('video-editing')}>VFX</NavLink>
-            <NavLink onClick={() => onScrollTo('about')}>About</NavLink>
+            <NavLink onClick={() => onScrollTo('portfolio')}>Work</NavLink>
             <NavLink onClick={() => onScrollTo('contact')}>Order</NavLink>
         </nav>
         <div className="flex items-center gap-4">
             <SignedIn>
               <div className="flex items-center gap-3 border-r border-white/10 pr-6">
-                  <RequestHub isOpen={isRequestsOpen} setIsOpen={(v) => { setIsRequestsOpen(v); if(v) setIsNotificationsOpen(false); }} onShowUser={handleShowUser} />
-                  <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); if(v) setIsRequestsOpen(false); }} onShowUser={handleShowUser} onGoToInbox={handleGoToInbox} />
+                  <RequestHub isOpen={isRequestsOpen} setIsOpen={setIsRequestsOpen} onShowUser={onOpenProfile!} />
+                  <NotificationHub isOpen={isNotificationsOpen} setIsOpen={setIsNotificationsOpen} onShowUser={onOpenProfile!} onGoToInbox={onOpenChatWithUser!} />
+                  <button onClick={() => onOpenProfile!(useUser().user?.id!)} className="p-2.5 rounded-xl bg-white/5 hover:bg-red-600/10 border border-white/5 transition-all text-gray-400 hover:text-red-500"><i className="fa-solid fa-gear"></i></button>
               </div>
             </SignedIn>
             <SignedOut>
-              <SignInButton mode="modal"><button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.4em] transition-all">Log In</button></SignInButton>
-              <button onClick={() => onScrollTo('contact')} className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2.5 uppercase tracking-[0.3em] transition-all shadow-lg">Order Now</button>
+              <SignInButton mode="modal"><button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.4em]">Log In</button></SignInButton>
+              <button onClick={() => onScrollTo('contact')} className="bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2.5 uppercase tracking-[0.3em] transition-all shadow-lg rounded-xl">Order Now</button>
             </SignedOut>
             <SignedIn>
-              <UserButton appearance={{ elements: { userButtonAvatarBox: "w-11 h-11 border-[3px] border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.4)]" } }} />
+              <UserButton appearance={{ elements: { userButtonAvatarBox: "w-11 h-11 border-[3px] border-red-600 shadow-xl" } }} />
             </SignedIn>
         </div>
     </header>
@@ -370,41 +269,20 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUs
 };
 
 export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUser, onOpenProfile }) => {
-    const [isSpinning, setIsSpinning] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [isRequestsOpen, setIsRequestsOpen] = useState(false);
 
-    const toggleNotifications = (v: boolean) => {
-        setIsNotificationsOpen(v);
-        if (v) setIsRequestsOpen(false);
-    };
-
-    const toggleRequests = (v: boolean) => {
-        setIsRequestsOpen(v);
-        if (v) setIsNotificationsOpen(false);
-    };
-
-    const handleGoToInbox = (targetId: string) => {
-        if(onOpenChatWithUser) onOpenChatWithUser(targetId);
-    };
-
-    const handleShowUser = (targetId: string) => {
-        if(onOpenProfile) onOpenProfile(targetId);
-    };
-
     return (
-        <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-[9999] h-20 px-6 select-none bg-transparent">
-            <div onClick={() => { setIsSpinning(true); onScrollTo('home'); setTimeout(() => setIsSpinning(false), 2000); }} className="flex items-center gap-3">
-                <img src={siteConfig.branding.logoUrl} alt="Logo" className={`h-9 w-9 rounded-full ${isSpinning ? 'logo-3d-spin' : ''}`} />
-                <span className="font-black text-white tracking-widest text-[10px] uppercase leading-none">FUAD EDITING ZONE</span>
+        <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-[9999] h-20 px-6 bg-transparent">
+            <div onClick={() => onScrollTo('home')} className="flex items-center gap-3">
+                <img src={siteConfig.branding.logoUrl} alt="Logo" className="h-9 w-9 rounded-full" />
+                <span className="font-black text-white tracking-widest text-[10px] uppercase">FEZ ZONE</span>
             </div>
             <div className="flex items-center gap-2.5">
                 <SignedIn>
-                    <div className="flex items-center gap-2.5">
-                        <RequestHub isOpen={isRequestsOpen} setIsOpen={toggleRequests} onShowUser={handleShowUser} />
-                        <NotificationHub isOpen={isNotificationsOpen} setIsOpen={toggleNotifications} onShowUser={handleShowUser} onGoToInbox={handleGoToInbox} />
-                        <UserButton appearance={{ elements: { userButtonAvatarBox: "w-10 h-10 border-2 border-red-600" } }} />
-                    </div>
+                    <RequestHub isOpen={isRequestsOpen} setIsOpen={setIsRequestsOpen} onShowUser={onOpenProfile!} />
+                    <NotificationHub isOpen={isNotificationsOpen} setIsOpen={setIsNotificationsOpen} onShowUser={onOpenProfile!} onGoToInbox={onOpenChatWithUser!} />
+                    <UserButton />
                 </SignedIn>
                 <SignedOut><SignInButton mode="modal"><button className="text-[9px] font-black text-red-500 uppercase tracking-widest bg-red-600/10 px-4 py-2 rounded-lg border border-red-600/30">Verify</button></SignInButton></SignedOut>
             </div>
@@ -412,21 +290,11 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUse
     );
 };
 
-const FooterNavLink: React.FC<{ icon: React.ReactNode, label: string, onClick: () => void }> = ({ icon, label, onClick }) => (
-    <button onClick={onClick} className="flex flex-col items-center justify-center gap-1.5 text-gray-500 hover:text-red-500 transition-all duration-300 w-16 group">
-        <div className="group-hover:scale-110 transition-transform">{icon}</div>
-        <span className="text-[8px] font-black uppercase tracking-wider">{label}</span>
-    </button>
+export const MobileFooterNav: React.FC<{ onScrollTo: (target: any) => void }> = ({ onScrollTo }) => (
+    <nav className="md:hidden fixed bottom-6 left-6 right-6 z-40 bg-black/80 backdrop-blur-3xl rounded-[2rem] h-16 flex justify-around items-center shadow-2xl border border-white/10">
+        <button onClick={() => onScrollTo('home')}><HomeIcon className="w-5 h-5" /></button>
+        <button onClick={() => onScrollTo('portfolio')}><BriefcaseIcon className="w-5 h-5" /></button>
+        <button onClick={() => onScrollTo('video-editing')}><VfxIcon className="w-5 h-5" /></button>
+        <button onClick={() => onScrollTo('contact')}><ChatBubbleIcon className="w-5 h-5" /></button>
+    </nav>
 );
-
-export const MobileFooterNav: React.FC<{ onScrollTo: (section: 'home' | 'portfolio' | 'graphic-design' | 'contact' | 'video-editing' | 'about') => void; }> = ({ onScrollTo }) => {
-    return (
-        <nav className="md:hidden fixed bottom-6 left-6 right-6 z-40 bg-black/80 backdrop-blur-3xl rounded-[2rem] h-18 flex justify-around items-center shadow-2xl border border-white/10 p-2">
-            <FooterNavLink icon={<HomeIcon className="w-5 h-5" />} label="Home" onClick={() => onScrollTo('home')} />
-            <FooterNavLink icon={<BriefcaseIcon className="w-5 h-5" />} label="Graphic" onClick={() => onScrollTo('graphic-design')} />
-            <FooterNavLink icon={<VfxIcon className="w-5 h-5" />} label="VFX" onClick={() => onScrollTo('video-editing')} />
-            <FooterNavLink icon={<ChatBubbleIcon className="w-5 h-5" />} label="Order" onClick={() => onScrollTo('contact')} />
-            <FooterNavLink icon={<UserCircleIcon className="w-5 h-5" />} label="About" onClick={() => onScrollTo('about')} />
-        </nav>
-    );
-};
