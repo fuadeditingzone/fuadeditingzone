@@ -88,7 +88,9 @@ const AgentProfileModal: React.FC<{
                 if (s1.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'requested' }));
                 else {
                     onValue(reqRecRef, (s2) => {
-                        if (s2.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'none' }));
+                        // FIX: Updated logic to set friendStatus to 'pending' when a request is found from the target user
+                        if (s2.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'pending' }));
+                        else setSocialState(prev => ({ ...prev, friendStatus: 'none' }));
                     });
                 }
             });
@@ -114,12 +116,15 @@ const AgentProfileModal: React.FC<{
           await set(ref(db, `social/${currentUser.id}/requests/sent/${user.id}`), { timestamp: Date.now() });
           await set(ref(db, `social/${user.id}/requests/received/${currentUser.id}`), { timestamp: Date.now() });
       } else if (socialState.friendStatus === 'pending') {
+          // FIX: Corrected bidirectional friendship logic and replaced undefined targetId with user.id and currentUser.id
           await remove(ref(db, `social/${currentUser.id}/requests/received/${user.id}`));
           await remove(ref(db, `social/${user.id}/requests/sent/${currentUser.id}`));
           await set(ref(db, `social/${currentUser.id}/friends/${user.id}`), true);
           await set(ref(db, `social/${user.id}/friends/${currentUser.id}`), true);
           await set(ref(db, `social/${currentUser.id}/following/${user.id}`), true);
           await set(ref(db, `social/${user.id}/followers/${currentUser.id}`), true);
+          await set(ref(db, `social/${user.id}/following/${currentUser.id}`), true);
+          await set(ref(db, `social/${currentUser.id}/followers/${user.id}`), true);
       }
   };
 
@@ -153,7 +158,7 @@ const AgentProfileModal: React.FC<{
         </div>
         <div className="flex flex-col gap-2 w-full">
             <button onClick={() => { onMessage(); onClose(); }} className="w-full py-5 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl shadow-2xl transition-all">Message</button>
-            <button onClick={() => { onShowFullProfile?.(user.id); onClose(); }} className="w-full py-4 bg-white/5 text-zinc-500 hover:text-white font-black uppercase tracking-[0.2em] text-[9px] rounded-xl transition-all">View Identity File</button>
+            <button onClick={() => { onShowFullProfile?.(user.id); onClose(); }} className="w-full py-4 bg-white/5 text-zinc-500 hover:text-white font-black uppercase tracking-[0.2em] text-[9px] rounded-xl transition-all">View Profile</button>
         </div>
       </div>
     </motion.div>
@@ -274,7 +279,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                 </button>
                 <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id)} className="w-full flex items-center gap-4 p-4 rounded-[2rem] hover:bg-white/5 transition-all">
                     <div className="w-11 h-11 rounded-2xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0"><i className="fa-solid fa-gear text-lg"></i></div>
-                    <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Neural Settings</p></div>
+                    <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Settings</p></div>
                 </button>
             </div>
 

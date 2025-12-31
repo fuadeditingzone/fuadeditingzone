@@ -207,8 +207,20 @@ export const Portfolio: React.FC<any> = ({
             <div className="container mx-auto px-4 md:px-6 max-w-7xl">
                 <div className="text-center mb-16 md:mb-20">
                     <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-4 block">Selected Legend Portfolio</span>
-                    <h2 className="text-white text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none">Video Showcase</h2>
+                    <h2 className="text-white text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none">Portfolio Showcase</h2>
                 </div>
+
+                {/* GRAPHIC DESIGN - NOW AT TOP */}
+                <PortfolioSection 
+                    id="graphic-design" 
+                    title="Graphic Designs" 
+                    subtitle="Premium Mastery" 
+                    icon={<PhotoManipulationIcon className="w-5 h-5 md:w-6 md:h-6" />} 
+                    works={graphicWorks} 
+                    onItemClick={(items, index) => openModal(items, index)}
+                    nextSectionId="video-editing"
+                    nextSectionTitle="Video Edits"
+                />
 
                 <div id="video-editing" className="mb-20 md:mb-32">
                     <div className="flex items-center gap-4 mb-8 md:mb-10 border-l-4 border-red-600 pl-6">
@@ -289,25 +301,14 @@ export const Portfolio: React.FC<any> = ({
                         ))}
                     </motion.div>
                     <div className="mt-12 flex justify-center">
-                        <button onClick={() => document.getElementById('graphic-design')?.scrollIntoView({ behavior: 'smooth' })} className="group flex flex-col items-center gap-3 transition-all hover:scale-105">
-                            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-white">Next: Graphic Designs</span>
+                        <button onClick={() => document.getElementById('community')?.scrollIntoView({ behavior: 'smooth' })} className="group flex flex-col items-center gap-3 transition-all hover:scale-105">
+                            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-white">Next: Community Chat</span>
                             <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-red-600 transition-all">
                                 <ChevronRightIcon className="w-4 h-4 rotate-90 text-zinc-500 group-hover:text-red-500" />
                             </div>
                         </button>
                     </div>
                 </div>
-
-                <PortfolioSection 
-                    id="graphic-design" 
-                    title="Graphic Designs" 
-                    subtitle="Premium Mastery" 
-                    icon={<PhotoManipulationIcon className="w-5 h-5 md:w-6 md:h-6" />} 
-                    works={graphicWorks} 
-                    onItemClick={(items, index) => openModal(items, index)}
-                    nextSectionId="community"
-                    nextSectionTitle="Community Chat"
-                />
             </div>
         </section>
     );
