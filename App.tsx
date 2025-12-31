@@ -36,15 +36,31 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getDatabase(app);
 
-// SEO Utility
-const updateSEO = (title: string, desc: string, image?: string) => {
-  document.title = title;
+// Enhanced SEO Utility for Rich Social Previews
+const updateSEO = (title: string, desc: string, image?: string, url?: string) => {
+  const finalTitle = `${title} | Fuad Editing Zone`;
+  document.title = finalTitle;
+  
+  // Standard Meta
   document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
-  document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+  
+  // Open Graph (Facebook/Instagram/Discord)
+  document.querySelector('meta[property="og:title"]')?.setAttribute('content', finalTitle);
   document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
+  document.querySelector('meta[property="og:type"]')?.setAttribute('content', url?.includes('/work/') || url?.includes('/post/') ? 'article' : 'website');
+  
+  // Twitter
+  document.querySelector('meta[property="twitter:title"]')?.setAttribute('content', finalTitle);
+  document.querySelector('meta[property="twitter:description"]')?.setAttribute('content', desc);
+  
   if (image) {
     document.querySelector('meta[property="og:image"]')?.setAttribute('content', image);
     document.querySelector('meta[property="twitter:image"]')?.setAttribute('content', image);
+    document.querySelector('meta[property="twitter:card"]')?.setAttribute('content', 'summary_large_image');
+  }
+  
+  if (url) {
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', url);
   }
 };
 
@@ -54,6 +70,7 @@ export default function App() {
     window.location.pathname === '/marketplace' ? 'marketplace' : 
     window.location.pathname === '/community' ? 'community' : 'home'
   );
+  
   const [isYouTubeApiReady, setIsYouTubeApiReady] = useState(false);
   const [modalState, setModalState] = useState<{ items: ModalItem[]; currentIndex: number } | null>(null);
   const [targetUserId, setTargetUserId] = useState<string | null>(null);
@@ -67,42 +84,64 @@ export default function App() {
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
-  // Dynamic SEO based on Route
+  // Handle Deep Linking / Initial Routes with Preview logic
   useEffect(() => {
-    if (route === 'home') {
-      updateSEO(siteConfig.seo.title, siteConfig.seo.description);
-    } else if (route === 'marketplace') {
-      updateSEO("Marketplace | Fuad Editing Zone", "Discover premium VFX shots and high-end graphic design templates from Fuad Ahmed.");
-    } else if (route === 'community') {
-      updateSEO("Community Hub | Fuad Editing Zone", "Connect with other designers and VFX editors in the FEZ ecosystem.");
-    }
-  }, [route]);
-
-  // JSON-LD Structured Data
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Person",
-      "name": "Fuad Ahmed",
-      "alternateName": "Selected Legend",
-      "url": "https://fuadeditingzone.pages.dev",
-      "image": siteConfig.branding.profilePicUrl,
-      "sameAs": siteConfig.branding.socials.map(s => s.url),
-      "jobTitle": "VFX Editor & Graphic Designer",
-      "worksFor": {
-        "@type": "Organization",
-        "name": "Fuad Editing Zone"
+    const handleInitialLink = async () => {
+      const path = window.location.pathname;
+      
+      if (path.startsWith('/work/')) {
+        const id = path.split('/')[2];
+        const allWorks = [
+          ...siteConfig.content.portfolio.graphicWorks,
+          ...siteConfig.content.portfolio.vfxEdits
+        ];
+        const index = allWorks.findIndex(w => String(w.id) === id);
+        if (index !== -1) setModalState({ items: allWorks, currentIndex: index });
+      } else if (path.startsWith('/post/')) {
+        const id = path.split('/')[2];
+        const postSnap = await get(ref(db, `explore_posts/${id}`));
+        if (postSnap.exists()) {
+          const post = { id, ...postSnap.val() };
+          setModalState({ items: [post], currentIndex: 0 });
+        }
       }
-    });
-    document.head.appendChild(script);
-    return () => { document.head.removeChild(script); };
+    };
+    handleInitialLink();
   }, []);
+
+  // Sync Global SEO when modal or route changes
+  useEffect(() => {
+    if (modalState) {
+      const item = modalState.items[modalState.currentIndex] as any;
+      const title = item.title || 'Exclusive Masterpiece';
+      const desc = item.description || item.caption || "Official work from Fuad Editing Zone portfolio.";
+      const img = item.imageUrl || item.thumbnailUrl || (item.mediaUrl && item.mediaType === 'image' ? item.mediaUrl : siteConfig.branding.profilePicUrl);
+      const url = window.location.origin + (item.userId ? `/post/${item.id}` : `/work/${item.id}`);
+      updateSEO(title, desc, img, url);
+    } else {
+      if (route === 'home') updateSEO(siteConfig.seo.title, siteConfig.seo.description, siteConfig.branding.profilePicUrl, window.location.origin);
+      else if (route === 'marketplace') updateSEO("Marketplace", "Discover premium visual assets.", siteConfig.branding.logoUrl, window.location.origin + "/marketplace");
+      else if (route === 'community') updateSEO("Community Hub", "Join the professional design network.", siteConfig.branding.logoUrl, window.location.origin + "/community");
+    }
+  }, [modalState, route]);
+
+  const handleSetModal = (items: ModalItem[], index: number) => {
+    const item = items[index] as any;
+    const path = item.userId ? `/post/${item.id}` : `/work/${item.id}`;
+    window.history.pushState(null, '', path);
+    setModalState({ items, currentIndex: index });
+  };
+
+  const handleCloseModal = () => {
+    const base = route === 'home' ? '/' : `/${route}`;
+    window.history.pushState(null, '', base);
+    setModalState(null);
+  };
 
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
+      if (!path.includes('/work/') && !path.includes('/post/')) setModalState(null);
       setRoute(path === '/marketplace' ? 'marketplace' : path === '/community' ? 'community' : 'home');
     };
     window.addEventListener('popstate', handlePopState);
@@ -184,7 +223,7 @@ export default function App() {
             {route === 'home' && (
               <div className="flex flex-col">
                 <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
-                <Portfolio openModal={(items, index) => setModalState({ items, currentIndex: index })} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
+                <Portfolio openModal={handleSetModal} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
                 <div className="py-20 text-center">
                     <button onClick={() => navigateTo('community')} className="group relative px-12 py-6 bg-red-600/10 border border-red-600/30 rounded-3xl overflow-hidden transition-all hover:bg-red-600 hover:border-red-600">
                         <span className="relative z-10 font-black uppercase tracking-[0.4em] text-sm text-red-500 group-hover:text-white transition-colors">Join Community Hub</span>
@@ -203,7 +242,7 @@ export default function App() {
                     <h1 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">Marketplace</h1>
                     <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4">Discover & Collaborate Sequentially</p>
                 </div>
-                <ExploreFeed onOpenProfile={handleOpenProfile} onOpenModal={(items, index) => setModalState({ items, currentIndex: index })} />
+                <ExploreFeed onOpenProfile={handleOpenProfile} onOpenModal={handleSetModal} />
               </div>
             )}
 
@@ -224,7 +263,14 @@ export default function App() {
             onClose={() => setViewingProfileId(null)} 
             viewingUserId={viewingProfileId} 
           />
-          {modalState && <ModalViewer state={{ ...modalState, items: normalizedModalItems }} onClose={() => setModalState(null)} onNext={(idx) => setModalState({...modalState, currentIndex: idx})} onPrev={(idx) => setModalState({...modalState, currentIndex: idx})} />}
+          {modalState && (
+            <ModalViewer 
+              state={{ ...modalState, items: normalizedModalItems }} 
+              onClose={handleCloseModal} 
+              onNext={(idx) => handleSetModal(modalState.items, idx)} 
+              onPrev={(idx) => handleSetModal(modalState.items, idx)} 
+            />
+          )}
           {isServicesPopupOpen && <ServicesListPopup onClose={() => setIsServicesPopupOpen(false)} />}
           {isYouTubeRedirectOpen && <YouTubeRedirectPopup onClose={() => setIsYouTubeRedirectOpen(false)} onConfirm={() => { setIsYouTubeRedirectOpen(false); handleScrollTo('portfolio'); }} />}
           {pipVideo && <VideoPipPlayer video={pipVideo} onClose={() => setPipVideo(null)} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />}

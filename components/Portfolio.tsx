@@ -5,13 +5,14 @@ import { useUser } from '@clerk/clerk-react';
 import type { GraphicWork, VideoWork, ContentSection } from '../hooks/types';
 import { siteConfig } from '../config';
 import { 
-    PlayIcon, VolumeOnIcon, VolumeOffIcon, SparklesIcon, PhotoManipulationIcon, YouTubeIcon, ChevronRightIcon, VfxIcon, BannerIcon, ThumbnailIcon, CloseIcon
+    PlayIcon, VolumeOnIcon, VolumeOffIcon, SparklesIcon, PhotoManipulationIcon, YouTubeIcon, ChevronRightIcon, VfxIcon, BannerIcon, ThumbnailIcon, CloseIcon, ShareIcon
 } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { useAnimatedCounter } from '../hooks/useAnimatedCounter';
 
 const OWNER_HANDLE = 'fuadeditingzone';
+const DELETE_SECRET_CODE = '62114@#';
 
 const PortfolioSection: React.FC<{ 
     title: string; 
@@ -27,6 +28,15 @@ const PortfolioSection: React.FC<{
     onDeleteItem?: (work: any) => void;
 }> = ({ title, subtitle, icon, works, onItemClick, id, aspectRatio = 'square', nextSectionId, isOwner, onDeleteItem }) => {
     const [ref, inView] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
+    const [copyToast, setCopyToast] = useState(false);
+
+    const handleQuickShare = (e: React.MouseEvent, work: any) => {
+        e.stopPropagation();
+        const url = `${window.location.origin}/work/${work.id}`;
+        navigator.clipboard.writeText(url);
+        setCopyToast(true);
+        setTimeout(() => setCopyToast(false), 2000);
+    };
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -52,6 +62,12 @@ const PortfolioSection: React.FC<{
 
     return (
         <div id={id} ref={ref as any} className="mb-24 md:mb-32 last:mb-0 px-4 md:px-0 overflow-visible">
+            <AnimatePresence>
+                {copyToast && (
+                    <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:20}} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-white text-black px-6 py-3 rounded-full font-black uppercase text-[10px] tracking-widest shadow-2xl">Preview Link Copied</motion.div>
+                )}
+            </AnimatePresence>
+            
             <div className="flex items-center justify-between mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
@@ -94,15 +110,24 @@ const PortfolioSection: React.FC<{
                             )}
                         </div>
 
-                        {isOwner && (
+                        <div className="absolute top-4 right-4 flex gap-2">
                             <button 
-                                onClick={(e) => { e.stopPropagation(); onDeleteItem?.(work); }}
-                                className="absolute top-4 right-4 z-50 p-2 bg-black/80 hover:bg-red-600 text-white rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Remove from Portfolio"
+                                onClick={(e) => handleQuickShare(e, work)}
+                                className="p-2 bg-black/80 hover:bg-red-600 text-white rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Copy Preview Link"
                             >
-                                <CloseIcon className="w-4 h-4" />
+                                <ShareIcon className="w-3.5 h-3.5" />
                             </button>
-                        )}
+                            {isOwner && (
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); onDeleteItem?.(work); }}
+                                    className="p-2 bg-black/80 hover:bg-red-600 text-white rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    title="Remove from Portfolio"
+                                >
+                                    <CloseIcon className="w-3.5 h-3.5" />
+                                </button>
+                            )}
+                        </div>
 
                         <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4 md:p-6">
                             <h3 className="text-white font-black uppercase tracking-widest text-[8px] md:text-xs leading-tight truncate">{work.title || 'Portfolio Work'}</h3>
@@ -144,10 +169,19 @@ const VfxVideoPlayer: React.FC<{
     const [containerRef] = useIntersectionObserver({ threshold: 0.5 });
     const [isMuted, setIsMuted] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
+    const [copyToast, setCopyToast] = useState(false);
 
     const videoUrl = video.url || video.mediaUrl;
     const isPlaying = currentlyPlaying?.id === video.id;
     const isThisVideoInPip = pipVideo?.id === video.id;
+
+    const handleQuickShare = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const url = `${window.location.origin}/work/${video.id}`;
+        navigator.clipboard.writeText(url);
+        setCopyToast(true);
+        setTimeout(() => setCopyToast(false), 2000);
+    };
 
     useEffect(() => {
         const videoEl = videoRef.current;
@@ -161,6 +195,12 @@ const VfxVideoPlayer: React.FC<{
 
     return (
         <motion.div ref={containerRef as any} variants={variants} className="group relative aspect-square bg-black rounded-[1.2rem] md:rounded-[2.5rem] overflow-hidden border border-white/10 hover:border-red-600/50 transition-all duration-500">
+            <AnimatePresence>
+                {copyToast && (
+                    <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:10}} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[500] bg-white text-black px-4 py-2 rounded-full font-black uppercase text-[8px] tracking-widest shadow-2xl">Signal Copied</motion.div>
+                )}
+            </AnimatePresence>
+            
             <figure className="w-full h-full m-0 p-0 cursor-pointer" onClick={() => onPlayRequest(isPlaying ? null : video)}>
                 <video ref={videoRef} src={videoUrl} loop muted={isMuted} playsInline className="w-full h-full object-contain" onCanPlay={() => setIsLoading(false)} title={`${video.title || 'VFX Work'} | Fuad Editing Zone Mastery`} />
                 <div className={`absolute inset-0 bg-black/20 transition-opacity flex items-center justify-center ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
@@ -172,15 +212,25 @@ const VfxVideoPlayer: React.FC<{
                     </div>
                 )}
             </figure>
-            {isOwner && (
+            
+            <div className="absolute top-4 right-4 flex gap-2">
                 <button 
-                    onClick={(e) => { e.stopPropagation(); onDeleteItem?.(video); }}
-                    className="absolute top-4 right-4 z-50 p-2 bg-black/80 hover:bg-red-600 text-white rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Remove from Portfolio"
+                    onClick={handleQuickShare}
+                    className="p-2 bg-black/80 hover:bg-red-600 text-white rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Copy Preview Link"
                 >
-                    <CloseIcon className="w-4 h-4" />
+                    <ShareIcon className="w-3.5 h-3.5" />
                 </button>
-            )}
+                {isOwner && (
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onDeleteItem?.(video); }}
+                        className="p-2 bg-black/80 hover:bg-red-600 text-white rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Remove from Portfolio"
+                    >
+                        <CloseIcon className="w-3.5 h-3.5" />
+                    </button>
+                )}
+            </div>
         </motion.div>
     );
 };
@@ -248,8 +298,14 @@ export const Portfolio: React.FC<any> = ({
 
     const handleHideOrDelete = async (work: any) => {
         if (!isOwner) return;
-        const confirmation = window.confirm("Are you sure you want to remove this item from the portfolio?");
-        if (!confirmation) return;
+        
+        const code = window.prompt("Security clearance required. Enter secret code to remove this item:");
+        if (code === null) return; // User cancelled
+        
+        if (code !== DELETE_SECRET_CODE) {
+            alert("Authorization denied: Incorrect secret code.");
+            return;
+        }
 
         if (work.id && typeof work.id === 'string' && work.userId) {
             // This is a dynamic post from marketplace

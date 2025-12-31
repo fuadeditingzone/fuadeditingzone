@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import type { GraphicWork, VideoWork, ModalItem } from '../hooks/types';
 import { LazyImage } from './LazyImage';
@@ -83,12 +82,13 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
 
     const isImage = (item: ModalItem): item is GraphicWork => 'imageUrl' in item;
     const isVideo = (item: ModalItem): item is VideoWork => ('url' in item || 'videoId' in item);
-    // Fix: Using correct ContentSection type 'Thumbnail Designs' instead of 'YouTube Thumbnails'
     const isYTThumbnail = isImage(currentItem) && currentItem.category === 'Thumbnail Designs';
     const isManipulation = isImage(currentItem) && currentItem.category === 'Photo Manipulation';
 
     const handleShare = () => {
-        const url = `${window.location.origin}/portfolio/${currentItem.id}`;
+        const item = currentItem as any;
+        const type = item.userId ? 'post' : 'work';
+        const url = `${window.location.origin}/${type}/${item.id}`;
         navigator.clipboard.writeText(url);
         setShowShareToast(true);
         setTimeout(() => setShowShareToast(false), 2000);
@@ -96,9 +96,8 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
 
     return (
         <div className="fixed inset-0 bg-black z-[9999] flex flex-col animate-fade-in overflow-hidden" onClick={onClose}>
-            {isImage(currentItem) && (
-                <div className="absolute inset-0 bg-cover bg-center filter blur-3xl brightness-[0.2] opacity-40 scale-110 pointer-events-none" style={{ backgroundImage: `url(${currentItem.imageUrl})` }} />
-            )}
+            <div className="absolute inset-0 bg-cover bg-center filter blur-3xl brightness-[0.2] opacity-40 scale-110 pointer-events-none" 
+                 style={{ backgroundImage: `url(${isImage(currentItem) ? currentItem.imageUrl : (currentItem.thumbnailUrl || siteConfig.branding.profilePicUrl)})` }} />
 
             <div className="relative z-[100] flex justify-between items-center p-6 bg-gradient-to-b from-black/80 to-transparent flex-shrink-0">
                 <div className="flex items-center gap-3">
@@ -143,9 +142,9 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                     <div className="space-y-2 flex-1">
                          <h3 className="text-white font-black text-2xl uppercase tracking-tighter">{currentItem.title || 'Untitled Masterpiece'}</h3>
-                         <p className="text-gray-400 text-sm font-medium leading-relaxed italic">{currentItem.description || 'Exclusive creative project by Fuad Ahmed.'}</p>
+                         <p className="text-gray-400 text-sm font-medium leading-relaxed italic">{currentItem.description || (currentItem as any).caption || 'Exclusive creative project by Fuad Ahmed.'}</p>
                     </div>
-                    <button onClick={handleShare} className="btn-angular bg-red-600 text-white font-black py-4 px-10 uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all">Share Project</button>
+                    <button onClick={handleShare} className="btn-angular bg-red-600 text-white font-black py-4 px-10 uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all">Share Link</button>
                 </div>
             </div>
             <AnimatePresence>
@@ -156,21 +155,3 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
         </div>
     );
 };
-
-export const GalleryGridModal: React.FC<any> = ({ items, onClose, onItemClick }) => (
-    <div className="fixed inset-0 bg-black/98 z-[9999] flex flex-col animate-fade-in" onClick={onClose}>
-        <div className="p-8 flex justify-between items-center border-b border-white/10 bg-black">
-            <h2 className="text-2xl font-black text-white uppercase tracking-widest">Master Gallery</h2>
-            <button onClick={onClose} className="p-3 rounded-full hover:bg-red-600 text-white transition-all"><CloseIcon className="w-8 h-8" /></button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-10 custom-scrollbar" onClick={e => e.stopPropagation()}>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                {items.map((item: any, index: number) => (
-                    <div key={index} onClick={() => onItemClick(index)} className="aspect-square bg-white/5 rounded-2xl overflow-hidden cursor-pointer hover:ring-4 hover:ring-red-600 transition-all group">
-                        <img src={item.imageUrl || item.thumbnailUrl || `https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg`} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" />
-                    </div>
-                ))}
-            </div>
-        </div>
-    </div>
-);
