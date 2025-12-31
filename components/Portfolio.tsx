@@ -3,8 +3,9 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { GraphicWork, VideoWork } from '../hooks/types';
 import { siteConfig } from '../config';
+// FIX: Added VfxIcon to the imported icons from './Icons'
 import { 
-    PlayIcon, VolumeOnIcon, VolumeOffIcon, SparklesIcon, PhotoManipulationIcon, YouTubeIcon, ChevronRightIcon
+    PlayIcon, VolumeOnIcon, VolumeOffIcon, SparklesIcon, PhotoManipulationIcon, YouTubeIcon, ChevronRightIcon, VfxIcon
 } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { InteractiveCard } from './InteractiveCard';
@@ -170,13 +171,11 @@ export const Portfolio: React.FC<any> = ({
         if (!isYouTubeApiReady || !activeYouTubeId) return;
         const initPlayer = () => {
             if (playerRef.current) playerRef.current.destroy();
-            // FIX: Using type casting to access YT property on window object
             playerRef.current = new (window as any).YT.Player('youtube-portfolio-player-inner', {
                 videoId: activeYouTubeId,
                 playerVars: { autoplay: 0, modestbranding: 1, rel: 0 },
                 events: {
                     onStateChange: (e: any) => {
-                        // FIX: Using type casting to access YT property on window object
                         if (e.data === (window as any).YT.PlayerState.PLAYING) setIsYtPlaying(true);
                         else if (e.data === (window as any).YT.PlayerState.PAUSED || e.data === (window as any).YT.PlayerState.ENDED) setIsYtPlaying(false);
                     }
@@ -217,23 +216,23 @@ export const Portfolio: React.FC<any> = ({
         <section id="portfolio" className="py-20 md:py-24 bg-[#050505] relative z-10 select-none overflow-hidden">
             <div className="container mx-auto px-4 md:px-6 max-w-7xl">
                 <div className="text-center mb-16 md:mb-20">
-                    <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-4 block">Video</span>
-                    <h2 className="text-white text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none">YouTube Edits</h2>
+                    <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-4 block">Selected Legend Portfolio</span>
+                    <h2 className="text-white text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none">Video Showcase</h2>
                 </div>
 
-                {/* YouTube Sector First */}
+                {/* YouTube Sector FIRST */}
                 <div id="video-editing" className="mb-20 md:mb-32">
                     <div className="flex items-center gap-4 mb-8 md:mb-10 border-l-4 border-red-600 pl-6">
                         <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
                             <YouTubeIcon className="w-5 h-5 md:w-6 md:h-6" />
                         </div>
                         <div>
-                            <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">YouTube</span>
+                            <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">YouTube Edits</span>
                             <h3 className="text-white text-2xl md:text-3xl font-black uppercase tracking-tighter">Content Feed</h3>
                         </div>
                     </div>
 
-                    <div className="lg:flex lg:gap-12 lg:items-start">
+                    <div className="lg:flex lg:gap-12 lg:items-start space-y-8 lg:space-y-0">
                         <div className="flex-1 space-y-4 md:space-y-6">
                             <div className="relative aspect-video w-full rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl bg-black border border-white/10">
                                 <div id="youtube-portfolio-player-inner" className="w-full h-full"></div>
@@ -263,7 +262,7 @@ export const Portfolio: React.FC<any> = ({
                                 </div>
                             </div>
                         </div>
-                        <div className="hidden lg:flex flex-col gap-4 w-[300px] flex-shrink-0 h-[600px] overflow-y-auto custom-scrollbar px-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-col gap-4 w-full lg:w-[300px] flex-shrink-0 max-h-[600px] overflow-y-auto custom-scrollbar px-4 pb-4">
                             {animeEdits.map((video: any) => (
                                 <button key={video.id} onClick={() => { setActiveYouTubeId(video.videoId); setIsYtPlaying(true); }} className={`relative aspect-video rounded-2xl overflow-hidden border transition-all ${activeYouTubeId === video.videoId ? 'border-red-600 ring-4 ring-red-600/20' : 'border-white/10 opacity-50 hover:opacity-100'}`}>
                                     <img src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} className="w-full h-full object-cover" />
@@ -289,10 +288,10 @@ export const Portfolio: React.FC<any> = ({
                 <div id="vfx-animations" className="mb-20 md:mb-32" ref={vfxRef as any}>
                      <div className="flex items-center gap-4 mb-8 md:mb-10 border-l-4 border-red-600 pl-6">
                         <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
-                            <SparklesIcon className="w-5 h-5 md:w-6 md:h-6" />
+                            <VfxIcon className="w-5 h-5 md:w-6 md:h-6" />
                         </div>
                         <div>
-                            <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">Visuals</span>
+                            <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">Visual FX</span>
                             <h3 className="text-white text-2xl md:text-3xl font-black uppercase tracking-tighter">VFX Mastery</h3>
                         </div>
                     </div>
@@ -315,7 +314,7 @@ export const Portfolio: React.FC<any> = ({
                 <PortfolioSection 
                     id="graphic-design" 
                     title="Graphic Designs" 
-                    subtitle="Creative" 
+                    subtitle="Premium Mastery" 
                     icon={<PhotoManipulationIcon className="w-5 h-5 md:w-6 md:h-6" />} 
                     works={graphicWorks} 
                     onItemClick={(items, index) => openModal(items, index)}

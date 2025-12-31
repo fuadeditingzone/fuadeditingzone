@@ -10,7 +10,7 @@ const firebaseConfig = {
   databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
   apiKey: "AIzaSyCC3wbQp5713OqHlf1jLZabA0VClDstfKY",
   projectId: "fuad-editing-zone",
-  messagingSenderId: "1032345523456",
+  messagingSenderId: "832389657221",
   appId: "1:1032345523456:web:123456789",
 };
 
@@ -76,6 +76,13 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
         return;
     }
 
+    const budgetVal = parseInt(formData.customPrice);
+    if (isNaN(budgetVal) || budgetVal < 5) {
+        setNumWarning("Minimum budget is 5.");
+        setTimeout(() => setNumWarning(null), 3000);
+        return;
+    }
+
     setStatus('submitting');
     const isCustom = selectedTier === 'custom';
     const tier = SERVICE_TIERS.find(t => t.id === selectedTier);
@@ -130,7 +137,7 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
     <section ref={intersectionRef} id="contact" className="py-20 md:py-24 bg-black relative z-10 select-none overflow-hidden">
       <div className="container mx-auto px-4 md:px-6 max-w-6xl">
         <div className="mb-12 md:mb-16 text-center">
-          <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Order</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Place Your Order</span>
           <h2 className="text-white text-4xl md:text-6xl font-black uppercase tracking-tighter">Order Now</h2>
         </div>
 
@@ -145,7 +152,7 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
                 ))}
             </div>
 
-            <div className="bg-[#080808] border border-white/10 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 space-y-6 shadow-2xl">
+            <div className="bg-[#080808] border border-white/10 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 space-y-6 shadow-2xl relative">
                 {!isSignedIn ? (
                     <SignInButton mode="modal"><button className="w-full bg-red-600 py-6 rounded-2xl font-black uppercase tracking-[0.6em] text-[11px] shadow-xl hover:bg-red-700 transition-all active:scale-95">Verify Identity to Order</button></SignInButton>
                 ) : (
@@ -161,22 +168,26 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
                                 {tagWarning && <p className="text-[9px] text-red-500 font-bold uppercase animate-bounce">{tagWarning}</p>}
                             </div>
                         )}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="relative">
-                                <label className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1 block ml-1">Budget</label>
+                                <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Budget</label>
                                 <div className="relative flex items-center">
-                                    <button type="button" onClick={cycleCurrency} className="absolute left-4 z-10 text-red-600 font-black text-sm hover:scale-110 transition-transform">{currency}</button>
-                                    <input required type="text" value={formData.customPrice} onChange={e => handleNumInput(e.target.value, 'customPrice')} placeholder="e.g. 50" className="w-full bg-black border border-white/10 rounded-xl py-4 pl-10 pr-5 text-xs text-white outline-none focus:border-red-600 transition-all" />
+                                    <button type="button" onClick={cycleCurrency} className="absolute left-5 z-10 text-red-600 font-black text-lg hover:scale-110 transition-transform">{currency}</button>
+                                    <input required type="text" value={formData.customPrice} onChange={e => handleNumInput(e.target.value, 'customPrice')} placeholder="Amount" className="w-full h-16 md:h-20 bg-black border border-white/10 rounded-2xl py-4 pl-12 pr-5 text-lg font-black text-white outline-none focus:border-red-600 transition-all shadow-inner" />
                                 </div>
                             </div>
                             <div className="relative">
-                                <label className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1 block ml-1">Timeline (Days)</label>
-                                <input required type="text" value={formData.customTime} onChange={e => handleNumInput(e.target.value, 'customTime')} placeholder="e.g. 3" className="w-full bg-black border border-white/10 rounded-xl py-4 px-5 text-xs text-white outline-none focus:border-red-600 transition-all" />
+                                <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Deadline (Days)</label>
+                                <input required type="text" value={formData.customTime} onChange={e => handleNumInput(e.target.value, 'customTime')} placeholder="Days" className="w-full h-16 md:h-20 bg-black border border-white/10 rounded-2xl py-4 px-6 text-lg font-black text-white outline-none focus:border-red-600 transition-all shadow-inner" />
                             </div>
                         </div>
-                        {numWarning && <p className="text-[9px] text-red-500 font-bold uppercase ml-2 animate-pulse">{numWarning}</p>}
+                        <AnimatePresence>
+                            {numWarning && (
+                                <motion.p initial={{ opacity:0, y: -10 }} animate={{ opacity:1, y: 0 }} exit={{ opacity: 0 }} className="text-[10px] text-red-500 font-black uppercase ml-2 animate-pulse">{numWarning}</motion.p>
+                            )}
+                        </AnimatePresence>
                         <textarea required rows={4} value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} className="w-full bg-black border border-white/10 rounded-2xl px-6 py-5 text-sm text-white focus:border-red-600 outline-none resize-none shadow-lg transition-all" placeholder="Specific mission requirements..." />
-                        <button type="submit" disabled={status === 'submitting' || !selectedTier} className={`w-full py-6 rounded-2xl text-[11px] font-black uppercase tracking-[0.6em] transition-all flex items-center justify-center gap-4 ${!selectedTier ? 'bg-white/5 text-zinc-600 cursor-not-allowed' : 'bg-red-600 text-white shadow-xl hover:bg-red-700 active:scale-95'}`}>
+                        <button type="submit" disabled={status === 'submitting' || !selectedTier} className={`w-full py-6 md:py-8 rounded-2xl text-[11px] font-black uppercase tracking-[0.6em] transition-all flex items-center justify-center gap-4 ${!selectedTier ? 'bg-white/5 text-zinc-600 cursor-not-allowed' : 'bg-red-600 text-white shadow-xl hover:bg-red-700 active:scale-95'}`}>
                             {status === 'submitting' ? <SparklesIcon className="w-5 h-5 animate-spin" /> : 'Transmit Order Signal'}
                         </button>
                     </>

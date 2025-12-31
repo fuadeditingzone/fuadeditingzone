@@ -17,7 +17,7 @@ const firebaseConfig = {
   databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
   apiKey: "AIzaSyCC3wbQp5713OqHlf1jLZabA0VClDstfKY",
   projectId: "fuad-editing-zone",
-  messagingSenderId: "1032345523456",
+  messagingSenderId: "832389657221",
   appId: "1:1032345523456:web:123456789",
 };
 if (!getApps().length) initializeApp(firebaseConfig);
@@ -27,6 +27,7 @@ const OWNER_HANDLE = 'fuadeditingzone';
 
 interface NavProps {
   onScrollTo: (section: 'home' | 'portfolio' | 'graphic-design' | 'contact' | 'video-editing' | 'about') => void;
+  onOpenChatWithUser?: (userId: string) => void;
 }
 
 const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; onShowUser: (id: string) => void }> = ({ isOpen, setIsOpen, onShowUser }) => {
@@ -54,6 +55,15 @@ const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; o
             });
         });
     }, [user]);
+
+    useEffect(() => {
+        if (isOpen && window.innerWidth < 768) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [isOpen]);
 
     const handleAction = async (targetId: string, action: 'accept' | 'reject' | 'cancel') => {
         if (!user) return;
@@ -100,7 +110,7 @@ const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; o
                             <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Neural Handshakes</span>
                             <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors"><CloseIcon className="w-5 h-5 text-gray-500" /></button>
                         </div>
-                        <div className="max-h-[60vh] md:max-h-[450px] overflow-y-auto custom-scrollbar p-6 space-y-8 bg-[#080808]/50">
+                        <div className="max-h-[60dvh] md:max-h-[450px] overflow-y-auto custom-scrollbar p-6 space-y-8 bg-[#080808]/50">
                             <div>
                                 <h4 className="text-[9px] font-black text-red-600 uppercase tracking-[0.3em] mb-5 flex items-center gap-2">
                                     <span className="w-8 h-px bg-red-600/30"></span> Incoming ({requests.received.length})
@@ -113,14 +123,14 @@ const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; o
                                 ) : (
                                     requests.received.map(r => (
                                         <div key={r.id} onClick={() => onShowUser(r.id)} className="flex items-center gap-4 mb-4 bg-white/5 p-4 rounded-3xl border border-white/5 shadow-inner cursor-pointer hover:border-red-600/30 transition-all">
-                                            <img src={r.avatar} className="w-12 h-12 rounded-2xl object-cover ring-2 ring-white/5 shadow-lg" />
+                                            <img src={r.avatar} className="w-12 h-12 rounded-2xl object-cover ring-2 ring-white/5 shadow-lg flex-shrink-0" />
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-[12px] font-black text-white uppercase truncate">{r.name}</p>
                                                 <p className="text-[10px] text-gray-500 font-bold">@{r.username}</p>
                                             </div>
                                             <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                                                <button onClick={() => handleAction(r.id, 'accept')} className="bg-red-600 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-red-700 transition-all shadow-lg active:scale-90"><CheckCircleIcon className="w-5 h-5" /></button>
-                                                <button onClick={() => handleAction(r.id, 'reject')} className="bg-white/10 text-gray-400 w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-all active:scale-90"><CloseIcon className="w-5 h-5" /></button>
+                                                <button onClick={() => handleAction(r.id, 'accept')} className="bg-red-600 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-red-700 transition-all shadow-lg active:scale-90 flex-shrink-0"><CheckCircleIcon className="w-5 h-5" /></button>
+                                                <button onClick={() => handleAction(r.id, 'reject')} className="bg-white/10 text-gray-400 w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-all active:scale-90 flex-shrink-0"><CloseIcon className="w-5 h-5" /></button>
                                             </div>
                                         </div>
                                     ))
@@ -135,7 +145,7 @@ const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; o
                                         const canRevoke = (Date.now() - s.timestamp) >= FIVE_HOURS;
                                         return (
                                             <div key={s.id} className="flex items-center gap-4 mb-4 opacity-70 hover:opacity-100 transition-opacity">
-                                                <img src={s.avatar} className="w-10 h-10 rounded-xl object-cover grayscale-[0.5]" />
+                                                <img src={s.avatar} className="w-10 h-10 rounded-xl object-cover grayscale-[0.5] flex-shrink-0" />
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-[11px] font-black text-white uppercase truncate">{s.name}</p>
                                                     <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">
@@ -158,7 +168,7 @@ const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; o
     );
 };
 
-const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; onShowUser: (id: string) => void; onGoToInbox: () => void }> = ({ isOpen, setIsOpen, onShowUser, onGoToInbox }) => {
+const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; onShowUser: (id: string) => void; onGoToInbox: (id: string) => void }> = ({ isOpen, setIsOpen, onShowUser, onGoToInbox }) => {
     const { user } = useUser();
     const [notifications, setNotifications] = useState<any[]>([]);
     const isOwner = user?.username === OWNER_HANDLE;
@@ -174,6 +184,15 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
             setNotifications(list);
         });
     }, [user]);
+
+    useEffect(() => {
+        if (isOpen && window.innerWidth < 768) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [isOpen]);
 
     const markAsRead = async (id: string) => {
         if (!user) return;
@@ -204,7 +223,9 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
         if (n.type === 'request_accepted' || n.type === 'friend_request') {
             onShowUser(n.fromId);
         } else if (n.type === 'order_accepted' || n.type === 'order_rejected') {
-            onGoToInbox();
+            onGoToInbox(OWNER_HANDLE);
+        } else if (n.type === 'new_order') {
+            onGoToInbox(n.fromId);
         }
         markAsRead(n.id);
         setIsOpen(false);
@@ -221,11 +242,11 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
             <AnimatePresence>
                 {isOpen && (
                     <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-1/2 md:top-full -translate-y-1/2 md:translate-y-0 md:mt-4 w-auto md:w-[380px] bg-[#0a0a0a] border border-white/10 rounded-[2rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden z-[999999]">
-                        <div className="p-6 border-b border-white/5 bg-black/40 flex justify-between items-center">
-                            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Live Activity Hub</span>
+                        <div className="p-6 border-b border-white/5 bg-black/40 flex justify-between items-center flex-shrink-0">
+                            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Notifications</span>
                             <button onClick={clearAll} className="text-[9px] font-black text-gray-500 uppercase hover:text-red-500 tracking-widest transition-colors">Clear All</button>
                         </div>
-                        <div className="max-h-[60vh] md:max-h-[450px] overflow-y-auto custom-scrollbar p-3 bg-[#080808]/50">
+                        <div className="max-h-[60dvh] md:max-h-[450px] overflow-y-auto custom-scrollbar p-3 bg-[#080808]/50 min-h-0">
                             {notifications.length === 0 ? (
                                 <div className="p-16 text-center opacity-10 flex flex-col items-center gap-5">
                                     <SparklesIcon className="w-12 h-12" />
@@ -234,14 +255,14 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
                             ) : (
                                 notifications.map((n) => (
                                     <div key={n.id} onClick={() => handleNotificationClick(n)} className={`p-5 mb-2 rounded-3xl transition-all cursor-pointer flex flex-col gap-4 border border-transparent ${!n.read ? 'bg-red-600/5 border-red-600/10' : 'hover:bg-white/5 opacity-60'}`}>
-                                        <div className="flex items-start gap-4">
+                                        <div className="flex items-start gap-4 min-w-0">
                                             <img src={n.fromAvatar} className="w-11 h-11 rounded-2xl object-cover flex-shrink-0 shadow-lg ring-2 ring-white/5" />
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-[12px] text-gray-200 leading-tight">
+                                                <p className="text-[12px] text-gray-200 leading-tight break-words">
                                                     <span className="font-black text-white uppercase mr-1">{n.fromName}</span>
-                                                    {n.type === 'follow' && 'started following your work.'}
-                                                    {n.type === 'friend_request' && 'sent you a handshake request.'}
-                                                    {n.type === 'request_accepted' && 'accepted your handshake.'}
+                                                    {n.type === 'follow' && 'started following you.'}
+                                                    {n.type === 'friend_request' && 'sent you a friend request.'}
+                                                    {n.type === 'request_accepted' && 'accepted your friend request.'}
                                                     {n.type === 'new_order' && `placed a new order: "${n.orderName}"`}
                                                     {n.type === 'order_accepted' && `accepted your order for "${n.orderName}"`}
                                                     {n.type === 'order_rejected' && `could not accept your order for "${n.orderName}"`}
@@ -276,18 +297,16 @@ const NavLink: React.FC<{ onClick: () => void; children: React.ReactNode }> = ({
     </button>
 );
 
-export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
+export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUser }) => {
   const [isSpinning, setIsSpinning] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
   const [viewingUserId, setViewingUserId] = useState<string | null>(null);
 
-  const openSettings = useCallback(() => {
-    setIsNotificationsOpen(false);
-    setIsRequestsOpen(false);
-    setIsProfileOpen(true);
-  }, []);
+  const handleGoToInbox = (targetId: string) => {
+      if(onOpenChatWithUser) onOpenChatWithUser(targetId);
+  };
 
   return (
     <>
@@ -311,7 +330,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
               <SignedIn>
                 <div className="flex items-center gap-3 border-r border-white/10 pr-6">
                     <RequestHub isOpen={isRequestsOpen} setIsOpen={(v) => { setIsRequestsOpen(v); if(v) setIsNotificationsOpen(false); }} onShowUser={setViewingUserId} />
-                    <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); if(v) setIsRequestsOpen(false); }} onShowUser={setViewingUserId} onGoToInbox={() => {}} />
+                    <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); if(v) setIsRequestsOpen(false); }} onShowUser={setViewingUserId} onGoToInbox={handleGoToInbox} />
                 </div>
               </SignedIn>
               <SignedOut>
@@ -328,7 +347,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
   );
 };
 
-export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
+export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUser }) => {
     const [isSpinning, setIsSpinning] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -351,6 +370,10 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
         }
     };
 
+    const handleGoToInbox = (targetId: string) => {
+        if(onOpenChatWithUser) onOpenChatWithUser(targetId);
+    };
+
     return (
         <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-[9999] h-20 px-6 select-none bg-transparent">
             <div onClick={() => { setIsSpinning(true); onScrollTo('home'); setTimeout(() => setIsSpinning(false), 2000); }} className="flex items-center gap-3">
@@ -361,7 +384,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                 <SignedIn>
                     <div className="flex items-center gap-2.5">
                         <RequestHub isOpen={isRequestsOpen} setIsOpen={toggleRequests} onShowUser={setViewingUserId} />
-                        <NotificationHub isOpen={isNotificationsOpen} setIsOpen={toggleNotifications} onShowUser={setViewingUserId} onGoToInbox={() => {}} />
+                        <NotificationHub isOpen={isNotificationsOpen} setIsOpen={toggleNotifications} onShowUser={setViewingUserId} onGoToInbox={handleGoToInbox} />
                         <UserButton appearance={{ elements: { userButtonAvatarBox: "w-10 h-10 border-2 border-red-600" } }} />
                     </div>
                 </SignedIn>

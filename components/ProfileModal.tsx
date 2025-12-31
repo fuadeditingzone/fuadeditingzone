@@ -9,7 +9,7 @@ const firebaseConfig = {
   databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
   apiKey: "AIzaSyCC3wbQp5713OqHlf1jLZabA0VClDstfKY",
   projectId: "fuad-editing-zone",
-  messagingSenderId: "1032345523456",
+  messagingSenderId: "832389657221",
   appId: "1:1032345523456:web:123456789",
 };
 
@@ -60,6 +60,9 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
         } else {
             document.body.style.overflow = 'unset';
         }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
     }, [isOpen, user]);
 
     if (!isLoaded || !user) return null;
@@ -98,7 +101,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
             {isOpen && (
                 <div className="fixed inset-0 z-[1000000] flex items-center justify-center p-4 md:p-10 overflow-hidden">
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/90 backdrop-blur-2xl" />
-                    <motion.div initial={{ opacity: 0, scale: 0.9, y: 40 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 40 }} className="relative w-full max-w-4xl h-fit max-h-[90vh] md:max-h-[85vh] bg-[#080808] rounded-[2.5rem] md:rounded-[3.5rem] shadow-[0_50px_150px_rgba(0,0,0,1)] border border-white/10 flex flex-col overflow-hidden">
+                    <motion.div initial={{ opacity: 0, scale: 0.9, y: 40 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 40 }} className="relative w-full max-w-4xl h-fit max-h-[90dvh] bg-[#080808] rounded-[2.5rem] md:rounded-[3.5rem] shadow-[0_50px_150px_rgba(0,0,0,1)] border border-white/10 flex flex-col overflow-hidden">
                         
                         <div className="px-6 py-6 md:px-8 md:py-8 flex justify-between items-center border-b border-white/5 bg-black/40 flex-shrink-0">
                             <div className="flex items-center gap-4 md:gap-5">
@@ -123,7 +126,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                                     <div className="flex flex-col items-center text-center space-y-8 md:space-y-10 max-w-2xl mx-auto animate-fade-in">
                                         <div className="relative group">
                                             <div className="absolute -inset-4 bg-red-600/10 blur-2xl rounded-full group-hover:bg-red-600/20 transition-all duration-500"></div>
-                                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] md:rounded-[3rem] overflow-hidden border-4 border-red-600/30 p-1.5 bg-black shadow-2xl relative"><img src={user.imageUrl} className="w-full h-full object-cover rounded-[2.2rem] md:rounded-[2.5rem]" alt="" /></div>
+                                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] md:rounded-[3rem] overflow-hidden border-4 border-red-600/30 p-1.5 bg-black shadow-2xl relative flex-shrink-0"><img src={user.imageUrl} className="w-full h-full object-cover rounded-[2.2rem] md:rounded-[2.5rem]" alt="" /></div>
                                             <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 bg-red-600 text-white p-2 md:p-3 rounded-xl border-4 border-[#080808] shadow-2xl"><CheckCircleIcon className="w-4 h-4 md:w-6 md:h-6" /></div>
                                         </div>
                                         <div>
