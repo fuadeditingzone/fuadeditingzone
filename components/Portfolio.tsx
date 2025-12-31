@@ -47,7 +47,7 @@ const PortfolioSection: React.FC<{
     }[aspectRatio];
 
     return (
-        <div id={id} ref={ref as any} className="mb-24 md:mb-32 last:mb-0 px-4 md:px-0">
+        <div id={id} ref={ref as any} className="mb-24 md:mb-32 last:mb-0 px-6 md:px-0">
             <div className="flex items-center gap-4 mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
                     {icon}
@@ -62,18 +62,18 @@ const PortfolioSection: React.FC<{
                 variants={containerVariants}
                 initial="hidden"
                 animate={inView ? "visible" : "hidden"}
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 overflow-hidden"
+                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 overflow-hidden max-w-7xl mx-auto"
             >
                 {works.map((work, index) => (
                     <motion.div 
                         key={work.id}
                         variants={itemVariants}
                         onClick={() => onItemClick(works, index)}
-                        className={`group relative ${aspectClass} bg-black rounded-[1rem] md:rounded-[2rem] overflow-hidden border border-white/5 cursor-pointer hover:border-red-600/50 transition-all duration-500 shadow-xl`}
+                        className={`group relative ${aspectClass} bg-black rounded-[1.2rem] md:rounded-[2rem] overflow-hidden border border-white/10 cursor-pointer hover:border-red-600/50 transition-all duration-500 shadow-xl`}
                     >
                         <img 
                             src={work.imageUrl || work.thumbnailUrl || (work.mediaUrl && work.mediaType === 'image' ? work.mediaUrl : `https://i.ytimg.com/vi/${work.videoId}/mqdefault.jpg`)} 
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                             alt=""
                         />
                         {work.mediaType === 'video' && (
@@ -135,7 +135,7 @@ const VfxVideoPlayer: React.FC<{
     }, [isPlaying, isThisVideoInPip]);
 
     return (
-        <motion.div ref={containerRef as any} variants={variants} className="group relative aspect-square bg-black rounded-[1rem] md:rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer hover:border-red-600/50 transition-all duration-500">
+        <motion.div ref={containerRef as any} variants={variants} className="group relative aspect-square bg-black rounded-[1.2rem] md:rounded-[2.5rem] overflow-hidden border border-white/10 cursor-pointer hover:border-red-600/50 transition-all duration-500">
             <figure className="w-full h-full m-0 p-0" onClick={() => onPlayRequest(isPlaying ? null : video)}>
                 <video ref={videoRef} src={videoUrl} loop muted={isMuted} playsInline className="w-full h-full object-cover" onCanPlay={() => setIsLoading(false)} />
                 <div className={`absolute inset-0 bg-black/20 transition-opacity flex items-center justify-center ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
@@ -276,7 +276,7 @@ export const Portfolio: React.FC<any> = ({
                     nextSectionTitle="Edits"
                 />
 
-                <div id="video-editing" className="mb-24 md:mb-32 px-4 md:px-0">
+                <div id="video-editing" className="mb-24 md:mb-32 px-6 md:px-0">
                     <div className="flex items-center gap-4 mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
                         <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
                             <YouTubeIcon className="w-5 h-5 md:w-6 md:h-6" />
@@ -327,7 +327,7 @@ export const Portfolio: React.FC<any> = ({
                     </div>
                 </div>
 
-                <div id="vfx-animations" className="mb-24 md:mb-32 px-4 md:px-0" ref={vfxRef as any}>
+                <div id="vfx-animations" className="mb-24 md:mb-32 px-6 md:px-0" ref={vfxRef as any}>
                      <div className="flex items-center gap-4 mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
                         <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
                             <VfxIcon className="w-5 h-5 md:w-6 md:h-6" />
@@ -337,7 +337,7 @@ export const Portfolio: React.FC<any> = ({
                             <h3 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter">VFX Mastery</h3>
                         </div>
                     </div>
-                    <motion.div variants={containerVariants} initial="hidden" animate={vfxInView ? "visible" : "hidden"} className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                    <motion.div variants={containerVariants} initial="hidden" animate={vfxInView ? "visible" : "hidden"} className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-7xl mx-auto">
                         {vfxWorks.map((video: any) => (
                             <VfxVideoPlayer key={video.id} video={video} currentlyPlaying={playingVfxVideo} pipVideo={pipVideo} onPlayRequest={setPlayingVfxVideo} setPipVideo={setPipVideo} currentTime={currentTime} setCurrentTime={setCurrentTime} variants={itemVariants} />
                         ))}

@@ -24,6 +24,7 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getDatabase(app);
 
 const OWNER_HANDLE = 'fuadeditingzone';
+const ADMIN_HANDLE = 'studiomuzammil';
 
 interface NavProps {
   onScrollTo: (section: string) => void;
@@ -93,14 +94,22 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
     );
 };
 
+const isVerified = (username: string) => username === OWNER_HANDLE || username === ADMIN_HANDLE;
+
 export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketplace, onOpenChatWithUser, onOpenProfile, activeRoute }) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const siteBrandingName = isVerified(OWNER_HANDLE) ? (
+      <div className="flex items-center gap-1">
+          <span className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</span>
+          <i className="fa-solid fa-circle-check text-[14px] verified-badge-owner"></i>
+      </div>
+  ) : <h1 className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</h1>;
 
   return (
     <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-[100] h-20 px-10 bg-black/40 backdrop-blur-md border-b border-white/5">
         <div onClick={() => onScrollTo('home')} className="cursor-pointer flex items-center gap-4">
             <img src={siteConfig.branding.logoUrl} alt="Logo" className="h-10 w-10 rounded-full shadow-lg" />
-             <h1 className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</h1>
+             {siteBrandingName}
         </div>
         <nav className="flex items-center gap-8">
             <button onClick={() => onScrollTo('home')} className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeRoute === 'home' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>Home</button>
@@ -127,7 +136,10 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketp
         <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-[100] h-20 px-6 bg-black/60 backdrop-blur-xl border-b border-white/5">
             <div onClick={() => onScrollTo('home')} className="flex items-center gap-3">
                 <img src={siteConfig.branding.logoUrl} alt="Logo" className="h-9 w-9 rounded-full shadow-lg" />
-                <span className="font-black text-white tracking-widest text-[10px] uppercase">FEZ ZONE</span>
+                <div className="flex items-center gap-1">
+                    <span className="font-black text-white tracking-widest text-[10px] uppercase">FEZ ZONE</span>
+                    <i className="fa-solid fa-circle-check text-[11px] verified-badge-owner"></i>
+                </div>
             </div>
             <div className="flex items-center gap-3">
                 <SignedIn>
@@ -141,22 +153,22 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketp
 };
 
 export const MobileFooterNav: React.FC<{ onScrollTo: (target: any) => void; onNavigateMarketplace: () => void; activeRoute?: string }> = ({ onScrollTo, onNavigateMarketplace, activeRoute }) => (
-    <nav className="md:hidden fixed bottom-4 left-4 right-4 z-[100] bg-black/80 backdrop-blur-3xl rounded-[2.5rem] h-20 flex justify-around items-center shadow-2xl border border-white/10 px-2">
-        <button onClick={() => onScrollTo('home')} className={`flex flex-col items-center gap-1 transition-all ${activeRoute === 'home' ? 'text-red-500' : 'text-zinc-500 hover:text-white'}`}>
-            <HomeIcon className="w-5 h-5" />
-            <span className="text-[8px] font-black uppercase tracking-widest">Home</span>
+    <nav className="md:hidden fixed bottom-6 left-6 right-6 z-[100] bg-black/80 backdrop-blur-3xl rounded-[2.5rem] h-20 flex justify-around items-center shadow-2xl border border-white/10 px-4">
+        <button onClick={() => onScrollTo('home')} className={`flex flex-col items-center gap-1 transition-all ${activeRoute === 'home' ? 'text-red-500 scale-110' : 'text-zinc-500'}`}>
+            <HomeIcon className="w-6 h-6" />
+            <span className="text-[9px] font-black uppercase tracking-widest">Home</span>
         </button>
-        <button onClick={onNavigateMarketplace} className={`flex flex-col items-center gap-1 transition-all ${activeRoute === 'marketplace' ? 'text-red-500' : 'text-zinc-500 hover:text-white'}`}>
-            <GlobeAltIcon className="w-5 h-5" />
-            <span className="text-[8px] font-black uppercase tracking-widest">Market</span>
+        <button onClick={onNavigateMarketplace} className={`flex flex-col items-center gap-1 transition-all ${activeRoute === 'marketplace' ? 'text-red-500 scale-110' : 'text-zinc-500'}`}>
+            <GlobeAltIcon className="w-6 h-6" />
+            <span className="text-[9px] font-black uppercase tracking-widest">Market</span>
         </button>
-        <button onClick={() => onScrollTo('portfolio')} className="flex flex-col items-center gap-1 text-zinc-500 hover:text-white">
-            <BriefcaseIcon className="w-5 h-5" />
-            <span className="text-[8px] font-black uppercase tracking-widest">Work</span>
+        <button onClick={() => onScrollTo('portfolio')} className={`flex flex-col items-center gap-1 transition-all text-zinc-500 hover:text-white`}>
+            <BriefcaseIcon className="w-6 h-6" />
+            <span className="text-[9px] font-black uppercase tracking-widest">Work</span>
         </button>
-        <button onClick={() => onScrollTo('contact')} className="flex flex-col items-center gap-1 text-zinc-500 hover:text-white">
-            <ChatBubbleIcon className="w-5 h-5" />
-            <span className="text-[8px] font-black uppercase tracking-widest">Order</span>
+        <button onClick={() => onScrollTo('contact')} className={`flex flex-col items-center gap-1 transition-all text-zinc-500 hover:text-white`}>
+            <ChatBubbleIcon className="w-6 h-6" />
+            <span className="text-[9px] font-black uppercase tracking-widest">Order</span>
         </button>
     </nav>
 );

@@ -167,7 +167,7 @@ export default function App() {
                     <h2 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">Marketplace</h2>
                     <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4">Discover & Collaborate Sequentially</p>
                 </div>
-                <ExploreFeed onOpenProfile={handleOpenProfile} />
+                <ExploreFeed onOpenProfile={handleOpenProfile} onOpenModal={(items, index) => setModalState({ items, currentIndex: index })} />
               </div>
             )}
           </main>

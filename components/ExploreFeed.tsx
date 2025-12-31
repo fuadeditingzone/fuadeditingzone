@@ -45,7 +45,7 @@ interface Post {
     comments?: Record<string, Comment>;
 }
 
-export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void }> = ({ onOpenProfile }) => {
+export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpenModal?: (items: any[], index: number) => void }> = ({ onOpenProfile, onOpenModal }) => {
     const { user, isSignedIn } = useUser();
     const [posts, setPosts] = useState<Post[]>([]);
     const [isUploading, setIsUploading] = useState(false);
@@ -181,8 +181,8 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void }> = (
                 </div>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-                {posts.map((post) => {
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 px-6 md:px-0">
+                {posts.map((post, idx) => {
                     const postLikes = Object.keys(post.likes || {}).length;
                     const isLikedByMe = user ? !!post.likes?.[user.id] : false;
                     const isMyPost = user?.id === post.userId;
@@ -202,13 +202,19 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void }> = (
                                 </div>
                                 <div className="flex gap-2">
                                     {isMyPost && <button onClick={() => handleDelete(post.id)} className="p-2 rounded-full bg-white/5 text-zinc-600 hover:text-red-600 transition-all"><i className="fa-solid fa-trash text-xs"></i></button>}
-                                    <button onClick={() => handleShare(post.id)} className="p-2 rounded-full bg-white/5 text-zinc-500 hover:text-white transition-all"><CopyIcon className="w-4 h-4" /></button>
+                                    <button onClick={() => handleShare(post.id)} title="Copy Post Link" className="p-2 rounded-full bg-white/5 text-zinc-500 hover:text-white transition-all"><CopyIcon className="w-4 h-4" /></button>
                                 </div>
                             </div>
 
                             {post.mediaUrl && (
-                                <div className="aspect-square bg-black flex items-center justify-center relative group overflow-hidden border-b border-white/5">
-                                    {post.mediaType === 'video' ? <video src={post.mediaUrl} controls className="w-full h-full object-contain" /> : <img src={post.mediaUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />}
+                                <div 
+                                    className="aspect-square bg-black flex items-center justify-center relative group overflow-hidden border-b border-white/5 cursor-pointer"
+                                    onClick={() => onOpenModal?.(posts, idx)}
+                                >
+                                    {post.mediaType === 'video' ? <video src={post.mediaUrl} className="w-full h-full object-contain" /> : <img src={post.mediaUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />}
+                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                        <EyeIcon className="w-8 h-8 text-white/80" />
+                                    </div>
                                 </div>
                             )}
 
