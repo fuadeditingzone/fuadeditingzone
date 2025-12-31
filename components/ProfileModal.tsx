@@ -37,7 +37,8 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
         bio: '',
         chatPassword: '',
         allowMessages: true,
-        showOnline: true
+        showOnline: true,
+        hideSocialStats: false
     });
 
     useEffect(() => {
@@ -146,6 +147,19 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                                         <div>
                                             <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-3 block ml-1">Professional Bio</label>
                                             <textarea rows={4} value={profileData.bio} onChange={e => setProfileData({...profileData, bio: e.target.value})} placeholder="Professional summary..." className="w-full bg-white/5 border border-white/10 rounded-3xl py-5 px-6 text-sm text-white focus:border-red-600 outline-none resize-none transition-all shadow-inner" />
+                                        </div>
+
+                                        <div className="flex items-center justify-between p-6 bg-white/5 border border-white/10 rounded-2xl">
+                                            <div>
+                                                <h4 className="text-white text-xs font-bold uppercase tracking-widest">Public Social Stats</h4>
+                                                <p className="text-[9px] text-gray-500 uppercase font-medium">Show followers/following counts to others</p>
+                                            </div>
+                                            <button 
+                                                onClick={() => setProfileData({...profileData, hideSocialStats: !profileData.hideSocialStats})}
+                                                className={`w-12 h-6 rounded-full transition-all relative ${profileData.hideSocialStats ? 'bg-gray-700' : 'bg-red-600'}`}
+                                            >
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${profileData.hideSocialStats ? 'left-1' : 'left-7'}`}></div>
+                                            </button>
                                         </div>
 
                                         <div>

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, push, onChildAdded, onValue, set, update, get, remove, runTransaction, query, limitToLast } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { SparklesIcon, SendIcon, UserCircleIcon, GlobeAltIcon, CheckCircleIcon, CloseIcon, ChatBubbleIcon, VolumeOffIcon, VolumeOnIcon, EyeIcon, HandThumbUpIcon, ChevronRightIcon } from './Icons';
+import { SparklesIcon, SendIcon, UserCircleIcon, GlobeAltIcon, CheckCircleIcon, CloseIcon, ChatBubbleIcon, VolumeOffIcon, VolumeOnIcon, EyeIcon, HandThumbUpIcon, ChevronRightIcon, SearchIcon } from './Icons';
 
 const firebaseConfig = {
   databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
@@ -21,7 +21,6 @@ const db = getDatabase();
 const OWNER_HANDLE = 'fuadeditingzone';
 const ADMIN_HANDLE = 'studiomuzammil';
 
-// FIX: Added RECOMMENDED_PROFESSIONS constant to resolve "Cannot find name" error in Profile Setup.
 const RECOMMENDED_PROFESSIONS = [
     'VFX Editor', 'Motion Designer', 'YouTuber', 'Photo Artist', 
     'Logo Designer', '3D Modeler', 'Video Editor', 'Graphic Designer', 'Thumbnail Artist'
@@ -32,12 +31,6 @@ interface RatingStats {
     count: number;
 }
 
-interface SocialStats {
-    followers: number;
-    following: number;
-    friends: number;
-}
-
 interface Profile {
   role: 'Client' | 'Designer' | 'Editor';
   profession: string;
@@ -45,6 +38,7 @@ interface Profile {
   bio: string;
   chatPassword?: string;
   rating?: RatingStats;
+  hideSocialStats?: boolean;
 }
 
 interface ChatUser {
@@ -96,7 +90,6 @@ const AgentProfileModal: React.FC<{
   const isOwner = user.username === OWNER_HANDLE;
   const isAdmin = user.username === ADMIN_HANDLE;
   const isImmune = isOwner || isAdmin;
-  const [copied, setCopied] = useState(false);
   const [socialState, setSocialState] = useState({ isFollowing: false, friendStatus: 'none', stats: { followers: 0, following: 0, friends: 0 } });
   
   useEffect(() => {
@@ -123,7 +116,7 @@ const AgentProfileModal: React.FC<{
           await remove(ref(db, `social/${user.id}/followers/${currentUser.id}`));
       } else {
           await set(ref(db, path), true);
-          await set(ref(db, `social/${user.id}/followers/${currentUser.id}`));
+          await set(ref(db, `social/${user.id}/followers/${currentUser.id}`), true);
       }
   };
 
@@ -155,7 +148,7 @@ const AgentProfileModal: React.FC<{
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-6"
+      className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-6"
       onClick={onClose}
     >
       <motion.div 
@@ -177,12 +170,16 @@ const AgentProfileModal: React.FC<{
                     <StarRating rating={user.profile?.rating?.average || 0} onRate={currentUser?.id !== user.id ? handleRate : undefined} />
                     <span className="text-[10px] font-black text-gray-500 uppercase">({user.profile?.rating?.count || 0} Ratings)</span>
                 </div>
-                <div className="flex gap-4 mb-6">
-                    <div className="text-center"><p className="text-white font-black text-lg">{socialState.stats.followers}</p><p className="text-[8px] text-gray-500 uppercase font-black">Followers</p></div>
-                    <div className="text-center"><p className="text-white font-black text-lg">{socialState.stats.friends}</p><p className="text-[8px] text-gray-500 uppercase font-black">Friends</p></div>
-                </div>
+
+                {!user.profile?.hideSocialStats && (
+                    <div className="flex gap-4 mb-6 justify-center">
+                        <div className="text-center"><p className="text-white font-black text-lg">{socialState.stats.followers}</p><p className="text-[8px] text-gray-500 uppercase font-black">Followers</p></div>
+                        <div className="text-center"><p className="text-white font-black text-lg">{socialState.stats.friends}</p><p className="text-[8px] text-gray-500 uppercase font-black">Friends</p></div>
+                    </div>
+                )}
+
                 {currentUser?.id !== user.id && (
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 justify-center">
                         <button onClick={handleFollow} className={`px-8 py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white shadow-lg'}`}>
                             {socialState.isFollowing ? 'Unfollow' : 'Follow'}
                         </button>
@@ -230,6 +227,8 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
   const [viewingProfile, setViewingProfile] = useState<ChatUser | null>(null);
   const [isGlobal, setIsGlobal] = useState(true);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [blockedIds, setBlockedIds] = useState<string[]>([]);
@@ -238,10 +237,15 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
   const [isUnlocked, setIsUnlocked] = useState(false);
   
   const [showSetup, setShowSetup] = useState(false);
-  const [setupData, setSetupData] = useState<Profile>({ role: 'Client', profession: '', experience: '', bio: '', chatPassword: '' });
+  const [setupData, setSetupData] = useState<Profile>({ role: 'Client', profession: '', experience: '', bio: '', chatPassword: '', hideSocialStats: false });
   const [isProfDropdownOpen, setIsProfDropdownOpen] = useState(false);
   const [profSearch, setProfSearch] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isSearchOpen || viewingProfile) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'unset';
+  }, [isSearchOpen, viewingProfile]);
 
   useEffect(() => {
     if (!clerkUser) return;
@@ -341,6 +345,15 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
     return sorted;
   }, [users, clerkUser, blockedIds]);
 
+  const searchResults = useMemo(() => {
+      if (!searchQuery.trim()) return [];
+      return users.filter(u => 
+        (u.username?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+         u.name?.toLowerCase().includes(searchQuery.toLowerCase())) &&
+         u.id !== clerkUser?.id
+      );
+  }, [searchQuery, users, clerkUser]);
+
   const handleChatUnlock = () => {
     const myProfile = users.find(u => u.id === clerkUser?.id)?.profile;
     if (!myProfile?.chatPassword || unlockPassword === myProfile.chatPassword) {
@@ -371,6 +384,34 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                 onToggleBlock={() => toggleBlock(viewingProfile.id)}
                 onToggleMute={() => toggleMute(viewingProfile.id)}
             />
+        )}
+
+        {isSearchOpen && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[80000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4">
+                <div className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col max-h-[85vh] shadow-[0_40px_100px_rgba(0,0,0,1)]">
+                    <div className="flex justify-between items-center mb-8">
+                        <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Search Agents</h3>
+                        <button onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }} className="p-3 bg-white/5 rounded-full hover:bg-white/10 transition-colors"><CloseIcon className="w-6 h-6 text-gray-400" /></button>
+                    </div>
+                    <div className="relative mb-8">
+                        <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+                        <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Username or Agent Name..." className="w-full bg-black border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white text-sm outline-none focus:border-red-600 transition-all" />
+                    </div>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+                        {searchResults.length === 0 && searchQuery.trim() !== '' ? (
+                            <div className="text-center py-10 opacity-20"><p className="text-xs uppercase font-black tracking-widest">No matching agents found</p></div>
+                        ) : searchResults.map(u => (
+                            <button key={u.id} onClick={() => { setViewingProfile(u); setIsSearchOpen(false); }} className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-red-600/30 transition-all">
+                                <img src={u.avatar} className="w-12 h-12 rounded-xl object-cover" />
+                                <div className="text-left">
+                                    <p className="text-[11px] font-black uppercase text-white tracking-widest">{u.name}</p>
+                                    <p className="text-[9px] font-bold text-gray-600">@{u.username}</p>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </motion.div>
         )}
         
         {showSetup && (
@@ -439,6 +480,16 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                 <p className={`text-[11px] font-black uppercase tracking-widest ${isGlobal ? 'text-white' : 'text-gray-500'}`}>Public Grid</p>
                 <p className="text-[8px] text-gray-600 font-bold uppercase">Community Sync</p>
               </div>
+            </button>
+
+            <button onClick={() => setIsSearchOpen(true)} className="flex items-center gap-4 p-7 border-b border-white/5 transition-all flex-shrink-0 hover:bg-white/5">
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center border bg-white/5 border-white/10 text-gray-500">
+                    <SearchIcon className="w-5 h-5" />
+                </div>
+                <div className="text-left min-w-0 flex-1">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-gray-500">Search Agents</p>
+                    <p className="text-[8px] text-gray-600 font-bold uppercase">Find Transmissions</p>
+                </div>
             </button>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar min-h-0">
