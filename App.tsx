@@ -25,6 +25,7 @@ import { VideoPipPlayer } from './components/VideoPipPlayer';
 import { YouTubeRedirectPopup } from './components/YouTubeRedirectPopup';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { ProfileModal } from './components/ProfileModal';
+import { ExploreFeed } from './components/ExploreFeed';
 
 const firebaseConfig = {
   databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
@@ -37,115 +38,32 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getDatabase(app);
 
-const MessageToaster: React.FC<{ userId: string; onOpenChat: (senderId: string) => void }> = ({ userId, onOpenChat }) => {
-    const [toast, setToast] = useState<any>(null);
-    const lastMessageRef = useRef<number>(Date.now());
-
-    useEffect(() => {
-        const inboxRef = query(ref(db, `inbox/${userId}`), limitToLast(1));
-        return onValue(inboxRef, (snap) => {
-            const data = snap.val();
-            if (data) {
-                const [senderId, info]: [string, any] = Object.entries(data)[0];
-                if (info.timestamp > lastMessageRef.current) {
-                    onValue(ref(db, `users/${senderId}`), (uSnap) => {
-                        const u = uSnap.val();
-                        if (u) setToast({ senderId, senderName: u.name, senderAvatar: u.avatar, text: info.lastMessage });
-                    }, { onlyOnce: true });
-                    setTimeout(() => setToast(null), 8000);
-                }
-            }
-        });
-    }, [userId]);
-
-    return (
-        <AnimatePresence>
-            {toast && (
-                <motion.div initial={{ opacity: 0, y: -120 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} onClick={() => onOpenChat(toast.senderId)} className="fixed top-24 right-4 z-[1000000] w-full max-w-[350px] cursor-pointer">
-                    <div className="bg-black/90 backdrop-blur-3xl border border-red-600/30 rounded-2xl p-4 shadow-2xl flex gap-4 items-center">
-                        <img src={toast.senderAvatar} className="w-12 h-12 rounded-xl object-cover" alt="" />
-                        <div className="flex-1 min-w-0">
-                            <p className="text-xs font-black text-white uppercase">{toast.senderName}</p>
-                            <p className="text-[10px] text-gray-400 line-clamp-1 italic">"{toast.text}"</p>
-                        </div>
-                    </div>
-                </motion.div>
-            )}
-        </AnimatePresence>
-    );
-};
-
 export default function App() {
   const { isSignedIn, user } = useUser();
   const [isYouTubeApiReady, setIsYouTubeApiReady] = useState(false);
   const [modalState, setModalState] = useState<{ items: ModalItem[]; currentIndex: number } | null>(null);
-  const [isGalleryGridOpen, setIsGalleryGridOpen] = useState(false);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-  const [isServicesPopupOpen, setIsServicesPopupOpen] = useState(false);
   const [isCommunityChatOpen, setIsCommunityChatOpen] = useState(false);
   const [targetUserId, setTargetUserId] = useState<string | null>(null);
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
+  const [isServicesPopupOpen, setIsServicesPopupOpen] = useState(false);
   const [isYouTubeRedirectOpen, setIsYouTubeRedirectOpen] = useState(false);
-  const [isNavVisible, setIsNavVisible] = useState(true);
   const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.content.portfolio.animeEdits[0].videoId || 'oAEDU-nycsE');
   const [isYtPlaying, setIsYtPlaying] = useState(false);
   const [playingVfxVideo, setPlayingVfxVideo] = useState<VideoWork | null>(null);
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
-  const isAnyOverlayActive = !!(modalState || isGalleryGridOpen || isServicesPopupOpen || isYouTubeRedirectOpen || contextMenu || isCommunityChatOpen || viewingProfileId);
+  const isAnyOverlayActive = !!(modalState || isServicesPopupOpen || isYouTubeRedirectOpen || isCommunityChatOpen || viewingProfileId);
 
   useEffect(() => {
-    if (isAnyOverlayActive) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    if (isAnyOverlayActive) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'unset';
   }, [isAnyOverlayActive]);
-
-  // Clerk <-> Firebase Identity Sync Logic
-  useEffect(() => {
-    if (isSignedIn && user) {
-      const syncIdentity = async () => {
-        const userRef = ref(db, `users/${user.id}`);
-        const snap = await get(userRef);
-        const data = snap.val();
-        
-        const updates: any = {
-          name: user.fullName || user.username,
-          avatar: user.imageUrl,
-          id: user.id
-        };
-
-        if (data) {
-          if (data.username !== user.username) {
-            updates.username = user.username;
-            // Store change notification permanently
-            await push(ref(db, `notifications/${user.id}`), {
-              type: 'identity_update',
-              fromId: 'system',
-              fromName: 'FEZ Protocol',
-              fromAvatar: siteConfig.branding.logoUrl,
-              text: `Username evolved from @${data.username} to @${user.username}`,
-              timestamp: Date.now(),
-              read: false
-            });
-          }
-          await update(userRef, updates);
-        } else {
-          updates.username = user.username;
-          await update(userRef, updates);
-        }
-      };
-      syncIdentity();
-    }
-  }, [isSignedIn, user]);
 
   // Dynamic Routing Logic
   useEffect(() => {
     const handleRouting = async () => {
       const path = window.location.pathname;
-      
       if (path.startsWith('/@')) {
         const handle = path.replace('/@', '');
         if (handle) {
@@ -157,22 +75,7 @@ export default function App() {
           }
         }
       } 
-      else if (path.startsWith('/portfolio/')) {
-        const itemId = path.replace('/portfolio/', '');
-        if (itemId) {
-          const allItems = [
-            ...siteConfig.content.portfolio.graphicWorks,
-            ...siteConfig.content.portfolio.animeEdits,
-            ...siteConfig.content.portfolio.vfxEdits
-          ];
-          const foundIdx = allItems.findIndex(item => String(item.id) === itemId);
-          if (foundIdx !== -1) {
-            setModalState({ items: allItems, currentIndex: foundIdx });
-          }
-        }
-      }
     };
-
     handleRouting();
     window.addEventListener('popstate', handleRouting);
     return () => window.removeEventListener('popstate', handleRouting);
@@ -188,7 +91,7 @@ export default function App() {
 
   const handleCloseProfile = () => {
     setViewingProfileId(null);
-    if (!modalState) window.history.pushState(null, '', '/');
+    window.history.pushState(null, '', '/');
   };
 
   const handleOpenModal = (items: ModalItem[], index: number) => {
@@ -201,19 +104,6 @@ export default function App() {
     setModalState(null);
     if (!viewingProfileId) window.history.pushState(null, '', '/');
   };
-
-  // Push Notification Token Setup
-  useEffect(() => {
-    if (isSignedIn && user) {
-      const messaging = getMessaging(app);
-      getToken(messaging, { vapidKey: 'BC8L_97G_rR8e7B1-XhH7bW4K9p3H7yXv8J4l9s6M1G3r5P2Q4z6X8C0V2B4N6M8L0K2J4H6G8F' })
-        .then((currentToken) => {
-          if (currentToken) {
-            update(ref(db, `users/${user.id}`), { fcmToken: currentToken });
-          }
-        });
-    }
-  }, [isSignedIn, user]);
 
   useEffect(() => {
     if (!(window as any).YT) {
@@ -229,24 +119,28 @@ export default function App() {
     document.getElementById(target)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleOpenChat = (userId: string) => {
-      setTargetUserId(userId);
-      setIsCommunityChatOpen(true);
-  };
-
   return (
     <ParallaxProvider>
-      <div className="text-white min-h-screen bg-black" onContextMenu={e => { e.preventDefault(); if(!isAnyOverlayActive) setContextMenu({ x: e.clientX, y: e.clientY }); }}>
+      <div className="text-white min-h-screen bg-black">
           <VFXBackground /><MediaGridBackground />
-          <div className={`transition-all fixed top-0 left-0 right-0 z-50 ${(isNavVisible) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
-            <DesktopHeader onScrollTo={handleScrollTo} onOpenChatWithUser={handleOpenChat} onOpenProfile={handleOpenProfile} />
-            <MobileHeader onScrollTo={handleScrollTo} onOpenChatWithUser={handleOpenChat} onOpenProfile={handleOpenProfile} />
+          <div className={`transition-all fixed top-0 left-0 right-0 z-50`}>
+            <DesktopHeader onScrollTo={handleScrollTo} onOpenChatWithUser={(id) => { setTargetUserId(id); setIsCommunityChatOpen(true); }} onOpenProfile={handleOpenProfile} />
+            <MobileHeader onScrollTo={handleScrollTo} onOpenChatWithUser={(id) => { setTargetUserId(id); setIsCommunityChatOpen(true); }} onOpenProfile={handleOpenProfile} />
           </div>
           
-          {isSignedIn && user && <MessageToaster userId={user.id} onOpenChat={handleOpenChat} />}
-
           <main className="main-content relative z-10 pb-20 md:pb-0">
               <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
+              
+              <section id="explore" className="py-20 bg-black/50 backdrop-blur-sm">
+                  <div className="container mx-auto">
+                    <div className="text-center mb-16">
+                        <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-4 block">Visual Discovery</span>
+                        <h2 className="text-white text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none">Explore Feed</h2>
+                    </div>
+                    <ExploreFeed />
+                  </div>
+              </section>
+
               <Portfolio openModal={handleOpenModal} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
               <CommunityChat onShowProfile={handleOpenProfile} />
               <Contact onStartOrder={() => {}} />
@@ -265,14 +159,12 @@ export default function App() {
           </AnimatePresence>
 
           <ProfileModal isOpen={!!viewingProfileId} onClose={handleCloseProfile} viewingUserId={viewingProfileId} />
-
           {modalState && <ModalViewer state={modalState} onClose={handleCloseModal} onNext={(idx) => handleOpenModal(modalState.items, idx)} onPrev={(idx) => handleOpenModal(modalState.items, idx)} />}
           {isServicesPopupOpen && <ServicesListPopup onClose={() => setIsServicesPopupOpen(false)} />}
-          {isYouTubeRedirectOpen && <YouTubeRedirectPopup onClose={() => setIsYouTubeRedirectOpen(false)} onConfirm={() => { setIsYouTubeRedirectOpen(false); handleScrollTo('video-editing'); }} />}
+          {isYouTubeRedirectOpen && <YouTubeRedirectPopup onClose={() => setIsYouTubeRedirectOpen(false)} onConfirm={() => { setIsYouTubeRedirectOpen(false); handleScrollTo('portfolio'); }} />}
           {pipVideo && <VideoPipPlayer video={pipVideo} onClose={() => setPipVideo(null)} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />}
-          {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} onClose={() => setContextMenu(null)} onGalleryOpen={() => setIsGalleryGridOpen(true)} />}
           <PwaInstallPrompt />
-          <div className={`transition-all fixed bottom-0 left-0 right-0 z-40 ${(isNavVisible) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
+          <div className={`transition-all fixed bottom-0 left-0 right-0 z-40`}>
             <MobileFooterNav onScrollTo={handleScrollTo} />
           </div>
       </div>
