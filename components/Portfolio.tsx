@@ -47,7 +47,7 @@ const PortfolioSection: React.FC<{
     }[aspectRatio];
 
     return (
-        <div id={id} ref={ref as any} className="mb-24 md:mb-32 last:mb-0 px-6 md:px-0">
+        <div id={id} ref={ref as any} className="mb-24 md:mb-32 last:mb-0 px-4 md:px-0 overflow-visible">
             <div className="flex items-center gap-4 mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
                     {icon}
@@ -62,7 +62,7 @@ const PortfolioSection: React.FC<{
                 variants={containerVariants}
                 initial="hidden"
                 animate={inView ? "visible" : "hidden"}
-                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 overflow-hidden max-w-7xl mx-auto"
+                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto px-2 md:px-0"
             >
                 {works.map((work, index) => (
                     <motion.div 
@@ -73,7 +73,7 @@ const PortfolioSection: React.FC<{
                     >
                         <img 
                             src={work.imageUrl || work.thumbnailUrl || (work.mediaUrl && work.mediaType === 'image' ? work.mediaUrl : `https://i.ytimg.com/vi/${work.videoId}/mqdefault.jpg`)} 
-                            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             alt=""
                         />
                         {work.mediaType === 'video' && (
@@ -337,7 +337,7 @@ export const Portfolio: React.FC<any> = ({
                             <h3 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter">VFX Mastery</h3>
                         </div>
                     </div>
-                    <motion.div variants={containerVariants} initial="hidden" animate={vfxInView ? "visible" : "hidden"} className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-7xl mx-auto">
+                    <motion.div variants={containerVariants} initial="hidden" animate={vfxInView ? "visible" : "hidden"} className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-7xl mx-auto px-2 md:px-0">
                         {vfxWorks.map((video: any) => (
                             <VfxVideoPlayer key={video.id} video={video} currentlyPlaying={playingVfxVideo} pipVideo={pipVideo} onPlayRequest={setPlayingVfxVideo} setPipVideo={setPipVideo} currentTime={currentTime} setCurrentTime={setCurrentTime} variants={itemVariants} />
                         ))}

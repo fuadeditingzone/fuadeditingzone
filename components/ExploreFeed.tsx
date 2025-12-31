@@ -4,7 +4,7 @@ import { useUser, SignInButton } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, push, onValue, query, limitToLast, set, update, get, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { siteConfig } from '../config';
-import { PhotoManipulationIcon, SendIcon, CopyIcon, PlayIcon, SparklesIcon, CloseIcon, CheckCircleIcon, ChatBubbleIcon, EyeIcon } from './Icons';
+import { PhotoManipulationIcon, SendIcon, CopyIcon, PlayIcon, SparklesIcon, CloseIcon, CheckCircleIcon, ChatBubbleIcon, EyeIcon, ThreeDotsIcon } from './Icons';
 
 const firebaseConfig = {
   databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
@@ -56,6 +56,9 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
     const [activeCommentsPost, setActiveCommentsPost] = useState<string | null>(null);
     const [newComment, setNewComment] = useState('');
     const [shareToast, setShareToast] = useState(false);
+    const [activeMenu, setActiveMenu] = useState<string | null>(null);
+    const [editingPostId, setEditingPostId] = useState<string | null>(null);
+    const [editCaption, setEditCaption] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const isOwner = user?.username === OWNER_HANDLE;
@@ -78,6 +81,14 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
     const handleDelete = async (postId: string) => {
         if (!window.confirm("Permanent Deletion Request: Continue?")) return;
         await remove(ref(db, `explore_posts/${postId}`));
+        setActiveMenu(null);
+    };
+
+    const handleUpdateCaption = async (postId: string) => {
+        if (!editCaption.trim()) return;
+        await update(ref(db, `explore_posts/${postId}`), { caption: editCaption.trim() });
+        setEditingPostId(null);
+        setEditCaption('');
     };
 
     const handleUpload = async () => {
@@ -181,7 +192,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                 </div>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 px-6 md:px-0">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 px-4 md:px-0">
                 {posts.map((post, idx) => {
                     const postLikes = Object.keys(post.likes || {}).length;
                     const isLikedByMe = user ? !!post.likes?.[user.id] : false;
@@ -189,20 +200,41 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                     const commentsList = Object.entries(post.comments || {}).map(([id, val]) => ({ id, ...val }));
 
                     return (
-                        <motion.div key={post.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#080808] border border-white/5 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-xl flex flex-col h-fit">
+                        <motion.div key={post.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#080808] border border-white/5 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-xl flex flex-col h-fit relative">
                             <div className="p-4 flex items-center justify-between bg-black/40">
                                 <div className="flex items-center gap-3 cursor-pointer group min-w-0" onClick={() => onOpenProfile?.(post.userId)}>
                                     <img src={post.userAvatar} className="w-8 h-8 rounded-full border border-white/10 object-cover flex-shrink-0" alt="" />
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-1">
                                             <p className="text-[10px] font-black text-white uppercase truncate group-hover:text-red-500 transition-colors">@{post.userName}</p>
-                                            {isVerified(post.userName) && <i className={`fa-solid fa-circle-check text-[10px] verified-badge-owner`}></i>}
+                                            {isVerified(post.userName) && (
+                                              <i className={`fa-solid fa-circle-check text-[10px] ${post.userName === OWNER_HANDLE ? 'verified-badge-owner' : 'verified-badge-admin'}`}></i>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    {isMyPost && <button onClick={() => handleDelete(post.id)} className="p-2 rounded-full bg-white/5 text-zinc-600 hover:text-red-600 transition-all"><i className="fa-solid fa-trash text-xs"></i></button>}
-                                    <button onClick={() => handleShare(post.id)} title="Copy Post Link" className="p-2 rounded-full bg-white/5 text-zinc-500 hover:text-white transition-all"><CopyIcon className="w-4 h-4" /></button>
+                                <div className="flex gap-1 relative">
+                                    <button onClick={() => handleShare(post.id)} title="Copy Post Link" className="p-2 rounded-full bg-white/5 text-zinc-500 hover:text-white transition-all"><CopyIcon className="w-3.5 h-3.5" /></button>
+                                    {isMyPost && (
+                                      <div className="relative">
+                                        <button onClick={() => setActiveMenu(activeMenu === post.id ? null : post.id)} className="p-2 rounded-full bg-white/5 text-zinc-500 hover:text-white transition-all">
+                                          <ThreeDotsIcon className="w-3.5 h-3.5" />
+                                        </button>
+                                        <AnimatePresence>
+                                          {activeMenu === post.id && (
+                                            <motion.div 
+                                              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                                              exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                              className="absolute right-0 top-full mt-2 w-32 bg-[#111] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
+                                            >
+                                              <button onClick={() => { setEditingPostId(post.id); setEditCaption(post.caption); setActiveMenu(null); }} className="w-full px-4 py-2.5 text-[9px] font-black text-white uppercase hover:bg-white/5 text-left border-b border-white/5 transition-colors">Edit Intel</button>
+                                              <button onClick={() => handleDelete(post.id)} className="w-full px-4 py-2.5 text-[9px] font-black text-red-500 uppercase hover:bg-red-500/10 text-left transition-colors">Abort Signal</button>
+                                            </motion.div>
+                                          )}
+                                        </AnimatePresence>
+                                      </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -220,7 +252,22 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
 
                             <div className="p-5 space-y-4">
                                 {post.title && <h3 className="text-xs font-black text-white uppercase tracking-tight truncate">{post.title}</h3>}
-                                <p className="text-zinc-400 text-[10px] leading-relaxed line-clamp-2">{post.caption}</p>
+                                
+                                {editingPostId === post.id ? (
+                                  <div className="space-y-2">
+                                    <textarea 
+                                      value={editCaption} 
+                                      onChange={e => setEditCaption(e.target.value)}
+                                      className="w-full bg-black border border-white/10 rounded-lg p-2 text-[10px] text-white outline-none focus:border-red-600 resize-none h-16"
+                                    />
+                                    <div className="flex gap-2">
+                                      <button onClick={() => handleUpdateCaption(post.id)} className="flex-1 bg-red-600 text-white text-[8px] font-black py-1.5 rounded-md uppercase">Save</button>
+                                      <button onClick={() => setEditingPostId(null)} className="flex-1 bg-white/5 text-zinc-500 text-[8px] font-black py-1.5 rounded-md uppercase">Cancel</button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <p className="text-zinc-400 text-[10px] leading-relaxed line-clamp-2">{post.caption}</p>
+                                )}
                                 
                                 <div className="flex items-center gap-6 pt-4 border-t border-white/5">
                                     <button onClick={() => handleLike(post.id, isLikedByMe)} className={`flex items-center gap-2 transition-all ${isLikedByMe ? 'text-red-600' : 'text-zinc-500 hover:text-white'}`}>
