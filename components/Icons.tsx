@@ -29,6 +29,12 @@ export const CopyIcon = ({ className }: IconProps) => (
     </svg>
 );
 
+export const UserGroupIcon = ({ className }: IconProps) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-2.533-4.653 12.62 12.62 0 00-4.355-.712m-2.433 3.018a3 3 0 100-6h-.025a3 3 0 000 6h.025zm-11.442 3.018a9.38 9.38 0 012.625.372 9.337 9.337 0 014.121-.952 4.125 4.125 0 01-2.533-4.653 12.62 12.62 0 01-4.355-.712m2.433 3.018a3 3 0 110-6h.025a3 3 0 010 6h-.025z" />
+    </svg>
+);
+
 export const EyeIcon = ({ className }: IconProps) => (
     <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />

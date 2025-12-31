@@ -9,7 +9,7 @@ import {
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, onValue, set, remove, push, update, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { siteConfig } from '../config';
-import { HomeIcon, BriefcaseIcon, VfxIcon, UserCircleIcon, ChatBubbleIcon, SparklesIcon, CloseIcon, CheckCircleIcon, GlobeAltIcon } from './Icons';
+import { HomeIcon, BriefcaseIcon, VfxIcon, UserCircleIcon, ChatBubbleIcon, SparklesIcon, CloseIcon, CheckCircleIcon, GlobeAltIcon, UserGroupIcon } from './Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const firebaseConfig = {
@@ -35,6 +35,64 @@ interface NavProps {
   activeRoute?: string;
 }
 
+const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; onShowUser: (id: string) => void }> = ({ isOpen, setIsOpen, onShowUser }) => {
+    const { user } = useUser();
+    const [requests, setRequests] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (!user) return;
+        const notifyRef = ref(db, `notifications/${user.id}`);
+        onValue(notifyRef, (snap) => {
+            const data = snap.val() || {};
+            const list = Object.entries(data)
+                .map(([id, info]: [string, any]) => ({ id, ...info }))
+                .filter(n => n.type === 'friend_request')
+                .sort((a, b) => b.timestamp - a.timestamp);
+            setRequests(list);
+        });
+    }, [user]);
+
+    const handleAction = async (n: any) => {
+        await update(ref(db, `notifications/${user?.id}/${n.id}`), { read: true });
+        onShowUser(n.fromId);
+        setIsOpen(false);
+    };
+
+    return (
+        <div className="relative">
+            <button onClick={() => setIsOpen(!isOpen)} className="relative p-2.5 rounded-xl bg-white/5 hover:bg-red-600/10 border border-white/5 transition-all text-gray-400 hover:text-red-500">
+                <UserGroupIcon className="w-5 h-5" />
+                {requests.some(n => !n.read) && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border-2 border-black animate-pulse"></span>}
+            </button>
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-20 md:top-full w-auto md:w-[320px] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[999999]">
+                        <div className="p-5 border-b border-white/5 bg-black flex justify-between items-center">
+                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Network Requests</span>
+                            <button onClick={() => setIsOpen(false)}><CloseIcon className="w-5 h-5 text-zinc-500" /></button>
+                        </div>
+                        <div className="max-h-[350px] overflow-y-auto custom-scrollbar p-3 space-y-2">
+                            {requests.length === 0 ? (
+                                <p className="text-[9px] uppercase font-black tracking-widest text-zinc-600 text-center py-8">No pending signals</p>
+                            ) : (
+                                requests.map((n) => (
+                                    <div key={n.id} onClick={() => handleAction(n)} className={`p-4 rounded-xl cursor-pointer transition-all border border-transparent flex gap-3 items-center ${!n.read ? 'bg-red-600/5 border-red-600/10' : 'opacity-50 hover:bg-white/5'}`}>
+                                        <img src={n.fromAvatar} className="w-8 h-8 rounded-full object-cover border border-white/10" alt="" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[11px] text-gray-200 truncate"><span className="font-black text-red-500">@{n.fromName}</span> sent a friend request.</p>
+                                            <p className="text-[8px] text-zinc-600 mt-1 uppercase font-bold">{new Date(n.timestamp).toLocaleTimeString()}</p>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
 const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; onShowUser: (id: string) => void; onGoToInbox: (id: string) => void }> = ({ isOpen, setIsOpen, onShowUser, onGoToInbox }) => {
     const { user } = useUser();
     const [notifications, setNotifications] = useState<any[]>([]);
@@ -46,7 +104,9 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
         
         onValue(notifyRef, (snap) => {
             const data = snap.val() || {};
-            const list = Object.entries(data).map(([id, info]: [string, any]) => ({ id, ...info }));
+            const list = Object.entries(data)
+                .map(([id, info]: [string, any]) => ({ id, ...info }))
+                .filter(n => n.type !== 'friend_request');
             
             onValue(globalRef, (gSnap) => {
               const gData = gSnap.val() || {};
@@ -61,6 +121,14 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
         if (n.fromId && n.fromId !== 'system') onShowUser(n.fromId);
         else if (n.type === 'daily_spotlight') window.location.pathname = '/marketplace';
         setIsOpen(false);
+    };
+
+    const getNotifyText = (n: any) => {
+        if (n.type === 'follow') return `${n.fromName} started following you.`;
+        if (n.type === 'like') return `${n.fromName} liked your post.`;
+        if (n.type === 'friend_accepted') return `${n.fromName} accepted your friend request.`;
+        if (n.type === 'new_order') return `New order from ${n.fromName}: ${n.orderName}`;
+        return n.text || "System alert received.";
     };
 
     return (
@@ -82,8 +150,13 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
                             ) : (
                                 notifications.map((n) => (
                                     <div key={n.id} onClick={() => handleNotificationClick(n)} className={`p-4 rounded-xl cursor-pointer transition-all border border-transparent ${!n.read && !n.isGlobal ? 'bg-red-600/5 border-red-600/10' : 'opacity-50 hover:bg-white/5'}`}>
-                                        <p className={`text-[11px] ${n.type === 'daily_spotlight' ? 'text-red-500 font-black' : 'text-gray-200'}`}>{n.text}</p>
-                                        <p className="text-[8px] text-zinc-600 mt-1 uppercase font-bold">{new Date(n.timestamp).toLocaleTimeString()}</p>
+                                        <div className="flex gap-3 items-center">
+                                            {n.fromAvatar && <img src={n.fromAvatar} className="w-6 h-6 rounded-full object-cover" alt="" />}
+                                            <div className="flex-1 min-w-0">
+                                                <p className={`text-[11px] ${n.type === 'daily_spotlight' ? 'text-red-500 font-black' : 'text-gray-200'}`}>{getNotifyText(n)}</p>
+                                                <p className="text-[8px] text-zinc-600 mt-1 uppercase font-bold">{new Date(n.timestamp).toLocaleTimeString()}</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 ))
                             )}
@@ -99,6 +172,7 @@ const isVerified = (username: string) => username === OWNER_HANDLE || username =
 
 export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketplace, onNavigateCommunity, onOpenChatWithUser, onOpenProfile, activeRoute }) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isRequestsOpen, setIsRequestsOpen] = useState(false);
   const siteBrandingName = isVerified(OWNER_HANDLE) ? (
       <div className="flex items-center gap-1">
           <span className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</span>
@@ -121,7 +195,8 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarket
         </nav>
         <div className="flex items-center gap-4">
             <SignedIn>
-              <NotificationHub isOpen={isNotificationsOpen} setIsOpen={setIsNotificationsOpen} onShowUser={onOpenProfile!} onGoToInbox={onOpenChatWithUser!} />
+              <RequestHub isOpen={isRequestsOpen} setIsOpen={(v) => { setIsRequestsOpen(v); setIsNotificationsOpen(false); }} onShowUser={onOpenProfile!} />
+              <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); setIsRequestsOpen(false); }} onShowUser={onOpenProfile!} onGoToInbox={onOpenChatWithUser!} />
               <UserButton appearance={{ elements: { userButtonAvatarBox: "w-10 h-10 border-2 border-red-600" } }} />
             </SignedIn>
             <SignedOut>
@@ -134,6 +209,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarket
 
 export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketplace, onNavigateCommunity, onOpenChatWithUser, onOpenProfile }) => {
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [isRequestsOpen, setIsRequestsOpen] = useState(false);
     return (
         <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-[100] h-20 px-6 bg-black/60 backdrop-blur-xl border-b border-white/5">
             <div onClick={() => onScrollTo('home')} className="flex items-center gap-3">
@@ -145,7 +221,8 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketp
             </div>
             <div className="flex items-center gap-3">
                 <SignedIn>
-                    <NotificationHub isOpen={isNotificationsOpen} setIsOpen={setIsNotificationsOpen} onShowUser={onOpenProfile!} onGoToInbox={onOpenChatWithUser!} />
+                    <RequestHub isOpen={isRequestsOpen} setIsOpen={(v) => { setIsRequestsOpen(v); setIsNotificationsOpen(false); }} onShowUser={onOpenProfile!} />
+                    <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); setIsRequestsOpen(false); }} onShowUser={onOpenProfile!} onGoToInbox={onOpenChatWithUser!} />
                     <UserButton />
                 </SignedIn>
                 <SignedOut><SignInButton mode="modal"><button className="text-[9px] font-black text-red-500 uppercase tracking-widest bg-red-600/10 px-4 py-2 rounded-lg border border-red-600/30">Verify</button></SignInButton></SignedOut>

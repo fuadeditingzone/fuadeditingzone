@@ -50,12 +50,12 @@ const updateSEO = (title: string, desc: string, image?: string, url?: string) =>
   document.querySelector('meta[property="og:type"]')?.setAttribute('content', url?.includes('/work/') || url?.includes('/post/') ? 'article' : 'website');
   
   // Twitter
-  document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', finalTitle);
-  document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', desc);
+  document.querySelector('meta[property="twitter:title"]')?.setAttribute('content', finalTitle);
+  document.querySelector('meta[property="twitter:description"]')?.setAttribute('content', desc);
   
   if (image) {
     document.querySelector('meta[property="og:image"]')?.setAttribute('content', image);
-    document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', image);
+    document.querySelector('meta[property="twitter:image"]')?.setAttribute('content', image);
     document.querySelector('meta[name="twitter:card"]')?.setAttribute('content', 'summary_large_image');
   }
   
@@ -158,6 +158,12 @@ export default function App() {
     setViewingProfileId(userId);
   };
 
+  const handleOpenChatWithUser = (userId: string) => {
+    setTargetUserId(userId);
+    setViewingProfileId(null);
+    navigateTo('community');
+  };
+
   const handleScrollTo = (target: string) => {
     if (route !== 'home') {
       navigateTo('home');
@@ -206,7 +212,7 @@ export default function App() {
               onScrollTo={handleScrollTo} 
               onNavigateMarketplace={() => navigateTo('marketplace')}
               onNavigateCommunity={() => navigateTo('community')}
-              onOpenChatWithUser={(id) => { setTargetUserId(id); navigateTo('community'); }} 
+              onOpenChatWithUser={handleOpenChatWithUser} 
               onOpenProfile={handleOpenProfile} 
               activeRoute={route}
             />
@@ -214,7 +220,7 @@ export default function App() {
               onScrollTo={handleScrollTo} 
               onNavigateMarketplace={() => navigateTo('marketplace')}
               onNavigateCommunity={() => navigateTo('community')}
-              onOpenChatWithUser={(id) => { setTargetUserId(id); navigateTo('community'); }} 
+              onOpenChatWithUser={handleOpenChatWithUser} 
               onOpenProfile={handleOpenProfile} 
             />
           </div>
@@ -262,6 +268,7 @@ export default function App() {
             onClose={() => setViewingProfileId(null)} 
             viewingUserId={viewingProfileId} 
             onOpenModal={handleSetModal}
+            onMessageUser={handleOpenChatWithUser}
           />
           {modalState && (
             <ModalViewer 

@@ -117,11 +117,18 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
         } catch (err: any) { alert(`Error: ${err.message}`); } finally { setIsUploading(false); }
     };
 
-    const handleLike = async (postId: string, isLiked: boolean) => {
+    const handleLike = async (post: Post, isLiked: boolean) => {
         if (!isSignedIn || !user) return;
-        const likeRef = ref(db, `explore_posts/${postId}/likes/${user.id}`);
+        const likeRef = ref(db, `explore_posts/${post.id}/likes/${user.id}`);
         if (isLiked) await remove(likeRef);
-        else await set(likeRef, true);
+        else {
+            await set(likeRef, true);
+            if (post.userId !== user.id) {
+                await push(ref(db, `notifications/${post.userId}`), {
+                    type: 'like', fromId: user.id, fromName: user.username || user.fullName, fromAvatar: user.imageUrl, postId: post.id, timestamp: Date.now(), read: false
+                });
+            }
+        }
     };
 
     const handleComment = async (postId: string) => {
@@ -223,7 +230,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                 <p className="text-zinc-400 text-[10px] leading-relaxed line-clamp-2">{post.caption}</p>
                                 
                                 <div className="flex items-center gap-6 pt-4 border-t border-white/5">
-                                    <button onClick={() => handleLike(post.id, isLikedByMe)} className={`flex items-center gap-2 transition-all ${isLikedByMe ? 'text-red-600' : 'text-zinc-500 hover:text-white'}`}>
+                                    <button onClick={() => handleLike(post, isLikedByMe)} className={`flex items-center gap-2 transition-all ${isLikedByMe ? 'text-red-600' : 'text-zinc-500 hover:text-white'}`}>
                                         <i className={`fa-${isLikedByMe ? 'solid' : 'regular'} fa-heart text-base`}></i>
                                         <span className="text-[10px] font-black">{postLikes}</span>
                                     </button>

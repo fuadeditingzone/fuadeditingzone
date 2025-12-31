@@ -7,7 +7,7 @@ import {
   CloseIcon, CheckCircleIcon, UserCircleIcon, SparklesIcon, GlobeAltIcon, 
   CopyIcon, InstagramIcon, FacebookIcon, ChevronRightIcon, TikTokIcon, 
   BehanceIcon, GalleryIcon, ChevronLeftIcon, PlayIcon, PhotoManipulationIcon, 
-  SendIcon, YouTubeIcon, BriefcaseIcon, ThumbnailIcon, VfxIcon, EyeIcon
+  SendIcon, YouTubeIcon, BriefcaseIcon, ThumbnailIcon, VfxIcon, EyeIcon, ChatBubbleIcon
 } from './Icons';
 import { siteConfig } from '../config';
 
@@ -41,9 +41,10 @@ interface ProfileModalProps {
   onClose: () => void;
   viewingUserId?: string | null;
   onOpenModal?: (items: any[], index: number) => void;
+  onMessageUser?: (userId: string) => void;
 }
 
-export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, viewingUserId, onOpenModal }) => {
+export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, viewingUserId, onOpenModal, onMessageUser }) => {
     const { user: clerkUser, isLoaded } = useUser();
     const [activeTab, setActiveTab] = useState<TabType>('posts');
     const [targetUser, setTargetUser] = useState<any>(null);
@@ -141,12 +142,20 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
         const followRef = ref(db, `social/${clerkUser.id}/following/${viewingUserId}`);
         const friendRef = ref(db, `social/${clerkUser.id}/friends/${viewingUserId}`);
         const reqSentRef = ref(db, `social/${clerkUser.id}/requests/sent/${viewingUserId}`);
+        const reqReceivedRef = ref(db, `social/${clerkUser.id}/requests/received/${viewingUserId}`);
         
         onValue(followRef, (snap) => setSocialState(prev => ({ ...prev, isFollowing: snap.exists() })));
         onValue(friendRef, (snap) => {
             if (snap.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'accepted' }));
             else {
-              onValue(reqSentRef, (s) => setSocialState(prev => ({ ...prev, friendStatus: s.exists() ? 'requested' : 'none' })));
+              onValue(reqSentRef, (s1) => {
+                if (s1.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'requested' }));
+                else {
+                    onValue(reqReceivedRef, (s2) => {
+                        setSocialState(prev => ({ ...prev, friendStatus: s2.exists() ? 'pending' : 'none' }));
+                    });
+                }
+              });
             }
         });
     }, [isViewingOther, clerkUser, viewingUserId]);
@@ -162,10 +171,36 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
             } else {
                 await set(ref(db, path), true);
                 await set(ref(db, followerPath), true);
+                await push(ref(db, `notifications/${viewingUserId}`), {
+                    type: 'follow', fromId: clerkUser.id, fromName: clerkUser.username || clerkUser.fullName, fromAvatar: clerkUser.imageUrl, timestamp: Date.now(), read: false
+                });
             }
         } else {
-            await set(ref(db, `social/${clerkUser.id}/requests/sent/${viewingUserId}`), { timestamp: Date.now() });
-            await set(ref(db, `social/${viewingUserId}/requests/received/${clerkUser.id}`), { timestamp: Date.now() });
+            // Friend Action logic
+            if (socialState.friendStatus === 'accepted') {
+                if (window.confirm(`Unfriend @${targetUser?.username}?`)) {
+                    await remove(ref(db, `social/${clerkUser.id}/friends/${viewingUserId}`));
+                    await remove(ref(db, `social/${viewingUserId}/friends/${clerkUser.id}`));
+                    // When unfriending, also unfollow optionally or just reset friend status
+                    setSocialState(prev => ({ ...prev, friendStatus: 'none' }));
+                }
+            } else if (socialState.friendStatus === 'pending') {
+                // Accept request
+                await remove(ref(db, `social/${clerkUser.id}/requests/received/${viewingUserId}`));
+                await remove(ref(db, `social/${viewingUserId}/requests/sent/${clerkUser.id}`));
+                await set(ref(db, `social/${clerkUser.id}/friends/${viewingUserId}`), true);
+                await set(ref(db, `social/${viewingUserId}/friends/${clerkUser.id}`), true);
+                await push(ref(db, `notifications/${viewingUserId}`), {
+                    type: 'friend_accepted', fromId: clerkUser.id, fromName: clerkUser.username || clerkUser.fullName, fromAvatar: clerkUser.imageUrl, timestamp: Date.now(), read: false
+                });
+            } else if (socialState.friendStatus === 'none') {
+                // Send request
+                await set(ref(db, `social/${clerkUser.id}/requests/sent/${viewingUserId}`), { timestamp: Date.now() });
+                await set(ref(db, `social/${viewingUserId}/requests/received/${clerkUser.id}`), { timestamp: Date.now() });
+                await push(ref(db, `notifications/${viewingUserId}`), {
+                    type: 'friend_request', fromId: clerkUser.id, fromName: clerkUser.username || clerkUser.fullName, fromAvatar: clerkUser.imageUrl, timestamp: Date.now(), read: false
+                });
+            }
         }
     };
 
@@ -269,14 +304,17 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                                             <h3 className="text-2xl md:text-4xl font-light text-white lowercase">@{targetUser?.username || clerkUser.username}</h3>
                                         )}
                                         
-                                        <div className="flex gap-3">
+                                        <div className="flex flex-wrap justify-center md:justify-start gap-3">
                                             {isViewingOther ? (
                                                 <>
                                                     <button onClick={() => handleAction('follow')} className={`px-8 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white shadow-xl shadow-red-600/20'}`}>
                                                         {socialState.isFollowing ? 'Following' : 'Follow'}
                                                     </button>
-                                                    <button onClick={() => handleAction('friend')} className="px-8 py-2.5 bg-white/5 border border-white/10 rounded-xl font-black text-[10px] uppercase tracking-widest text-white">
-                                                        {socialState.friendStatus === 'accepted' ? 'Linked' : socialState.friendStatus === 'pending' ? 'Accept' : socialState.friendStatus === 'requested' ? 'Pending' : 'Add Friend'}
+                                                    <button onClick={() => handleAction('friend')} className={`px-8 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${socialState.friendStatus === 'accepted' ? 'bg-green-600/20 border border-green-600/30 text-green-500' : 'bg-white/5 border border-white/10 text-white'}`}>
+                                                        {socialState.friendStatus === 'accepted' ? 'Friends' : socialState.friendStatus === 'pending' ? 'Accept' : socialState.friendStatus === 'requested' ? 'Pending' : 'Add Friend'}
+                                                    </button>
+                                                    <button onClick={() => onMessageUser?.(viewingUserId!)} className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl font-black text-[10px] uppercase tracking-widest text-white hover:bg-white/10 flex items-center gap-2">
+                                                        <ChatBubbleIcon className="w-4 h-4" /> Message
                                                     </button>
                                                 </>
                                             ) : (

@@ -103,14 +103,25 @@ const AgentProfileModal: React.FC<{
       } else {
           await set(ref(db, path), true);
           await set(ref(db, `social/${user.id}/followers/${currentUser.id}`), true);
+          await push(ref(db, `notifications/${user.id}`), {
+              type: 'follow', fromId: currentUser.id, fromName: currentUser.username || currentUser.fullName, fromAvatar: currentUser.imageUrl, timestamp: Date.now(), read: false
+          });
       }
   };
 
   const handleFriendAction = async () => {
       if (!currentUser) return;
-      if (socialState.friendStatus === 'none') {
+      if (socialState.friendStatus === 'accepted') {
+          if (window.confirm(`Unfriend @${user.username}?`)) {
+              await remove(ref(db, `social/${currentUser.id}/friends/${user.id}`));
+              await remove(ref(db, `social/${user.id}/friends/${currentUser.id}`));
+          }
+      } else if (socialState.friendStatus === 'none') {
           await set(ref(db, `social/${currentUser.id}/requests/sent/${user.id}`), { timestamp: Date.now() });
           await set(ref(db, `social/${user.id}/requests/received/${currentUser.id}`), { timestamp: Date.now() });
+          await push(ref(db, `notifications/${user.id}`), {
+              type: 'friend_request', fromId: currentUser.id, fromName: currentUser.username || currentUser.fullName, fromAvatar: currentUser.imageUrl, timestamp: Date.now(), read: false
+          });
       } else if (socialState.friendStatus === 'pending') {
           await remove(ref(db, `social/${currentUser.id}/requests/received/${user.id}`));
           await remove(ref(db, `social/${user.id}/requests/sent/${currentUser.id}`));
@@ -120,6 +131,9 @@ const AgentProfileModal: React.FC<{
           await set(ref(db, `social/${user.id}/followers/${currentUser.id}`), true);
           await set(ref(db, `social/${user.id}/following/${currentUser.id}`), true);
           await set(ref(db, `social/${currentUser.id}/followers/${user.id}`), true);
+          await push(ref(db, `notifications/${user.id}`), {
+              type: 'friend_accepted', fromId: currentUser.id, fromName: currentUser.username || currentUser.fullName, fromAvatar: currentUser.imageUrl, timestamp: Date.now(), read: false
+          });
       }
   };
 
@@ -143,8 +157,8 @@ const AgentProfileModal: React.FC<{
                 <button onClick={handleFollow} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white shadow-xl hover:bg-red-700'}`}>
                     {socialState.isFollowing ? 'Unfollow' : 'Follow'}
                 </button>
-                <button onClick={handleFriendAction} className="flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest bg-white/5 border border-white/10 hover:bg-white/10 text-white">
-                    {socialState.friendStatus === 'accepted' ? 'Linked' : socialState.friendStatus === 'pending' ? 'Accept' : socialState.friendStatus === 'requested' ? 'Pending' : 'Add Friend'}
+                <button onClick={handleFriendAction} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${socialState.friendStatus === 'accepted' ? 'bg-green-600/10 border border-green-600/20 text-green-500' : 'bg-white/5 border border-white/10 text-white'}`}>
+                    {socialState.friendStatus === 'accepted' ? 'Friends' : socialState.friendStatus === 'pending' ? 'Accept' : socialState.friendStatus === 'requested' ? 'Pending' : 'Add Friend'}
                 </button>
             </div>
         </div>
@@ -168,6 +182,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
   const [showConversationOnMobile, setShowConversationOnMobile] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
+  const [isFriend, setIsFriend] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -187,6 +202,16 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
       }
     });
   }, [initialTargetUserId]);
+
+  useEffect(() => {
+    if (!isGlobal && clerkUser && selectedUser) {
+        onValue(ref(db, `social/${clerkUser.id}/friends/${selectedUser.id}`), (snap) => {
+            setIsFriend(snap.exists());
+        });
+    } else {
+        setIsFriend(false);
+    }
+  }, [isGlobal, clerkUser, selectedUser]);
 
   const chatPath = useMemo(() => {
     if (isGlobal) return 'community/global';
@@ -210,6 +235,15 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isSignedIn || !inputValue.trim() || !chatPath || !clerkUser) return;
+
+    if (!isGlobal && !isFriend) {
+        const sentCount = messages.filter(m => m.senderId === clerkUser.id).length;
+        if (sentCount >= 3) {
+            alert("Message Request Limit: You can send only 3 private messages until @"+selectedUser?.username+" adds you as a Friend.");
+            return;
+        }
+    }
+
     const newMessage = { senderId: clerkUser.id, senderName: clerkUser.fullName || clerkUser.username, senderAvatar: clerkUser.imageUrl, text: inputValue.trim(), timestamp: Date.now() };
     setInputValue('');
     await push(ref(db, chatPath), newMessage);
@@ -289,6 +323,13 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                   <h4 className="text-[12px] font-black text-white uppercase tracking-widest truncate">{isGlobal ? 'Global Hub' : selectedUser?.name}</h4>
                   <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest">{isGlobal ? 'Public Frequency' : `@${selectedUser?.username}`}</p>
                </div>
+               {!isGlobal && (
+                 <div className="ml-auto flex items-center">
+                    <span className={`text-[9px] font-black uppercase px-3 py-1 rounded-full border ${isFriend ? 'border-green-600/30 text-green-500 bg-green-600/5' : 'border-yellow-600/30 text-yellow-500 bg-yellow-600/5'}`}>
+                        {isFriend ? 'Friends' : 'Message Request'}
+                    </span>
+                 </div>
+               )}
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-5 custom-scrollbar bg-black/20 min-h-0">
@@ -309,9 +350,16 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
 
             <div className="p-3 md:p-6 border-t border-white/5 bg-black/40 flex-shrink-0">
               {isSignedIn ? (
-                <form onSubmit={handleSendMessage} className="flex gap-2 bg-white/5 border border-white/10 rounded-[1.8rem] p-1.5">
-                    <input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="Type a message..." className="flex-1 bg-transparent px-4 py-2 text-sm font-bold text-white outline-none min-w-0" />
-                    <button type="submit" disabled={!inputValue.trim()} className="bg-red-600 text-white w-10 h-10 flex items-center justify-center rounded-2xl active:scale-90 transition-all shadow-2xl disabled:opacity-50 flex-shrink-0"><SendIcon className="w-4 h-4" /></button>
+                <form onSubmit={handleSendMessage} className="flex flex-col gap-2">
+                    <div className="flex gap-2 bg-white/5 border border-white/10 rounded-[1.8rem] p-1.5">
+                        <input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="Type a message..." className="flex-1 bg-transparent px-4 py-2 text-sm font-bold text-white outline-none min-w-0" />
+                        <button type="submit" disabled={!inputValue.trim()} className="bg-red-600 text-white w-10 h-10 flex items-center justify-center rounded-2xl active:scale-90 transition-all shadow-2xl disabled:opacity-50 flex-shrink-0"><SendIcon className="w-4 h-4" /></button>
+                    </div>
+                    {!isGlobal && !isFriend && (
+                        <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest text-center px-4">
+                           Unconfirmed Connection: {3 - messages.filter(m => m.senderId === clerkUser?.id).length} message credits remaining.
+                        </p>
+                    )}
                 </form>
               ) : <div className="text-center py-2"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-3 px-10 rounded-2xl uppercase text-[9px] tracking-widest shadow-2xl transition-all hover:bg-red-700 active:scale-95">Log in to Chat</button></SignInButton></div>}
             </div>
