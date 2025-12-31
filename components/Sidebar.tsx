@@ -168,23 +168,24 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
     );
 };
 
-const isVerified = (username: string) => username === OWNER_HANDLE || username === ADMIN_HANDLE;
+const getBadge = (username: string) => {
+    if (username === OWNER_HANDLE) return <i className="fa-solid fa-circle-check text-[14px] verified-badge-owner"></i>;
+    if (username === ADMIN_HANDLE) return <i className="fa-solid fa-circle-check text-[14px] verified-badge-admin"></i>;
+    return null;
+};
 
 export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketplace, onNavigateCommunity, onOpenChatWithUser, onOpenProfile, activeRoute }) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
-  const siteBrandingName = isVerified(OWNER_HANDLE) ? (
-      <div className="flex items-center gap-1">
-          <span className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</span>
-          <i className="fa-solid fa-circle-check text-[14px] verified-badge-owner"></i>
-      </div>
-  ) : <h1 className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</h1>;
-
+  
   return (
     <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-[100] h-20 px-10 bg-black/40 backdrop-blur-md border-b border-white/5">
         <div onClick={() => onScrollTo('home')} className="cursor-pointer flex items-center gap-4">
             <img src={siteConfig.branding.logoUrl} alt="Logo" className="h-10 w-10 rounded-full shadow-lg" />
-             {siteBrandingName}
+            <div className="flex items-center gap-1">
+                <span className="font-black text-white text-base uppercase tracking-[0.2em]">{siteConfig.branding.name}</span>
+                {getBadge(OWNER_HANDLE)}
+            </div>
         </div>
         <nav className="flex items-center gap-8">
             <button onClick={() => onScrollTo('home')} className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeRoute === 'home' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>Home</button>
@@ -216,7 +217,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketp
                 <img src={siteConfig.branding.logoUrl} alt="Logo" className="h-9 w-9 rounded-full shadow-lg" />
                 <div className="flex items-center gap-1">
                     <span className="font-black text-white tracking-widest text-[10px] uppercase">FEZ ZONE</span>
-                    {isVerified(OWNER_HANDLE) && <i className="fa-solid fa-circle-check text-[11px] verified-badge-owner"></i>}
+                    {getBadge(OWNER_HANDLE)}
                 </div>
             </div>
             <div className="flex items-center gap-3">

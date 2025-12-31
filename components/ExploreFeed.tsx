@@ -65,11 +65,12 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
         const unsubscribe = onValue(postsRef, (snap) => {
             const data = snap.val();
             if (data) {
+                // Fix: Spread types may only be created from object types. Using (val as any) for safer spread.
                 const list = Object.entries(data).map(([id, val]: [string, any]) => ({
                     id, 
-                    ...val
-                })).sort((a, b) => b.timestamp - a.timestamp);
-                setPosts(list);
+                    ...(val as any)
+                })).sort((a: any, b: any) => b.timestamp - a.timestamp);
+                setPosts(list as Post[]);
             }
         });
         return () => unsubscribe();
@@ -145,7 +146,11 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
         setTimeout(() => setShareToast(false), 2000);
     };
 
-    const isVerified = (username: string) => username === OWNER_HANDLE || username === ADMIN_HANDLE;
+    const getBadge = (username: string) => {
+        if (username === OWNER_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-owner ml-1"></i>;
+        if (username === ADMIN_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-admin ml-1"></i>;
+        return null;
+    };
 
     return (
         <div className="max-w-7xl mx-auto space-y-12 pb-24">
@@ -188,12 +193,13 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                 </div>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 px-6 md:px-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 px-6 md:px-0">
                 {posts.map((post, idx) => {
                     const postLikes = Object.keys(post.likes || {}).length;
                     const isLikedByMe = user ? !!post.likes?.[user.id] : false;
                     const isMyPost = user?.id === post.userId;
-                    const commentsList = Object.entries(post.comments || {}).map(([id, val]) => ({ id, ...val }));
+                    // Fix: Spread types may only be created from object types. Ensuring 'val' is any.
+                    const commentsList = Object.entries(post.comments || {}).map(([id, val]) => ({ id, ...(val as any) }));
 
                     return (
                         <article key={post.id} className="bg-[#080808] border border-white/5 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-xl flex flex-col h-fit">
@@ -201,9 +207,9 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                 <div className="flex items-center gap-3 cursor-pointer group min-w-0" onClick={() => onOpenProfile?.(post.userId)}>
                                     <img src={post.userAvatar} className="w-8 h-8 rounded-full border border-white/10 object-cover flex-shrink-0" alt={`@{post.userName} avatar`} />
                                     <div className="min-w-0">
-                                        <div className="flex items-center gap-1">
+                                        <div className="flex items-center">
                                             <p className="text-[10px] font-black text-white uppercase truncate group-hover:text-red-500 transition-colors">@{post.userName}</p>
-                                            {isVerified(post.userName) && <i className={`fa-solid fa-circle-check text-[10px] verified-badge-owner`}></i>}
+                                            {getBadge(post.userName)}
                                         </div>
                                     </div>
                                 </div>
@@ -215,10 +221,14 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
 
                             {post.mediaUrl && (
                                 <div 
-                                    className="aspect-square bg-black flex items-center justify-center relative group overflow-hidden border-b border-white/5 cursor-pointer"
+                                    className="w-full bg-black flex items-center justify-center relative group overflow-hidden border-b border-white/5 cursor-pointer"
                                     onClick={() => onOpenModal?.(posts, idx)}
                                 >
-                                    {post.mediaType === 'video' ? <video src={post.mediaUrl} className="w-full h-full object-contain" title={post.title || "Marketplace Video"} /> : <img src={post.mediaUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={post.title || post.caption || "Marketplace Artwork"} />}
+                                    {post.mediaType === 'video' ? (
+                                        <video src={post.mediaUrl} className="w-full h-auto" title={post.title || "Marketplace Video"} />
+                                    ) : (
+                                        <img src={post.mediaUrl} className="w-full h-auto" alt={post.title || post.caption || "Marketplace Artwork"} />
+                                    )}
                                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                         <EyeIcon className="w-8 h-8 text-white/80" />
                                     </div>
@@ -227,7 +237,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
 
                             <div className="p-5 space-y-4">
                                 {post.title && <h2 className="text-xs font-black text-white uppercase tracking-tight truncate">{post.title}</h2>}
-                                <p className="text-zinc-400 text-[10px] leading-relaxed line-clamp-2">{post.caption}</p>
+                                <p className="text-zinc-400 text-[10px] leading-relaxed">{post.caption}</p>
                                 
                                 <div className="flex items-center gap-6 pt-4 border-t border-white/5">
                                     <button onClick={() => handleLike(post, isLikedByMe)} className={`flex items-center gap-2 transition-all ${isLikedByMe ? 'text-red-600' : 'text-zinc-500 hover:text-white'}`}>
@@ -248,7 +258,10 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                                     <div key={c.id} className="flex gap-2 items-start">
                                                         <img src={c.userAvatar} className="w-6 h-6 rounded-full flex-shrink-0 object-cover" alt="Commenter" />
                                                         <div className="bg-white/5 p-2.5 rounded-xl flex-1 min-w-0">
-                                                            <p className="text-[8px] font-black text-white uppercase mb-0.5 truncate">@{c.userName}</p>
+                                                            <div className="flex items-center">
+                                                                <p className="text-[8px] font-black text-white uppercase mb-0.5 truncate">@{c.userName}</p>
+                                                                {getBadge(c.userName)}
+                                                            </div>
                                                             <p className="text-[10px] text-zinc-400 leading-tight">{c.text}</p>
                                                         </div>
                                                     </div>

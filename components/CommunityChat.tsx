@@ -48,6 +48,12 @@ interface Message {
   timestamp: number;
 }
 
+const getBadge = (username: string) => {
+    if (username === OWNER_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-owner text-xs"></i>;
+    if (username === ADMIN_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-admin text-xs"></i>;
+    return null;
+};
+
 const AgentProfileModal: React.FC<{ 
   user: ChatUser; 
   currentUser: any; 
@@ -74,19 +80,14 @@ const AgentProfileModal: React.FC<{
 
   useEffect(() => {
     if (!currentUser) return;
-    const followRef = ref(db, `social/${currentUser.id}/following/${user.id}`);
-    const friendRef = ref(db, `social/${currentUser.id}/friends/${user.id}`);
-    const reqSentRef = ref(db, `social/${currentUser.id}/requests/sent/${user.id}`);
-    const reqRecRef = ref(db, `social/${user.id}/requests/sent/${currentUser.id}`);
-
-    onValue(followRef, (snap) => setSocialState(prev => ({ ...prev, isFollowing: snap.exists() })));
-    onValue(friendRef, (snap) => {
+    onValue(ref(db, `social/${currentUser.id}/following/${user.id}`), (snap) => setSocialState(prev => ({ ...prev, isFollowing: snap.exists() })));
+    onValue(ref(db, `social/${currentUser.id}/friends/${user.id}`), (snap) => {
         if (snap.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'accepted' }));
         else {
-            onValue(reqSentRef, (s1) => {
+            onValue(ref(db, `social/${currentUser.id}/requests/sent/${user.id}`), (s1) => {
                 if (s1.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'requested' }));
                 else {
-                    onValue(reqRecRef, (s2) => {
+                    onValue(ref(db, `social/${currentUser.id}/requests/received/${user.id}`), (s2) => {
                         if (s2.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'pending' }));
                         else setSocialState(prev => ({ ...prev, friendStatus: 'none' }));
                     });
@@ -116,12 +117,12 @@ const AgentProfileModal: React.FC<{
       <div className="w-full max-w-[380px] bg-[#0f0f0f] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-3xl" onClick={e => e.stopPropagation()}>
         <div className="p-8 pb-6">
             <div className="flex items-center gap-5 mb-8">
-                <div className={`w-16 h-16 rounded-full p-1 border-2 flex-shrink-0 cursor-pointer ${isOwner ? 'border-red-600' : 'border-white/10'}`} onClick={() => onShowFullProfile?.(user.id)}>
+                <div className={`w-16 h-16 rounded-full p-1 border-2 flex-shrink-0 cursor-pointer ${isOwner ? 'border-red-600 shadow-[0_0_15px_rgba(255,0,0,0.4)]' : isAdmin ? 'border-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'border-white/10'}`} onClick={() => onShowFullProfile?.(user.id)}>
                     <img src={user.avatar} className="w-full h-full rounded-full object-cover" alt="" />
                 </div>
                 <div className="min-w-0">
                     <h3 className="text-white font-black text-lg truncate flex items-center gap-1 cursor-pointer" onClick={() => onShowFullProfile?.(user.id)}>
-                        {user.username} {isOwner && <i className="fa-solid fa-circle-check text-red-500 text-xs"></i>}
+                        {user.username} {getBadge(user.username)}
                     </h3>
                     <p className="text-zinc-500 text-xs font-bold truncate">@{user.username}</p>
                 </div>
@@ -273,9 +274,9 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center border flex-shrink-0 ${isGlobal ? 'bg-red-600 text-white' : 'bg-white/5 text-zinc-500'}`}><GlobeAltIcon className="w-4 h-4" /></div>
                     <div className="text-left"><p className={`text-[10px] font-black uppercase tracking-widest ${isGlobal ? 'text-white' : 'text-zinc-500'}`}>Public Hub</p></div>
                 </button>
-                <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id, 'posts', true)} className="w-full flex items-center gap-3 p-3 rounded-[1.2rem] hover:bg-white/5 transition-all group">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0 group-hover:bg-red-600 group-hover:text-white transition-all"><PhotoManipulationIcon className="w-4 h-4" /></div>
-                    <div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Broadcast</p></div>
+                <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id)} className="w-full flex items-center gap-3 p-3 rounded-[1.2rem] hover:bg-white/5 transition-all group">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0 group-hover:bg-red-600 group-hover:text-white transition-all"><UserCircleIcon className="w-4 h-4" /></div>
+                    <div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Profile</p></div>
                 </button>
                 <button onClick={() => setIsSearchOpen(true)} className="w-full flex items-center gap-3 p-3 rounded-[1.2rem] hover:bg-white/5 transition-all">
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0"><SearchIcon className="w-4 h-4" /></div>
@@ -286,9 +287,12 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar min-h-0">
               {users.filter(u => u.id !== clerkUser?.id).map(u => (
                 <button key={u.id} onClick={() => { setIsGlobal(false); setSelectedUser(u); setShowConversationOnMobile(true); }} className={`w-full flex items-center gap-3 p-3 rounded-[1.2rem] transition-all border ${selectedUser?.id === u.id && !isGlobal ? 'bg-red-600/10 border-red-600/20' : 'border-transparent hover:bg-white/5'}`}>
-                  <img src={u.avatar} className={`w-9 h-9 rounded-xl border border-white/10 object-cover flex-shrink-0`} alt="" />
+                  <img src={u.avatar} className={`w-9 h-9 rounded-xl border object-cover flex-shrink-0 ${u.username === OWNER_HANDLE ? 'border-red-600 shadow-[0_0_8px_rgba(255,0,0,0.4)]' : u.username === ADMIN_HANDLE ? 'border-blue-600 shadow-[0_0_8px_rgba(59,130,246,0.4)]' : 'border-white/10'}`} alt="" />
                   <div className="text-left flex-1 truncate">
-                    <p className="text-[10px] font-black uppercase text-white truncate">{u.name}</p>
+                    <div className="flex items-center">
+                        <p className="text-[10px] font-black uppercase text-white truncate">{u.name}</p>
+                        {getBadge(u.username)}
+                    </div>
                     <p className={`text-[8px] font-bold text-zinc-600`}>@{u.username}</p>
                   </div>
                 </button>
@@ -299,11 +303,14 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
           <div className={`flex-1 flex flex-col bg-black relative min-h-0 ${showConversationOnMobile ? 'flex' : 'hidden md:flex'}`}>
             <div className="p-4 md:p-6 border-b border-white/5 flex items-center gap-3 bg-black/40 backdrop-blur-xl flex-shrink-0">
                <button onClick={() => setShowConversationOnMobile(false)} className="md:hidden p-1.5 text-white bg-white/5 rounded-full"><ChevronLeftIcon className="w-5 h-5" /></button>
-               <div className="w-10 h-10 rounded-xl bg-red-600/15 flex items-center justify-center border border-red-600/30 overflow-hidden flex-shrink-0">
-                  {isGlobal ? <GlobeAltIcon className="w-5 h-5 text-red-600" /> : <img src={selectedUser?.avatar} className="w-full h-full object-cover" />}
+               <div className={`w-10 h-10 rounded-xl bg-red-600/15 flex items-center justify-center border overflow-hidden flex-shrink-0 ${!isGlobal && selectedUser?.username === OWNER_HANDLE ? 'border-red-600' : !isGlobal && selectedUser?.username === ADMIN_HANDLE ? 'border-blue-600' : 'border-white/10'}`}>
+                  {isGlobal ? <GlobeAltIcon className="w-5 h-5 text-red-600" /> : <img src={selectedUser?.avatar} className="w-full h-full object-cover cursor-pointer" onClick={() => onShowProfile?.(selectedUser!.id)} />}
                </div>
                <div className="flex-1 truncate">
-                  <h4 className="text-[12px] font-black text-white uppercase tracking-widest truncate">{isGlobal ? 'Global Sync' : selectedUser?.name}</h4>
+                  <h4 className="text-[12px] font-black text-white uppercase tracking-widest truncate flex items-center">
+                    {isGlobal ? 'Global Sync' : selectedUser?.name}
+                    {!isGlobal && getBadge(selectedUser!.username)}
+                  </h4>
                   <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest">{isGlobal ? 'Public Frequency' : `@${selectedUser?.username}`}</p>
                </div>
                {!isGlobal && (
@@ -320,9 +327,12 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                 const isOrder = msg.text.startsWith('[ORDER INQUIRY]');
                 return (
                   <div key={msg.id} className={`flex gap-3 ${msg.senderId === clerkUser?.id ? 'flex-row-reverse' : 'flex-row'} items-end`}>
-                    <img src={msg.senderAvatar} className="w-8 h-8 rounded-lg border border-white/5 object-cover cursor-pointer flex-shrink-0 shadow-lg" alt="" onClick={() => onShowProfile?.(msg.senderId)} />
+                    <img src={msg.senderAvatar} className={`w-8 h-8 rounded-lg border object-cover cursor-pointer flex-shrink-0 shadow-lg ${msg.senderName.includes(OWNER_HANDLE) ? 'border-red-600' : msg.senderName.includes(ADMIN_HANDLE) ? 'border-blue-600' : 'border-white/5'}`} alt="" onClick={() => onShowProfile?.(msg.senderId)} />
                     <div className={`max-w-[85%] ${msg.senderId === clerkUser?.id ? 'items-end' : 'items-start'} flex flex-col min-w-0`}>
-                        <span className="text-[8px] font-black text-zinc-600 uppercase mb-1.5 px-1 truncate max-w-full">{msg.senderName}</span>
+                        <span className="text-[8px] font-black text-zinc-600 uppercase mb-1.5 px-1 truncate max-w-full flex items-center">
+                            {msg.senderName}
+                            {getBadge(msg.senderName)}
+                        </span>
                         <div className={`p-3 md:p-4 rounded-[1.2rem] text-[12px] md:text-[13px] border whitespace-pre-wrap ${isOrder ? 'bg-red-600/20 border-red-600/50 text-white font-bold' : (msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-zinc-300 rounded-tl-none')}`} style={{ overflowWrap: 'anywhere' }}>{msg.text}</div>
                     </div>
                   </div>
