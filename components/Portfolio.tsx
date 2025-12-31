@@ -22,11 +22,9 @@ const PortfolioSection: React.FC<{
     onItemClick: (items: any[], index: number) => void;
     id: string;
     aspectRatio?: 'square' | 'video' | 'banner';
-    nextSectionId?: string;
-    nextSectionTitle?: string;
     isOwner?: boolean;
     onDeleteItem?: (work: any) => void;
-}> = ({ title, subtitle, icon, works, onItemClick, id, aspectRatio = 'square', nextSectionId, isOwner, onDeleteItem }) => {
+}> = ({ title, subtitle, icon, works, onItemClick, id, aspectRatio = 'square', isOwner, onDeleteItem }) => {
     const [ref, inView] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
     const [copyToast, setCopyToast] = useState(false);
 
@@ -61,7 +59,7 @@ const PortfolioSection: React.FC<{
     }[aspectRatio];
 
     return (
-        <div id={id} ref={ref as any} className="mb-24 md:mb-32 last:mb-0 px-4 md:px-0 overflow-visible">
+        <div id={id} ref={ref as any} className="mb-24 last:mb-0 px-4 md:px-0 overflow-visible">
             <AnimatePresence>
                 {copyToast && (
                     <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:20}} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-white text-black px-6 py-3 rounded-full font-black uppercase text-[10px] tracking-widest shadow-2xl">Preview Link Copied</motion.div>
@@ -135,20 +133,6 @@ const PortfolioSection: React.FC<{
                     </motion.div>
                 ))}
             </motion.div>
-            
-            {nextSectionId && (
-                <div className="mt-12 flex justify-center">
-                    <button 
-                        onClick={() => document.getElementById(nextSectionId)?.scrollIntoView({ behavior: 'smooth' })}
-                        className="group flex flex-col items-center gap-3 transition-all hover:scale-105"
-                    >
-                        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-white">Next Section</span>
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-red-600 transition-all">
-                            <ChevronRightIcon className="w-4 h-4 rotate-90 text-zinc-500 group-hover:text-red-500" />
-                        </div>
-                    </button>
-                </div>
-            )}
         </div>
     );
 };
@@ -367,7 +351,6 @@ export const Portfolio: React.FC<any> = ({
                     works={photoManipWorks} 
                     onItemClick={(items, index) => openModal(items, index)}
                     aspectRatio="square"
-                    nextSectionId="thumbnail-designs"
                     isOwner={isOwner}
                     onDeleteItem={handleHideOrDelete}
                 />
@@ -380,7 +363,6 @@ export const Portfolio: React.FC<any> = ({
                     works={thumbnailWorks} 
                     onItemClick={(items, index) => openModal(items, index)}
                     aspectRatio="video"
-                    nextSectionId="banner-designs"
                     isOwner={isOwner}
                     onDeleteItem={handleHideOrDelete}
                 />
@@ -393,7 +375,6 @@ export const Portfolio: React.FC<any> = ({
                     works={bannerWorks} 
                     onItemClick={(items, index) => openModal(items, index)}
                     aspectRatio="banner"
-                    nextSectionId="video-editing"
                     isOwner={isOwner}
                     onDeleteItem={handleHideOrDelete}
                 />

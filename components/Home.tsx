@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { siteConfig } from '../config';
-import { ThreeDotsIcon, CheckCircleIcon, YouTubeIcon, SparklesIcon, ChevronRightIcon } from './Icons';
+import { ThreeDotsIcon, CheckCircleIcon, YouTubeIcon, SparklesIcon } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { useAnimatedCounter } from '../hooks/useAnimatedCounter';
 import { useParallax } from '../contexts/ParallaxContext';
@@ -207,18 +207,6 @@ export const Home: React.FC<HomeProps> = ({
                         </div>
                     </motion.div>
                 </div>
-                
-                {/* Scroll Down Navigation Button */}
-                <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={isImageLoaded ? { opacity: 1 } : { opacity: 0 }}
-                    transition={{ delay: 2.2, duration: 1 }}
-                    onClick={() => document.getElementById('portfolio')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="mt-16 flex flex-col items-center gap-3 group animate-bounce"
-                >
-                    <span className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-white transition-colors">See My Work</span>
-                    <div className="w-px h-12 bg-gradient-to-b from-red-600 to-transparent"></div>
-                </motion.button>
             </motion.div>
         </section>
     );

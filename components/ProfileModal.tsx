@@ -89,20 +89,27 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                 if (!isEditing) setEditData(initializedData);
             });
 
-            onValue(ref(db, `social/${currentProfileId}/followers`), (snap) => {
+            const unsubFollowers = onValue(ref(db, `social/${currentProfileId}/followers`), (snap) => {
               const data = snap.val() || {};
               setSocialState(prev => ({ ...prev, followers: Object.keys(data) }));
             });
-            onValue(ref(db, `social/${currentProfileId}/following`), (snap) => {
+            const unsubFollowing = onValue(ref(db, `social/${currentProfileId}/following`), (snap) => {
               const data = snap.val() || {};
               setSocialState(prev => ({ ...prev, following: Object.keys(data) }));
             });
 
             const postsQuery = query(ref(db, 'explore_posts'), orderByChild('userId'), equalTo(currentProfileId));
-            onValue(postsQuery, (snap) => {
+            const unsubPosts = onValue(postsQuery, (snap) => {
                 const data = snap.val();
                 setUserPosts(data ? Object.values(data).sort((a: any, b: any) => b.timestamp - a.timestamp) : []);
             });
+
+            return () => {
+                unsubUser();
+                unsubFollowers();
+                unsubFollowing();
+                unsubPosts();
+            }
         }
     }, [isOpen, currentProfileId, isEditing]);
 
@@ -122,8 +129,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
 
     useEffect(() => {
         if (!isViewingOther || !clerkUser || !viewingUserId) return;
-        onValue(ref(db, `social/${clerkUser.id}/following/${viewingUserId}`), (snap) => setSocialState(prev => ({ ...prev, isFollowing: snap.exists() })));
-        onValue(ref(db, `social/${clerkUser.id}/friends/${viewingUserId}`), (snap) => {
+        const unsubFol = onValue(ref(db, `social/${clerkUser.id}/following/${viewingUserId}`), (snap) => setSocialState(prev => ({ ...prev, isFollowing: snap.exists() })));
+        const unsubFri = onValue(ref(db, `social/${clerkUser.id}/friends/${viewingUserId}`), (snap) => {
             if (snap.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'accepted' }));
             else {
               onValue(ref(db, `social/${clerkUser.id}/requests/sent/${viewingUserId}`), (s1) => {
@@ -136,6 +143,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
               });
             }
         });
+        return () => { unsubFol(); unsubFri(); };
     }, [isViewingOther, clerkUser, viewingUserId]);
 
     const handleAction = async (type: 'follow' | 'friend') => {
@@ -170,7 +178,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                 });
             } else if (socialState.friendStatus === 'none') {
                 await set(ref(db, `social/${clerkUser.id}/requests/sent/${viewingUserId}`), { timestamp: Date.now() });
-                await set(ref(db, `social/${viewingUserId}/requests/received/${clerkUser.id}`), { timestamp: Date.now() });
+                await set(ref(db, `social/${clerkUser.id}/requests/received/${clerkUser.id}`), { timestamp: Date.now() });
                 await push(ref(db, `notifications/${viewingUserId}`), {
                     type: 'friend_request', fromId: clerkUser.id, fromName: clerkUser.username || clerkUser.fullName, fromAvatar: clerkUser.imageUrl, timestamp: Date.now(), read: false
                 });
@@ -218,14 +226,37 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                     </div>
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+                        {/* Resolved User List Overlay */}
+                        <AnimatePresence>
+                            {userListMode && (
+                                <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 50 }} className="absolute inset-0 z-[60] bg-[#050505] p-6 overflow-y-auto custom-scrollbar">
+                                    <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-4">
+                                        <h3 className="text-sm font-black text-white uppercase tracking-[0.2em]">{userListMode}</h3>
+                                        <button onClick={() => setUserListMode(null)} className="p-2 bg-white/5 rounded-full text-zinc-400 hover:text-white"><CloseIcon className="w-4 h-4" /></button>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {resolvedUserList.map((u, i) => (
+                                            <div key={i} className="flex items-center gap-3 p-3 bg-white/5 border border-white/5 rounded-xl">
+                                                <img src={u.avatar || u.imageUrl} className="w-10 h-10 rounded-lg object-cover" alt="" />
+                                                <div className="min-w-0">
+                                                    <p className="text-white font-bold text-[11px] uppercase truncate">{u.name}</p>
+                                                    <p className="text-zinc-500 font-medium text-[9px]">@{u.username}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
                         <div className="p-5 md:p-8 space-y-8">
                             {/* Profile Info Row */}
                             <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
-                                <div className={`w-28 h-28 md:w-32 md:h-32 rounded-[2rem] border-2 p-1 flex-shrink-0 ${targetUser?.username === OWNER_HANDLE ? 'border-red-600/50' : targetUser?.username === ADMIN_HANDLE ? 'border-blue-600/50' : 'border-white/10'}`}>
+                                <div className={`w-24 h-24 md:w-32 md:h-32 rounded-[2rem] border-2 p-1 flex-shrink-0 ${targetUser?.username === OWNER_HANDLE ? 'border-red-600/50' : targetUser?.username === ADMIN_HANDLE ? 'border-blue-600/50' : 'border-white/10'}`}>
                                     <img src={targetUser?.avatar || clerkUser.imageUrl} className="w-full h-full object-cover rounded-[1.8rem]" alt="" />
                                 </div>
                                 <div className="flex-1 text-center md:text-left">
-                                    <div className="flex flex-col md:flex-row items-center gap-3 mb-4">
+                                    <div className="flex flex-col md:flex-row items-center gap-3 mb-3">
                                         <h3 className="text-xl font-light text-white lowercase">@{targetUser?.username || clerkUser.username}</h3>
                                         <div className="flex gap-2">
                                             {isViewingOther ? (
@@ -245,12 +276,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex justify-center md:justify-start gap-8 mb-4">
+                                    <div className="flex justify-center md:justify-start gap-8 mb-3">
                                         <div className="text-center md:text-left"><p className="text-lg font-bold text-white">{userPosts.length}</p><p className="text-[8px] text-zinc-500 uppercase font-black">Posts</p></div>
-                                        <button onClick={() => setUserListMode('followers')} className="text-center md:text-left"><p className="text-lg font-bold text-white">{socialState.followers.length}</p><p className="text-[8px] text-zinc-500 uppercase font-black">Followers</p></button>
-                                        <button onClick={() => setUserListMode('following')} className="text-center md:text-left"><p className="text-lg font-bold text-white">{socialState.following.length}</p><p className="text-[8px] text-zinc-500 uppercase font-black">Following</p></button>
+                                        <button onClick={() => setUserListMode('followers')} className="text-center md:text-left hover:opacity-80 transition-opacity"><p className="text-lg font-bold text-white">{socialState.followers.length}</p><p className="text-[8px] text-zinc-500 uppercase font-black">Followers</p></button>
+                                        <button onClick={() => setUserListMode('following')} className="text-center md:text-left hover:opacity-80 transition-opacity"><p className="text-lg font-bold text-white">{socialState.following.length}</p><p className="text-[8px] text-zinc-500 uppercase font-black">Following</p></button>
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-1">
                                         {isEditing ? (
                                             <>
                                                 <input value={editData.name || ''} onChange={e => setEditData({...editData, name: e.target.value})} placeholder="Display Identity" className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-medium text-xs outline-none focus:border-red-600" />
@@ -266,42 +297,42 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                                 </div>
                             </div>
 
-                            {/* Identity Compressed Section */}
-                            <div className="bg-white/5 rounded-[1.5rem] border border-white/5 p-6 space-y-8">
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <h4 className="text-sm font-light text-red-500 uppercase tracking-widest">Location</h4>
+                            {/* Unified Identity Row */}
+                            <div className="space-y-6 pt-4">
+                                <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                                    <div className="space-y-1">
+                                        <h4 className="text-[9px] font-black text-red-600 uppercase tracking-[0.2em]">Location</h4>
                                         {isEditing ? (
                                             <input value={editData.profile?.origin || ''} onChange={e => setEditData({...editData, profile: {...editData.profile, origin: e.target.value}})} className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white text-[11px]" />
                                         ) : (
-                                            <p className="text-white font-medium text-xs">{targetUser?.profile?.origin || 'Location Classified'}</p>
+                                            <p className="text-white font-medium text-xs truncate">{targetUser?.profile?.origin || 'Location Classified'}</p>
                                         )}
                                     </div>
-                                    <div className="space-y-2">
-                                        <h4 className="text-sm font-light text-red-500 uppercase tracking-widest">Expertise</h4>
+                                    <div className="space-y-1">
+                                        <h4 className="text-[9px] font-black text-red-600 uppercase tracking-[0.2em]">Expertise</h4>
                                         {isEditing ? (
                                             <input value={editData.profile?.profession || ''} onChange={e => setEditData({...editData, profile: {...editData.profile, profession: e.target.value}})} className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white text-[11px]" />
                                         ) : (
-                                            <p className="text-white font-medium text-xs">{targetUser?.profile?.profession || 'Visual Artist'}</p>
+                                            <p className="text-white font-medium text-xs truncate">{targetUser?.profile?.profession || 'Visual Artist'}</p>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className="space-y-4 pt-6 border-t border-white/5">
-                                    <h4 className="text-sm font-light text-red-500 uppercase tracking-widest">Skills</h4>
-                                    <div className="flex flex-wrap gap-2">
+                                <div className="space-y-3">
+                                    <h4 className="text-[9px] font-black text-red-600 uppercase tracking-[0.2em]">Skills</h4>
+                                    <div className="flex flex-wrap gap-1.5">
                                         {(isEditing ? (editData.profile?.skills || []) : (targetUser?.profile?.skills || [])).map((s: string, i: number) => (
-                                            <span key={i} className="px-3 py-1.5 bg-black border border-white/10 rounded-lg text-[9px] font-medium text-zinc-300 uppercase tracking-widest flex items-center gap-1.5">
+                                            <span key={i} className="px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[8px] font-bold text-zinc-300 uppercase tracking-widest flex items-center gap-1.5">
                                                 {s} {isEditing && <button onClick={() => setEditData({...editData, profile: {...editData.profile, skills: editData.profile.skills.filter((_:any,idx:number)=>idx!==i)}})} className="text-red-500 font-bold ml-0.5">×</button>}
                                             </span>
                                         ))}
-                                        {isEditing && <button onClick={() => { const s = window.prompt("Enter core capability:"); if(s) setEditData({...editData, profile: {...editData.profile, skills: [...(editData.profile.skills||[]), s]}}); }} className="px-3 py-1.5 bg-red-600/10 border border-red-600/20 text-red-500 rounded-lg text-[9px] font-bold uppercase">+ Add</button>}
+                                        {isEditing && <button onClick={() => { const s = window.prompt("Enter core capability:"); if(s) setEditData({...editData, profile: {...editData.profile, skills: [...(editData.profile.skills||[]), s]}}); }} className="px-2.5 py-1.5 bg-red-600/10 border border-red-600/20 text-red-500 rounded-lg text-[8px] font-black uppercase tracking-widest">+ Add</button>}
                                     </div>
                                 </div>
 
-                                <div className="space-y-4 pt-6 border-t border-white/5">
+                                <div className="space-y-3">
                                     <div className="flex justify-between items-center">
-                                        <h4 className="text-sm font-light text-red-500 uppercase tracking-widest">Links & Socials</h4>
+                                        <h4 className="text-[9px] font-black text-red-600 uppercase tracking-[0.2em]">Links & Socials</h4>
                                         {isMyOwnProfile && isEditing && (
                                             <button onClick={() => {
                                                 const name = window.prompt("Platform (Facebook, Instagram, YouTube, TikTok, Behance):");
@@ -309,10 +340,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                                                     const newNets = [...(editData.profile.networks || []), { name, handle: '' }];
                                                     setEditData({...editData, profile: {...editData.profile, networks: newNets}});
                                                 }
-                                            }} className="text-[9px] font-bold text-zinc-500 uppercase hover:text-red-500 transition-colors">+ Add</button>
+                                            }} className="text-[8px] font-black text-zinc-500 uppercase tracking-widest hover:text-red-500 transition-colors">+ Add</button>
                                         )}
                                     </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
                                         {(isEditing ? (editData.profile?.networks || []) : (targetUser?.profile?.networks || [])).map((net: any, i: number) => {
                                             const cfg = NETWORK_CONFIGS[net.name] || { icon: GlobeAltIcon, baseUrl: '' };
                                             const Icon = cfg.icon;
@@ -321,22 +352,22 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                                                     {isEditing ? (
                                                         <div className="flex gap-2 items-center">
                                                             <div className="flex-1 space-y-1">
-                                                                <p className="text-[8px] font-bold text-zinc-600 uppercase ml-1">{net.name}</p>
+                                                                <p className="text-[7px] font-bold text-zinc-600 uppercase">{net.name}</p>
                                                                 <input value={net.handle} onChange={e => {
                                                                     const newNets = [...editData.profile.networks];
                                                                     newNets[i].handle = e.target.value.replace('@', '');
                                                                     setEditData({...editData, profile: {...editData.profile, networks: newNets}});
                                                                 }} placeholder={`@handle`} className="w-full bg-black border border-white/10 rounded-lg p-2 text-[10px] text-white focus:border-red-600 outline-none" />
                                                             </div>
-                                                            <button onClick={() => { const newNets = editData.profile.networks.filter((_:any,idx:number)=>idx!==i); setEditData({...editData, profile: {...editData.profile, networks: newNets}}); }} className="p-1 text-red-500 mt-4">×</button>
+                                                            <button onClick={() => { const newNets = editData.profile.networks.filter((_:any,idx:number)=>idx!==i); setEditData({...editData, profile: {...editData.profile, networks: newNets}}); }} className="p-1 text-red-500 mt-3">×</button>
                                                         </div>
                                                     ) : (
                                                         net.handle && (
-                                                            <a href={`${cfg.baseUrl}${net.handle}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-black/40 rounded-xl hover:bg-red-600/10 transition-all border border-white/5 group">
-                                                                <Icon className="w-4 h-4 text-zinc-500 group-hover:text-red-500" />
+                                                            <a href={`${cfg.baseUrl}${net.handle}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 p-2.5 bg-white/5 rounded-xl hover:bg-red-600/10 transition-all border border-white/5 group">
+                                                                <Icon className="w-3.5 h-3.5 text-zinc-500 group-hover:text-red-500" />
                                                                 <div className="min-w-0">
-                                                                    <span className="text-[9px] font-bold text-zinc-400 uppercase group-hover:text-white block">{net.name}</span>
-                                                                    <span className="text-[8px] text-zinc-600 block truncate">@{net.handle}</span>
+                                                                    <span className="text-[8px] font-black text-zinc-400 uppercase group-hover:text-white block truncate">{net.name}</span>
+                                                                    <span className="text-[7px] text-zinc-600 block truncate">@{net.handle}</span>
                                                                 </div>
                                                             </a>
                                                         )
@@ -349,18 +380,18 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                             </div>
 
                             {/* Posts Section */}
-                            <div className="space-y-4">
-                                <h4 className="text-base font-light text-white uppercase tracking-widest text-center">Protocol Works</h4>
-                                <div className="grid grid-cols-3 gap-1.5 md:gap-3">
+                            <div className="space-y-4 pt-4 border-t border-white/5">
+                                <h4 className="text-[10px] font-black text-white uppercase tracking-[0.3em] text-center">Protocol Works</h4>
+                                <div className="grid grid-cols-3 gap-1 md:gap-2">
                                     {userPosts.map((post, i) => (
                                         <div key={i} onClick={() => onOpenModal?.(userPosts, i)} className="aspect-square bg-white/5 rounded-lg overflow-hidden group relative cursor-pointer border border-white/5 shadow-md">
                                             {post.mediaType === 'video' ? <video src={post.mediaUrl} className="w-full h-full object-cover" /> : <img src={post.mediaUrl} className="w-full h-full object-cover" alt="" />}
                                             <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center">
-                                                <div className="flex gap-3 text-[9px] font-bold"><span className="text-red-500">♥ {Object.keys(post.likes || {}).length}</span><span>💬 {Object.keys(post.comments || {}).length}</span></div>
+                                                <div className="flex gap-2 text-[8px] font-bold text-white"><span className="text-red-500">♥ {Object.keys(post.likes || {}).length}</span><span>💬 {Object.keys(post.comments || {}).length}</span></div>
                                             </div>
                                         </div>
                                     ))}
-                                    {userPosts.length === 0 && <div className="col-span-3 py-16 text-center opacity-10"><GalleryIcon className="w-12 h-12 mx-auto mb-4" /><p className="text-[10px] font-bold uppercase tracking-[0.3em]">No Visual Signals</p></div>}
+                                    {userPosts.length === 0 && <div className="col-span-3 py-16 text-center opacity-10"><GalleryIcon className="w-10 h-10 mx-auto mb-3" /><p className="text-[9px] font-black uppercase tracking-[0.4em]">No Visual Signals</p></div>}
                                 </div>
                             </div>
                         </div>
