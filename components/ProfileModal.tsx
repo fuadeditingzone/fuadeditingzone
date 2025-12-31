@@ -129,17 +129,17 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
         }
 
         return (
-            <a href={url} target="_blank" rel="noopener noreferrer" className="p-5 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-red-600/30 transition-all">
-                <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-zinc-500 group-hover:text-red-500 transition-colors shadow-inner">
-                        <Icon className="w-6 h-6" />
+            <a href={url} target="_blank" rel="noopener noreferrer" className="p-6 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-red-600/30 transition-all shadow-lg mb-4">
+                <div className="flex items-center gap-6">
+                    <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-zinc-500 group-hover:text-red-500 transition-colors shadow-inner">
+                        <Icon className="w-8 h-8" />
                     </div>
                     <div>
-                        <p className="text-[9px] text-zinc-500 font-black uppercase tracking-[0.3em] mb-1">{platform}</p>
-                        <p className="text-white font-black text-sm tracking-tight">@{handle}</p>
+                        <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.4em] mb-1">{platform}</p>
+                        <p className="text-white font-black text-lg tracking-tight">@{handle}</p>
                     </div>
                 </div>
-                <ChevronRightIcon className="w-5 h-5 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ChevronRightIcon className="w-6 h-6 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" />
             </a>
         );
     };
@@ -154,203 +154,212 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                         initial={{ opacity: 0, scale: 0.95, y: 50 }} 
                         animate={{ opacity: 1, scale: 1, y: 0 }} 
                         exit={{ opacity: 0, scale: 0.95, y: 50 }} 
-                        className="relative w-full h-full md:w-[95%] md:h-[90%] bg-[#050505] md:rounded-[4rem] shadow-[0_0_100px_rgba(0,0,0,1)] border-none md:border md:border-white/10 flex flex-col overflow-hidden"
+                        className="relative w-full h-full md:w-[96%] md:h-[94%] bg-[#050505] md:rounded-[4rem] shadow-[0_0_120px_rgba(0,0,0,1)] border-none md:border md:border-white/10 flex flex-col overflow-hidden"
                     >
-                        {/* Custom Header Bar */}
-                        <div className="p-6 md:p-10 flex justify-between items-center bg-black/40 backdrop-blur-md border-b border-white/5 z-20">
-                            <div className="flex items-center gap-5">
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${isOwner ? 'bg-red-600/10 border-red-600/30 shadow-[0_0_20px_rgba(220,38,38,0.2)]' : isAdmin ? 'bg-blue-600/10 border-blue-600/30 shadow-[0_0_20px_rgba(37,99,235,0.2)]' : 'bg-white/5 border-white/10'}`}>
-                                    <UserCircleIcon className={`w-7 h-7 ${isOwner ? 'text-red-600' : isAdmin ? 'text-blue-600' : 'text-zinc-500'}`} />
+                        {/* Integrated Header Bar */}
+                        <div className="p-6 md:p-12 flex justify-between items-center bg-black/40 backdrop-blur-md border-b border-white/5 z-20 flex-shrink-0">
+                            <div className="flex items-center gap-6">
+                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border ${isOwner ? 'bg-red-600/10 border-red-600/30 shadow-[0_0_30px_rgba(220,38,38,0.2)]' : isAdmin ? 'bg-blue-600/10 border-blue-600/30 shadow-[0_0_30px_rgba(37,99,235,0.2)]' : 'bg-white/5 border-white/10'}`}>
+                                    <UserCircleIcon className={`w-8 h-8 ${isOwner ? 'text-red-600' : isAdmin ? 'text-blue-600' : 'text-zinc-500'}`} />
                                 </div>
-                                <div>
-                                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{isViewingOther ? 'Public Protocol' : 'Neural Core'}</h2>
-                                    <p className="text-[10px] text-zinc-500 uppercase font-black tracking-[0.4em] mt-1.5">Selected Legend Agent Registry</p>
+                                <div className="min-w-0">
+                                    <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter leading-none truncate">{isViewingOther ? 'Agent Intelligence' : 'Security Core'}</h2>
+                                    <p className="text-[10px] md:text-[11px] text-zinc-500 uppercase font-black tracking-[0.5em] mt-2 truncate">Global Registry • Legend Network</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <button onClick={copyProfileLink} className="hidden md:flex p-3 rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-all border border-white/5"><CopyIcon className="w-5 h-5" /></button>
-                                <button onClick={onClose} className="p-3 rounded-full hover:bg-red-600 text-zinc-400 hover:text-white transition-all"><CloseIcon className="w-7 h-7" /></button>
+                                <button onClick={copyProfileLink} className="hidden md:flex p-4 rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-all border border-white/5 shadow-inner"><CopyIcon className="w-6 h-6" /></button>
+                                <button onClick={onClose} className="p-4 rounded-full bg-white/5 hover:bg-red-600 text-zinc-400 hover:text-white transition-all border border-white/5 shadow-lg group"><CloseIcon className="w-8 h-8 group-hover:scale-110 transition-transform" /></button>
                             </div>
                         </div>
 
-                        {/* Layout Content */}
-                        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-                            {/* Tabs Sidebar */}
-                            <div className="w-full md:w-80 bg-black/20 border-b md:border-b-0 md:border-r border-white/5 p-6 md:p-10 flex flex-row md:flex-col gap-4 overflow-x-auto no-scrollbar">
-                                <button onClick={() => setActiveTab('identity')} className={`flex-1 md:flex-none flex items-center gap-4 px-6 py-5 rounded-[1.8rem] text-[11px] font-black uppercase tracking-widest transition-all border ${activeTab === 'identity' ? 'bg-red-600 border-red-500 text-white shadow-[0_15px_30px_rgba(220,38,38,0.3)]' : 'bg-white/5 border-transparent text-zinc-500 hover:bg-white/10'}`}>
-                                    <UserCircleIcon className="w-5 h-5" /> IDENTITY
+                        {/* Profile Content Layout */}
+                        <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
+                            {/* Navigation Sidebar */}
+                            <div className="w-full md:w-[320px] bg-black/30 border-b md:border-b-0 md:border-r border-white/5 p-6 md:p-12 flex flex-row md:flex-col gap-5 overflow-x-auto no-scrollbar flex-shrink-0">
+                                <button onClick={() => setActiveTab('identity')} className={`flex-1 md:flex-none flex items-center justify-center md:justify-start gap-5 px-8 py-6 rounded-[2rem] text-[12px] font-black uppercase tracking-[0.2em] transition-all border ${activeTab === 'identity' ? 'bg-red-600 border-red-500 text-white shadow-[0_20px_40px_rgba(220,38,38,0.3)]' : 'bg-white/5 border-transparent text-zinc-500 hover:bg-white/10'}`}>
+                                    <UserCircleIcon className="w-6 h-6" /> <span className="hidden md:inline">IDENTITY</span>
                                 </button>
-                                <button onClick={() => setActiveTab('credentials')} className={`flex-1 md:flex-none flex items-center gap-4 px-6 py-5 rounded-[1.8rem] text-[11px] font-black uppercase tracking-widest transition-all border ${activeTab === 'credentials' ? 'bg-red-600 border-red-500 text-white shadow-[0_15px_30px_rgba(220,38,38,0.3)]' : 'bg-white/5 border-transparent text-zinc-500 hover:bg-white/10'}`}>
-                                    <GlobeAltIcon className="w-5 h-5" /> CREDENTIALS
+                                <button onClick={() => setActiveTab('credentials')} className={`flex-1 md:flex-none flex items-center justify-center md:justify-start gap-5 px-8 py-6 rounded-[2rem] text-[12px] font-black uppercase tracking-[0.2em] transition-all border ${activeTab === 'credentials' ? 'bg-red-600 border-red-500 text-white shadow-[0_20px_40px_rgba(220,38,38,0.3)]' : 'bg-white/5 border-transparent text-zinc-500 hover:bg-white/10'}`}>
+                                    <GlobeAltIcon className="w-6 h-6" /> <span className="hidden md:inline">CREDENTIALS</span>
                                 </button>
-                                <button onClick={() => setActiveTab('networks')} className={`flex-1 md:flex-none flex items-center gap-4 px-6 py-5 rounded-[1.8rem] text-[11px] font-black uppercase tracking-widest transition-all border ${activeTab === 'networks' ? 'bg-red-600 border-red-500 text-white shadow-[0_15px_30px_rgba(220,38,38,0.3)]' : 'bg-white/5 border-transparent text-zinc-500 hover:bg-white/10'}`}>
-                                    <SparklesIcon className="w-5 h-5" /> NETWORKS
+                                <button onClick={() => setActiveTab('networks')} className={`flex-1 md:flex-none flex items-center justify-center md:justify-start gap-5 px-8 py-6 rounded-[2rem] text-[12px] font-black uppercase tracking-[0.2em] transition-all border ${activeTab === 'networks' ? 'bg-red-600 border-red-500 text-white shadow-[0_20px_40px_rgba(220,38,38,0.3)]' : 'bg-white/5 border-transparent text-zinc-500 hover:bg-white/10'}`}>
+                                    <SparklesIcon className="w-6 h-6" /> <span className="hidden md:inline">NETWORKS</span>
                                 </button>
-                                <button onClick={() => setActiveTab('posts')} className={`flex-1 md:flex-none flex items-center gap-4 px-6 py-5 rounded-[1.8rem] text-[11px] font-black uppercase tracking-widest transition-all border ${activeTab === 'posts' ? 'bg-red-600 border-red-500 text-white shadow-[0_15px_30px_rgba(220,38,38,0.3)]' : 'bg-white/5 border-transparent text-zinc-500 hover:bg-white/10'}`}>
-                                    <GalleryIcon className="w-5 h-5" /> POSTS
+                                <button onClick={() => setActiveTab('posts')} className={`flex-1 md:flex-none flex items-center justify-center md:justify-start gap-5 px-8 py-6 rounded-[2rem] text-[12px] font-black uppercase tracking-[0.2em] transition-all border ${activeTab === 'posts' ? 'bg-red-600 border-red-500 text-white shadow-[0_20px_40px_rgba(220,38,38,0.3)]' : 'bg-white/5 border-transparent text-zinc-500 hover:bg-white/10'}`}>
+                                    <GalleryIcon className="w-6 h-6" /> <span className="hidden md:inline">POSTS</span>
                                 </button>
                             </div>
 
-                            {/* Detailed Panels */}
-                            <div className="flex-1 overflow-y-auto custom-scrollbar p-8 md:p-20 bg-[#080808]">
-                                {activeTab === 'identity' && (
-                                    <div className="max-w-4xl mx-auto space-y-12">
-                                        <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
-                                            <div className="relative group">
-                                                <div className={`w-40 h-40 md:w-64 md:h-64 rounded-[3.5rem] md:rounded-[4.5rem] border-8 p-2 transition-transform duration-700 group-hover:scale-105 ${isOwner ? 'border-red-600 neon-glow-red shadow-[0_0_40px_rgba(220,38,38,0.4)]' : isAdmin ? 'border-blue-600 neon-glow-blue shadow-[0_0_40px_rgba(37,99,235,0.4)]' : 'border-white/10'}`}>
-                                                    <img src={isViewingOther ? targetUser?.avatar : clerkUser.imageUrl} className="w-full h-full object-cover rounded-[3rem] md:rounded-[3.8rem]" alt="" />
+                            {/* Main Scrollable Area */}
+                            <div className="flex-1 overflow-y-auto custom-scrollbar p-8 md:p-24 bg-[#080808] min-h-0">
+                                <div className="max-w-5xl mx-auto h-full">
+                                    {/* IDENTITY TAB */}
+                                    {activeTab === 'identity' && (
+                                        <div className="space-y-16 flex flex-col items-center md:items-start">
+                                            <div className="flex flex-col md:flex-row items-center gap-12 md:gap-20 w-full">
+                                                <div className="relative flex-shrink-0 group">
+                                                    <div className={`w-48 h-48 md:w-80 md:h-80 rounded-[4rem] md:rounded-[5.5rem] border-[10px] p-3 transition-all duration-1000 group-hover:rotate-3 ${isOwner ? 'border-red-600 shadow-[0_0_60px_rgba(220,38,38,0.3)]' : isAdmin ? 'border-blue-600 shadow-[0_0_60px_rgba(37,99,235,0.3)]' : 'border-white/10 shadow-2xl'}`}>
+                                                        <img src={isViewingOther ? targetUser?.avatar : clerkUser.imageUrl} className="w-full h-full object-cover rounded-[3.2rem] md:rounded-[4.5rem] shadow-inner" alt="" />
+                                                    </div>
+                                                    {isImmune && (
+                                                        <div className={`absolute -top-4 -right-4 px-8 py-3 rounded-2xl text-[12px] font-black uppercase text-white shadow-2xl tracking-[0.3em] ${isOwner ? 'bg-red-600' : 'bg-blue-600'}`}>
+                                                            {isOwner ? 'OWNER' : 'ADMIN'}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                {isImmune && (
-                                                    <div className={`absolute -top-3 -right-3 px-5 py-2 rounded-xl text-[10px] font-black uppercase text-white shadow-2xl tracking-widest ${isOwner ? 'bg-red-600' : 'bg-blue-600'}`}>
-                                                        {isOwner ? 'OWNER' : 'ADMIN'}
+                                                <div className="text-center md:text-left space-y-6 flex-1 min-w-0">
+                                                    <h3 className="text-5xl md:text-8xl font-black text-white uppercase tracking-tighter leading-none break-words">{isViewingOther ? targetUser?.name : clerkUser.fullName}</h3>
+                                                    <p className="text-red-500 font-black text-xl md:text-3xl uppercase tracking-[0.5em] opacity-90 truncate">@{isViewingOther ? targetUser?.username : clerkUser.username}</p>
+                                                    <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-6">
+                                                         <div className="px-8 py-4 bg-white/5 rounded-2xl border border-white/10 text-[11px] font-black text-zinc-400 uppercase tracking-[0.3em] shadow-inner">NEURAL ID: <span className="text-white">#{isViewingOther ? targetUser?.id?.slice(-8).toUpperCase() : clerkUser.id.slice(-8).toUpperCase()}</span></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full">
+                                                <div className="p-10 bg-white/5 rounded-[3rem] border border-white/10 group transition-all hover:bg-white/[0.08] hover:border-red-600/30 shadow-2xl relative overflow-hidden">
+                                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-red-600/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                    <p className="text-[11px] text-zinc-500 font-black uppercase tracking-[0.5em] mb-6 border-b border-white/5 pb-4">Agent Identification Manifest</p>
+                                                    {isViewingOther ? (
+                                                      <p className="text-zinc-200 text-xl md:text-2xl italic leading-relaxed break-words">"{profileData.bio || 'Silence is the preferred frequency.'}"</p>
+                                                    ) : (
+                                                      <textarea rows={5} value={profileData.bio} onChange={e => setProfileData({...profileData, bio: e.target.value})} className="bg-transparent text-white text-xl md:text-2xl outline-none w-full resize-none italic custom-scrollbar" placeholder="Establish your protocol..." />
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col gap-8">
+                                                    <button onClick={copyProfileLink} className="w-full py-8 bg-white/5 border border-white/10 rounded-[2.5rem] text-[12px] font-black uppercase tracking-[0.5em] hover:bg-red-600 hover:text-white hover:border-red-500 transition-all flex items-center justify-center gap-4 active:scale-95 shadow-2xl group">
+                                                        <CopyIcon className="w-7 h-7 group-hover:scale-110 transition-transform" /> {copyFeedback || 'COPY PROFILE FREQUENCY'}
+                                                    </button>
+                                                    <div className="flex-1 p-10 bg-red-600/10 border border-red-600/20 rounded-[3rem] flex flex-col justify-center text-center shadow-2xl">
+                                                        <p className="text-[11px] text-red-500 font-black uppercase tracking-[0.5em] mb-4">Security Clearance</p>
+                                                        <p className="text-white font-black text-3xl uppercase tracking-[0.2em] neon-glow-red">Verified</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* CREDENTIALS TAB */}
+                                    {activeTab === 'credentials' && (
+                                        <div className="space-y-12">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                <div className="p-10 bg-white/5 rounded-[3rem] border border-white/10 transition-all hover:border-red-600/40 shadow-xl group">
+                                                    <p className="text-[11px] text-zinc-500 font-black uppercase tracking-[0.5em] mb-4">Deployment Role</p>
+                                                    {isViewingOther ? <p className="text-3xl text-white font-black uppercase tracking-tighter group-hover:text-red-500 transition-colors">{profileData.role}</p> : (
+                                                        <select value={profileData.role} onChange={e => setProfileData({...profileData, role: e.target.value})} className="bg-transparent text-3xl text-white font-black uppercase tracking-tighter outline-none w-full appearance-none cursor-pointer">
+                                                            <option value="Client">Client</option>
+                                                            <option value="Designer">Designer</option>
+                                                            <option value="Editor">Editor</option>
+                                                        </select>
+                                                    )}
+                                                </div>
+                                                <div className="p-10 bg-white/5 rounded-[3rem] border border-white/10 transition-all hover:border-red-600/40 shadow-xl group">
+                                                    <p className="text-[11px] text-zinc-500 font-black uppercase tracking-[0.5em] mb-4">Core Specialty</p>
+                                                    {isViewingOther ? <p className="text-3xl text-white font-black uppercase tracking-tighter group-hover:text-red-500 transition-colors">{profileData.profession || 'Digital Artist'}</p> : (
+                                                        <input value={profileData.profession} onChange={e => setProfileData({...profileData, profession: e.target.value})} placeholder="Designation" className="bg-transparent text-3xl text-white font-black uppercase tracking-tighter outline-none w-full placeholder:text-zinc-800" />
+                                                    )}
+                                                </div>
+                                                <div className="p-10 bg-white/5 rounded-[3rem] border border-white/10 transition-all hover:border-red-600/40 shadow-xl md:col-span-2 group">
+                                                    <p className="text-[11px] text-zinc-500 font-black uppercase tracking-[0.5em] mb-4">Operational Experience</p>
+                                                    {isViewingOther ? <p className="text-3xl text-white font-black uppercase tracking-tighter group-hover:text-red-500 transition-colors">{profileData.experience || 'Verified Legend'}</p> : (
+                                                        <input value={profileData.experience} onChange={e => setProfileData({...profileData, experience: e.target.value})} placeholder="Years of Mastery" className="bg-transparent text-3xl text-white font-black uppercase tracking-tighter outline-none w-full placeholder:text-zinc-800" />
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="p-12 bg-[#0c0c0c] border border-white/5 rounded-[4rem] shadow-[0_40px_80px_rgba(0,0,0,0.5)] relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 p-12 opacity-5 group-hover:opacity-10 transition-opacity"><CheckCircleIcon className="w-32 h-32 text-red-600" /></div>
+                                                <h4 className="text-2xl font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-5">
+                                                    <SparklesIcon className="w-8 h-8 text-red-600" /> Audit Synchronized
+                                                </h4>
+                                                <p className="text-zinc-400 text-lg leading-relaxed max-w-3xl font-medium">This agent's digital footprint and professional capabilities have been verified by FEZ Security Protocols. All project interactions are encrypted and tracked via Legend Registry.</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* NETWORKS TAB */}
+                                    {activeTab === 'networks' && (
+                                        <div className="space-y-12">
+                                            <div className="grid grid-cols-1 gap-6">
+                                                {isViewingOther ? (
+                                                    <div className="flex flex-col justify-center min-h-[400px]">
+                                                        <SocialIcon platform="instagram" handle={profileData.instagram} />
+                                                        <SocialIcon platform="facebook" handle={profileData.facebook} />
+                                                        <SocialIcon platform="tiktok" handle={profileData.tiktok} />
+                                                        <SocialIcon platform="behance" handle={profileData.behance} />
+                                                        <SocialIcon platform="twitter" handle={profileData.twitter} />
+                                                        {Object.values(profileData).every(v => v === '' || typeof v !== 'string') && (
+                                                          <div className="text-center py-24 bg-white/5 rounded-[3.5rem] border border-white/10 border-dashed flex flex-col items-center justify-center space-y-6">
+                                                            <SparklesIcon className="w-16 h-16 text-zinc-700 opacity-20" />
+                                                            <p className="text-zinc-600 font-black uppercase text-sm tracking-[0.6em]">No Active Neural Nodes</p>
+                                                          </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-8">
+                                                        {['instagram', 'facebook', 'tiktok', 'behance', 'twitter'].map(platform => (
+                                                            <div key={platform} className="p-8 bg-white/5 rounded-[2.5rem] border border-white/10 flex items-center gap-10 group hover:border-red-600/30 transition-all shadow-inner">
+                                                                <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-zinc-600 group-focus-within:text-red-500 transition-colors shadow-inner">
+                                                                    {platform === 'instagram' && <InstagramIcon className="w-8 h-8" />}
+                                                                    {platform === 'facebook' && <FacebookIcon className="w-8 h-8" />}
+                                                                    {platform === 'tiktok' && <TikTokIcon className="w-8 h-8" />}
+                                                                    {platform === 'behance' && <BehanceIcon className="w-8 h-8" />}
+                                                                    {platform === 'twitter' && <i className="fa-brands fa-x-twitter text-3xl"></i>}
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-[11px] text-zinc-500 font-black uppercase tracking-[0.5em] mb-2">{platform} Frequency</p>
+                                                                    <input 
+                                                                      value={(profileData as any)[platform]} 
+                                                                      onChange={e => setProfileData({...profileData, [platform]: e.target.value})} 
+                                                                      placeholder={`@username`} 
+                                                                      className="bg-transparent text-white font-black text-2xl outline-none w-full placeholder:text-zinc-800" 
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="text-center md:text-left space-y-4">
-                                                <h3 className="text-4xl md:text-7xl font-black text-white uppercase tracking-tighter leading-none">{isViewingOther ? targetUser?.name : clerkUser.fullName}</h3>
-                                                <p className="text-red-500 font-black text-lg md:text-2xl uppercase tracking-[0.4em] opacity-80">@{isViewingOther ? targetUser?.username : clerkUser.username}</p>
-                                                <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-4">
-                                                     <div className="px-6 py-3 bg-white/5 rounded-2xl border border-white/5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Protocol ID: <span className="text-white">#{isViewingOther ? targetUser?.id?.slice(-6) : clerkUser.id.slice(-6)}</span></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                            <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 group transition-all hover:bg-white/[0.07] hover:border-red-600/20">
-                                                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.4em] mb-4">Transmission Bio</p>
-                                                {isViewingOther ? (
-                                                  <p className="text-zinc-300 text-lg italic leading-relaxed">"{profileData.bio || 'Silence is the primary signal.'}"</p>
-                                                ) : (
-                                                  <textarea rows={4} value={profileData.bio} onChange={e => setProfileData({...profileData, bio: e.target.value})} className="bg-transparent text-white text-lg outline-none w-full resize-none italic custom-scrollbar" placeholder="Enter identity manifest..." />
-                                                )}
-                                            </div>
-                                            <div className="flex flex-col gap-6">
-                                                <button onClick={copyProfileLink} className="w-full py-6 bg-white/5 border border-white/10 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] hover:bg-red-600 hover:text-white hover:border-red-500 transition-all flex items-center justify-center gap-3 active:scale-95 shadow-xl">
-                                                    <CopyIcon className="w-5 h-5" /> {copyFeedback || 'COPY IDENTITY LINK'}
-                                                </button>
-                                                <div className="flex-1 p-8 bg-red-600/5 border border-red-600/10 rounded-[2.5rem] flex flex-col justify-center text-center">
-                                                    <p className="text-[9px] text-red-500 font-black uppercase tracking-[0.4em] mb-2">Neural Status</p>
-                                                    <p className="text-white font-black text-xl uppercase tracking-widest">Authorized</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {activeTab === 'credentials' && (
-                                    <div className="max-w-4xl mx-auto space-y-10">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 transition-all hover:border-red-600/30">
-                                                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.4em] mb-3">Deployment Role</p>
-                                                {isViewingOther ? <p className="text-2xl text-white font-black uppercase tracking-tighter">{profileData.role}</p> : (
-                                                    <select value={profileData.role} onChange={e => setProfileData({...profileData, role: e.target.value})} className="bg-transparent text-2xl text-white font-black uppercase tracking-tighter outline-none w-full appearance-none">
-                                                        <option value="Client">Client</option>
-                                                        <option value="Designer">Designer</option>
-                                                        <option value="Editor">Editor</option>
-                                                    </select>
-                                                )}
-                                            </div>
-                                            <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 transition-all hover:border-red-600/30">
-                                                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.4em] mb-3">Mastery Specialty</p>
-                                                {isViewingOther ? <p className="text-2xl text-white font-black uppercase tracking-tighter">{profileData.profession || 'Digital Artist'}</p> : (
-                                                    <input value={profileData.profession} onChange={e => setProfileData({...profileData, profession: e.target.value})} placeholder="Mastery Designation" className="bg-transparent text-2xl text-white font-black uppercase tracking-tighter outline-none w-full placeholder:text-zinc-800" />
-                                                )}
-                                            </div>
-                                            <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 transition-all hover:border-red-600/30 md:col-span-2">
-                                                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.4em] mb-3">Work Experience</p>
-                                                {isViewingOther ? <p className="text-2xl text-white font-black uppercase tracking-tighter">{profileData.experience || 'Verified Legend'}</p> : (
-                                                    <input value={profileData.experience} onChange={e => setProfileData({...profileData, experience: e.target.value})} placeholder="Years of Operational Data" className="bg-transparent text-2xl text-white font-black uppercase tracking-tighter outline-none w-full placeholder:text-zinc-800" />
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="p-10 bg-red-600/10 border border-red-600/20 rounded-[3rem] shadow-2xl relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 p-6 opacity-10"><CheckCircleIcon className="w-20 h-20 text-red-600" /></div>
-                                            <h4 className="text-xl font-black text-white uppercase tracking-widest mb-3 flex items-center gap-3">
-                                                <SparklesIcon className="w-6 h-6 text-red-600" /> Security Verification
-                                            </h4>
-                                            <p className="text-zinc-400 text-sm leading-relaxed max-w-2xl font-medium">Agent profile has been audited and synchronized with FEZ Global Registry. Identity is protected under Selected Legend protocols.</p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {activeTab === 'networks' && (
-                                    <div className="max-w-3xl mx-auto space-y-10">
-                                        <div className="grid grid-cols-1 gap-6">
-                                            {isViewingOther ? (
-                                                <>
-                                                    <SocialIcon platform="instagram" handle={profileData.instagram} />
-                                                    <SocialIcon platform="facebook" handle={profileData.facebook} />
-                                                    <SocialIcon platform="tiktok" handle={profileData.tiktok} />
-                                                    <SocialIcon platform="behance" handle={profileData.behance} />
-                                                    <SocialIcon platform="twitter" handle={profileData.twitter} />
-                                                    {Object.values(profileData).every(v => v === '' || typeof v !== 'string') && (
-                                                      <div className="text-center py-20 bg-white/5 rounded-[2.5rem] border border-white/5 border-dashed">
-                                                        <SparklesIcon className="w-12 h-12 text-zinc-700 mx-auto mb-4 opacity-20" />
-                                                        <p className="text-zinc-600 font-black uppercase text-xs tracking-[0.4em]">No neural frequencies detected.</p>
-                                                      </div>
-                                                    )}
-                                                </>
-                                            ) : (
-                                                <div className="space-y-6">
-                                                    {['instagram', 'facebook', 'tiktok', 'behance', 'twitter'].map(platform => (
-                                                        <div key={platform} className="p-6 bg-white/5 rounded-[2rem] border border-white/5 flex items-center gap-6 group hover:border-red-600/20 transition-all">
-                                                            <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-zinc-600 group-focus-within:text-red-500 transition-colors">
-                                                                {platform === 'instagram' && <InstagramIcon className="w-7 h-7" />}
-                                                                {platform === 'facebook' && <FacebookIcon className="w-7 h-7" />}
-                                                                {platform === 'tiktok' && <TikTokIcon className="w-7 h-7" />}
-                                                                {platform === 'behance' && <BehanceIcon className="w-7 h-7" />}
-                                                                {platform === 'twitter' && <i className="fa-brands fa-x-twitter text-2xl"></i>}
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.4em] mb-1.5">{platform} Protocol</p>
-                                                                <input 
-                                                                  value={(profileData as any)[platform]} 
-                                                                  onChange={e => setProfileData({...profileData, [platform]: e.target.value})} 
-                                                                  placeholder={`@username`} 
-                                                                  className="bg-transparent text-white font-black text-lg outline-none w-full placeholder:text-zinc-800" 
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                                            {isViewingOther && !isImmune && (
+                                                <div className="flex flex-col sm:flex-row gap-6 pt-12 border-t border-white/5">
+                                                    <button onClick={() => handleAction('follow')} className={`flex-1 py-8 rounded-[2.5rem] text-[14px] font-black uppercase tracking-[0.5em] transition-all shadow-2xl ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white hover:bg-red-700'}`}>
+                                                        {socialState.isFollowing ? 'UNFOLLOW' : 'FOLLOW SIGNAL'}
+                                                    </button>
+                                                    <button onClick={() => handleAction('friend')} className="flex-1 py-8 bg-white/5 border border-white/10 rounded-[2.5rem] text-[14px] font-black uppercase tracking-[0.5em] hover:bg-white/10 text-white transition-all">
+                                                        {socialState.friendStatus === 'accepted' ? 'NEURAL LINKED' : 'ADD AGENT'}
+                                                    </button>
                                                 </div>
                                             )}
                                         </div>
-                                        {isViewingOther && !isImmune && (
-                                            <div className="flex gap-6 pt-10 border-t border-white/5">
-                                                <button onClick={() => handleAction('follow')} className={`flex-1 py-6 rounded-[2rem] text-[12px] font-black uppercase tracking-[0.4em] transition-all shadow-2xl ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white hover:bg-red-700'}`}>
-                                                    {socialState.isFollowing ? 'UNFOLLOW' : 'FOLLOW SIGNAL'}
-                                                </button>
-                                                <button onClick={() => handleAction('friend')} className="flex-1 py-6 bg-white/5 border border-white/10 rounded-[2rem] text-[12px] font-black uppercase tracking-[0.4em] hover:bg-white/10 text-white transition-all">
-                                                    {socialState.friendStatus === 'accepted' ? 'NEURAL LINKED' : 'ADD FRIEND'}
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                                    )}
 
-                                {activeTab === 'posts' && (
-                                    <div className="max-w-6xl mx-auto h-full flex flex-col items-center justify-center text-center">
-                                        <div className="relative mb-10">
-                                            <div className="absolute -inset-10 bg-red-600/10 blur-[80px] rounded-full animate-pulse"></div>
-                                            <SparklesIcon className="w-24 h-24 text-red-600 relative z-10" />
+                                    {/* POSTS TAB */}
+                                    {activeTab === 'posts' && (
+                                        <div className="h-full min-h-[500px] flex flex-col items-center justify-center text-center space-y-10">
+                                            <div className="relative">
+                                                <div className="absolute -inset-16 bg-red-600/10 blur-[100px] rounded-full animate-pulse"></div>
+                                                <GalleryIcon className="w-32 h-32 text-red-600 relative z-10 opacity-80" />
+                                            </div>
+                                            <div className="space-y-4">
+                                                <h3 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter">Content Feed</h3>
+                                                <p className="text-red-500 font-black text-sm md:text-xl uppercase tracking-[0.8em] animate-pulse">Encryption: Transmitting Soon</p>
+                                            </div>
+                                            <div className="mt-16 grid grid-cols-3 gap-4 w-full max-w-4xl opacity-5 pointer-events-none">
+                                                {[...Array(6)].map((_, i) => (
+                                                    <div key={i} className="aspect-square bg-white/10 rounded-3xl border border-white/10 border-dashed"></div>
+                                                ))}
+                                            </div>
                                         </div>
-                                        <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter mb-4">Content Feed</h3>
-                                        <p className="text-red-500 font-black text-sm md:text-lg uppercase tracking-[0.6em] animate-pulse">Posting & Uploading Coming Soon</p>
-                                        <div className="mt-16 grid grid-cols-3 gap-2 w-full opacity-10">
-                                            {[...Array(6)].map((_, i) => (
-                                                <div key={i} className="aspect-square bg-white/10 rounded-2xl border border-white/5 border-dashed"></div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
                         </div>
 
-                        {/* Save Trigger for Profile Owner */}
+                        {/* Persistent Save Button for Profile Owner */}
                         {!isViewingOther && (
-                            <div className="p-8 md:p-12 bg-black border-t border-white/10 z-20">
-                                <button onClick={handleSave} disabled={isSaving} className="w-full max-w-2xl mx-auto block py-6 md:py-8 bg-red-600 text-white font-black uppercase tracking-[0.6em] text-[12px] md:text-[14px] rounded-[2rem] shadow-[0_20px_60px_rgba(220,38,38,0.4)] hover:bg-red-700 active:scale-95 transition-all">
-                                    {isSaving ? 'SYNCHRONIZING...' : 'COMMIT PROTOCOL UPDATES'}
+                            <div className="p-8 md:p-16 bg-black border-t border-white/10 z-20 flex-shrink-0">
+                                <button onClick={handleSave} disabled={isSaving} className="w-full max-w-3xl mx-auto block py-8 md:py-10 bg-red-600 text-white font-black uppercase tracking-[0.7em] text-[14px] md:text-[16px] rounded-[3rem] shadow-[0_25px_70px_rgba(220,38,38,0.4)] hover:bg-red-700 active:scale-95 transition-all">
+                                    {isSaving ? 'UPLOADING TO REGISTRY...' : 'COMMIT PROTOCOL UPDATES'}
                                 </button>
                             </div>
                         )}
