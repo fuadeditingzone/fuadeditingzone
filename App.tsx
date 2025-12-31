@@ -1,9 +1,7 @@
-
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignIn } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-// FIX: Added 'update' to the list of imports from firebase-database
 import { getDatabase, ref, onValue, limitToLast, query, get, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
 
@@ -97,7 +95,6 @@ export default function App() {
 
   const isAnyOverlayActive = !!(modalState || isGalleryGridOpen || isServicesPopupOpen || isYouTubeRedirectOpen || contextMenu || isCommunityChatOpen || viewingProfileId);
 
-  // Background Scroll Locking
   useEffect(() => {
     if (isAnyOverlayActive) {
       document.body.style.overflow = 'hidden';
@@ -106,10 +103,12 @@ export default function App() {
     }
   }, [isAnyOverlayActive]);
 
-  // Unique Profile Link Routing Logic
+  // Unified Routing Logic for Profiles and Portfolio Items
   useEffect(() => {
     const handleRouting = async () => {
       const path = window.location.pathname;
+      
+      // 1. Profile Routing (/@username)
       if (path.startsWith('/@')) {
         const handle = path.replace('/@', '');
         if (handle) {
@@ -120,8 +119,24 @@ export default function App() {
             if (foundUser) setViewingProfileId(foundUser.id);
           }
         }
+      } 
+      // 2. Portfolio Item Routing (/portfolio/id)
+      else if (path.startsWith('/portfolio/')) {
+        const itemId = path.replace('/portfolio/', '');
+        if (itemId) {
+          const allItems = [
+            ...siteConfig.content.portfolio.graphicWorks,
+            ...siteConfig.content.portfolio.animeEdits,
+            ...siteConfig.content.portfolio.vfxEdits
+          ];
+          const foundIdx = allItems.findIndex(item => String(item.id) === itemId);
+          if (foundIdx !== -1) {
+            setModalState({ items: allItems, currentIndex: foundIdx });
+          }
+        }
       }
     };
+
     handleRouting();
     window.addEventListener('popstate', handleRouting);
     return () => window.removeEventListener('popstate', handleRouting);
@@ -129,35 +144,40 @@ export default function App() {
 
   const handleOpenProfile = (userId: string) => {
     setViewingProfileId(userId);
-    // Fetch username for URL update
-    onValue(ref(db, `users/${userId}/username`), (snap) => {
+    get(ref(db, `users/${userId}/username`)).then((snap) => {
       const uname = snap.val();
       if (uname) window.history.pushState(null, '', `/@${uname}`);
-    }, { onlyOnce: true });
+    });
   };
 
   const handleCloseProfile = () => {
     setViewingProfileId(null);
-    window.history.pushState(null, '', '/');
+    if (!modalState) window.history.pushState(null, '', '/');
+  };
+
+  const handleOpenModal = (items: ModalItem[], index: number) => {
+    setModalState({ items, currentIndex: index });
+    const item = items[index];
+    window.history.pushState(null, '', `/portfolio/${item.id}`);
+  };
+
+  const handleCloseModal = () => {
+    setModalState(null);
+    if (!viewingProfileId) window.history.pushState(null, '', '/');
   };
 
   // Push Notification Setup
   useEffect(() => {
     if (isSignedIn && user) {
       const messaging = getMessaging(app);
-      getToken(messaging, { vapidKey: 'BC8L_97G_rR8e7B1-XhH7bW4K9p3H7yXv8J4l9s6M1G3r5P2Q4z6X8C0V2B4N6M8L0K2J4H6G8F' }) // Replace with your actual VAPID key
+      getToken(messaging, { vapidKey: 'BC8L_97G_rR8e7B1-XhH7bW4K9p3H7yXv8J4l9s6M1G3r5P2Q4z6X8C0V2B4N6M8L0K2J4H6G8F' })
         .then((currentToken) => {
           if (currentToken) {
-            get(ref(db, `users/${user.id}/fcmToken`)).then((snap) => {
-              if (snap.val() !== currentToken) {
-                // FIX: update is now available through imports
-                update(ref(db, `users/${user.id}`), { fcmToken: currentToken });
-              }
-            });
+            update(ref(db, `users/${user.id}`), { fcmToken: currentToken });
           }
         });
       onMessage(messaging, (payload) => {
-        console.log('Foreground Message received. ', payload);
+        console.log('Signal Intercepted: ', payload);
       });
     }
   }, [isSignedIn, user]);
@@ -194,7 +214,7 @@ export default function App() {
 
           <main className="main-content relative z-10 pb-20 md:pb-0">
               <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
-              <Portfolio openModal={(items, idx) => setModalState({items, currentIndex: idx})} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
+              <Portfolio openModal={handleOpenModal} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
               <CommunityChat />
               <Contact onStartOrder={() => {}} />
               <AboutAndFooter />
@@ -204,7 +224,7 @@ export default function App() {
             {isCommunityChatOpen && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[900000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4" onClick={() => setIsCommunityChatOpen(false)}>
                     <motion.div initial={{ scale: 0.9, y: 40 }} animate={{ scale: 1, y: 0 }} className="relative w-full max-w-6xl h-[85vh] bg-[#050505] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-                        <CommunityChat isModalMode={true} initialTargetUserId={targetUserId} />
+                        <CommunityChat isModalMode={true} initialTargetUserId={targetUserId} onShowProfile={handleOpenProfile} />
                         <button onClick={() => setIsCommunityChatOpen(false)} className="absolute top-6 right-6 z-[50] p-3 rounded-full bg-white/5 hover:bg-red-600 transition-all"><CloseIcon className="w-6 h-6" /></button>
                     </motion.div>
                 </motion.div>
@@ -213,7 +233,7 @@ export default function App() {
 
           <ProfileModal isOpen={!!viewingProfileId} onClose={handleCloseProfile} viewingUserId={viewingProfileId} />
 
-          {modalState && <ModalViewer state={modalState} onClose={() => setModalState(null)} onNext={() => setModalState(s => s ? {...s, currentIndex: (s.currentIndex+1)%s.items.length} : null)} onPrev={() => setModalState(s => s ? {...s, currentIndex: (s.currentIndex-1+s.items.length)%s.items.length} : null)} />}
+          {modalState && <ModalViewer state={modalState} onClose={handleCloseModal} onNext={(idx) => handleOpenModal(modalState.items, idx)} onPrev={(idx) => handleOpenModal(modalState.items, idx)} />}
           {isServicesPopupOpen && <ServicesListPopup onClose={() => setIsServicesPopupOpen(false)} />}
           {isYouTubeRedirectOpen && <YouTubeRedirectPopup onClose={() => setIsYouTubeRedirectOpen(false)} onConfirm={() => { setIsYouTubeRedirectOpen(false); handleScrollTo('video-editing'); }} />}
           {pipVideo && <VideoPipPlayer video={pipVideo} onClose={() => setPipVideo(null)} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />}

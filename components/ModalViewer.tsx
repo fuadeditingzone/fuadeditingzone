@@ -15,8 +15,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface ModalViewerProps {
   state: { items: ModalItem[]; currentIndex: number };
   onClose: () => void;
-  onNext: () => void;
-  onPrev: () => void;
+  onNext: (idx: number) => void;
+  onPrev: (idx: number) => void;
 }
 
 const InstagramMockup: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
@@ -85,6 +85,13 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
     const isYTThumbnail = isImage(currentItem) && currentItem.category === 'YouTube Thumbnails';
     const isManipulation = isImage(currentItem) && currentItem.category === 'Photo Manipulation';
 
+    const handleShare = () => {
+        const url = `${window.location.origin}/portfolio/${currentItem.id}`;
+        navigator.clipboard.writeText(url);
+        setShowShareToast(true);
+        setTimeout(() => setShowShareToast(false), 2000);
+    };
+
     return (
         <div className="fixed inset-0 bg-black z-[9999] flex flex-col animate-fade-in overflow-hidden" onClick={onClose}>
             {isImage(currentItem) && (
@@ -121,10 +128,10 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                         </div>
                     ) : null}
 
-                    <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className="absolute left-4 md:-left-20 top-1/2 -translate-y-1/2 text-white/30 hover:text-white p-4 rounded-full transition-all">
+                    <button onClick={(e) => { e.stopPropagation(); onPrev((currentIndex - 1 + items.length) % items.length); }} className="absolute left-4 md:-left-20 top-1/2 -translate-y-1/2 text-white/30 hover:text-white p-4 rounded-full transition-all">
                         <ChevronLeftIcon className="w-12 h-12" />
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); onNext(); }} className="absolute right-4 md:-right-20 top-1/2 -translate-y-1/2 text-white/30 hover:text-white p-4 rounded-full transition-all">
+                    <button onClick={(e) => { e.stopPropagation(); onNext((currentIndex + 1) % items.length); }} className="absolute right-4 md:-right-20 top-1/2 -translate-y-1/2 text-white/30 hover:text-white p-4 rounded-full transition-all">
                         <ChevronRightIcon className="w-12 h-12" />
                     </button>
                 </div>
@@ -136,10 +143,14 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                          <h3 className="text-white font-black text-2xl uppercase tracking-tighter">{currentItem.title || 'Untitled Masterpiece'}</h3>
                          <p className="text-gray-400 text-sm font-medium leading-relaxed italic">{currentItem.description || 'Exclusive creative project by Fuad Ahmed.'}</p>
                     </div>
-                    <button onClick={() => { navigator.clipboard.writeText(window.location.href); setShowShareToast(false); setTimeout(() => setShowShareToast(false), 2000); }} className="btn-angular bg-red-600 text-white font-black py-4 px-10 uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all">Share Project</button>
+                    <button onClick={handleShare} className="btn-angular bg-red-600 text-white font-black py-4 px-10 uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all">Share Project</button>
                 </div>
             </div>
-            {showShareToast && <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-white text-black px-8 py-4 rounded-full font-black uppercase text-xs tracking-widest shadow-2xl z-[120]">Link Copied</div>}
+            <AnimatePresence>
+                {showShareToast && (
+                    <motion.div initial={{opacity:0, y: 50}} animate={{opacity:1, y:0}} exit={{opacity:0, y:50}} className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-white text-black px-8 py-4 rounded-full font-black uppercase text-xs tracking-widest shadow-2xl z-[120]">Link Copied</motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

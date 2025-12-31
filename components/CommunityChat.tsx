@@ -54,7 +54,8 @@ const AgentProfileModal: React.FC<{
   currentUser: any; 
   onClose: () => void; 
   onMessage: () => void;
-}> = ({ user, currentUser, onClose, onMessage }) => {
+  onShowFullProfile?: (id: string) => void;
+}> = ({ user, currentUser, onClose, onMessage, onShowFullProfile }) => {
   const isOwner = user.username === OWNER_HANDLE;
   const isAdmin = user.username === ADMIN_HANDLE;
   const [socialState, setSocialState] = useState({ isFollowing: false, friendStatus: 'none' });
@@ -88,7 +89,6 @@ const AgentProfileModal: React.FC<{
             onValue(reqSentRef, (s1) => {
                 if (s1.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'requested' }));
                 else {
-                    // Corrected typo reqRecRecRef to reqRecRef
                     onValue(reqRecRef, (s2) => {
                         if (s2.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'pending' }));
                         else setSocialState(prev => ({ ...prev, friendStatus: 'none' }));
@@ -126,22 +126,18 @@ const AgentProfileModal: React.FC<{
       }
   };
 
-  const copyUsername = () => {
-      navigator.clipboard.writeText(user.username);
-  };
-
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={onClose}>
       <div className="w-full max-w-[450px] bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col items-center shadow-[0_50px_100px_rgba(0,0,0,1)] max-h-[90dvh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
-        <div className="relative mb-6 flex-shrink-0">
+        <div className="relative mb-6 flex-shrink-0 cursor-pointer" onClick={() => onShowFullProfile?.(user.id)}>
             <img src={user.avatar} className={`w-32 h-32 rounded-[3rem] border-4 p-1 ${isOwner ? 'border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.5)]' : isAdmin ? 'border-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'border-white/10'}`} alt="" />
             {isOwner && <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] font-black px-2 py-1 rounded-lg">OWNER</span>}
         </div>
         <div className="text-center w-full mb-8 flex-shrink-0">
-            <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-1">{user.name}</h2>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-1 cursor-pointer" onClick={() => onShowFullProfile?.(user.id)}>{user.name}</h2>
             <div className="flex items-center justify-center gap-2">
                 <p className={`font-black uppercase text-[10px] tracking-[0.3em] ${isOwner ? 'text-red-500' : isAdmin ? 'text-blue-500' : 'text-zinc-500'}`}>@{user.username}</p>
-                <button onClick={copyUsername} className="p-1.5 bg-white/5 rounded-lg hover:bg-white/10 transition-all"><i className="fa-regular fa-copy text-[10px] text-zinc-500"></i></button>
+                <button onClick={() => navigator.clipboard.writeText(user.username)} className="p-1.5 bg-white/5 rounded-lg hover:bg-white/10 transition-all"><i className="fa-regular fa-copy text-[10px] text-zinc-500"></i></button>
             </div>
         </div>
         
@@ -158,13 +154,16 @@ const AgentProfileModal: React.FC<{
                 </button>
             </div>
         </div>
-        <button onClick={() => { onMessage(); onClose(); }} className="w-full py-6 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl shadow-2xl transition-all flex-shrink-0">Send Signal</button>
+        <div className="flex flex-col gap-2 w-full">
+            <button onClick={() => { onMessage(); onClose(); }} className="w-full py-5 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl shadow-2xl transition-all">Send Signal</button>
+            <button onClick={() => { onShowFullProfile?.(user.id); onClose(); }} className="w-full py-4 bg-white/5 text-zinc-500 hover:text-white font-black uppercase tracking-[0.2em] text-[9px] rounded-xl transition-all">View Identity File</button>
+        </div>
       </div>
     </motion.div>
   );
 };
 
-export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserId?: string | null }> = ({ isModalMode, initialTargetUserId }) => {
+export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserId?: string | null; onShowProfile?: (id: string) => void }> = ({ isModalMode, initialTargetUserId, onShowProfile }) => {
   const { user: clerkUser, isSignedIn } = useUser();
   const [users, setUsers] = useState<ChatUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
@@ -235,7 +234,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
   return (
     <section id="community" className={`${isModalMode ? 'h-full w-full' : 'py-12 md:py-24 bg-black relative z-10 select-none overflow-hidden'}`}>
       <AnimatePresence>
-        {viewingProfile && <AgentProfileModal user={viewingProfile} currentUser={clerkUser} onClose={() => setViewingProfile(null)} onMessage={() => { setIsGlobal(false); setSelectedUser(viewingProfile); setShowConversationOnMobile(true); }} />}
+        {viewingProfile && <AgentProfileModal user={viewingProfile} currentUser={clerkUser} onClose={() => setViewingProfile(null)} onMessage={() => { setIsGlobal(false); setSelectedUser(viewingProfile); setShowConversationOnMobile(true); }} onShowFullProfile={onShowProfile} />}
         {isSearchOpen && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[80000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4">
                 <div className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col max-h-[80dvh]">
@@ -277,7 +276,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                     <div className="w-11 h-11 rounded-2xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0"><SearchIcon className="w-5 h-5" /></div>
                     <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Find User</p></div>
                 </button>
-                <button onClick={() => setIsProfileSettingsOpen(true)} className="w-full flex items-center gap-4 p-4 rounded-[2rem] hover:bg-white/5 transition-all">
+                <button onClick={() => onShowProfile?.(clerkUser?.id!)} className="w-full flex items-center gap-4 p-4 rounded-[2rem] hover:bg-white/5 transition-all">
                     <div className="w-11 h-11 rounded-2xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0"><i className="fa-solid fa-gear text-lg"></i></div>
                     <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Settings</p></div>
                 </button>
@@ -338,7 +337,6 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
           </div>
         </div>
       </div>
-      <ProfileModal isOpen={isProfileSettingsOpen} onClose={() => setIsProfileSettingsOpen(false)} />
     </section>
   );
 };
