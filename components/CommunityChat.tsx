@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, push, onChildAdded, onValue, set, serverTimestamp, query, limitToLast, onDisconnect, update, get, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, ref, push, onChildAdded, onValue, set, serverTimestamp, query, limitToLast, onDisconnect, update, get, remove, runTransaction } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { SparklesIcon, SendIcon, SearchIcon, UserCircleIcon, GlobeAltIcon, CheckCircleIcon, CloseIcon, BriefcaseIcon, ChevronRightIcon, ChatBubbleIcon } from './Icons';
 
 declare global {
@@ -37,6 +37,7 @@ interface ChatUser {
   avatar: string;
   online?: boolean;
   profile?: Profile;
+  unreadCount?: number;
 }
 
 interface Message {
@@ -98,8 +99,10 @@ const AgentProfileModal: React.FC<{ user: ChatUser; currentUser: any; onClose: (
   const [canRate, setCanRate] = useState(false);
 
   useEffect(() => {
+    // Modal Open Logic: Block background interactions
+    const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = 'unset'; };
+    return () => { document.body.style.overflow = originalStyle; };
   }, []);
 
   // Fetch Order History & Ratings
@@ -120,20 +123,16 @@ const AgentProfileModal: React.FC<{ user: ChatUser; currentUser: any; onClose: (
       }
     });
 
-    // Check if current user can rate (completed order check)
-    // For this portfolio, we assume completion of any order with Fuad allows rating
     if (currentUser && currentUser.id !== user.id) {
        const checkOrdersRef = ref(db, 'orders');
        onValue(checkOrdersRef, (snap) => {
           const allOrders = snap.val();
           if (allOrders) {
              let hasCompleted = false;
-             // Check if currentUser has a completed order
              const myOrders = allOrders[currentUser.id] || {};
              Object.values(myOrders).forEach((o: any) => {
                 if (o.status === 'Completed') hasCompleted = true;
              });
-             // Also allow Owner to rate clients back
              if (currentUser.username === OWNER_USERNAME) {
                 const targetOrders = allOrders[user.id] || {};
                 Object.values(targetOrders).forEach((o: any) => {
@@ -155,7 +154,7 @@ const AgentProfileModal: React.FC<{ user: ChatUser; currentUser: any; onClose: (
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[800] bg-black/80 backdrop-blur-[12px] flex items-center justify-center p-6"
+      className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-[12px] flex items-center justify-center p-6"
       onClick={onClose}
     >
       <motion.div 
@@ -204,12 +203,11 @@ const AgentProfileModal: React.FC<{ user: ChatUser; currentUser: any; onClose: (
                     <h4 className="text-red-600 font-black text-[9px] uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
                       <div className="w-1 h-1 bg-red-600 rounded-full animate-pulse"></div> Signal Brief
                     </h4>
-                    <p className="text-[12px] text-gray-300 font-medium leading-relaxed italic">
+                    <p className="text-[12px] text-gray-300 font-medium leading-relaxed italic break-words">
                         "{user.profile?.bio || 'Neural signal restricted.'}"
                     </p>
                 </div>
 
-                {/* MISSION LOG (PUBLIC ORDER HISTORY) */}
                 <div className="p-8 bg-black border border-white/10 rounded-[2.5rem] space-y-6">
                     <h4 className="text-white font-black text-[10px] uppercase tracking-[0.4em] border-b border-white/5 pb-4">Mission Log</h4>
                     <div className="space-y-3 max-h-[200px] overflow-y-auto custom-scrollbar pr-2">
@@ -246,7 +244,11 @@ const AgentProfileModal: React.FC<{ user: ChatUser; currentUser: any; onClose: (
   );
 };
 
-export const CommunityChat: React.FC = () => {
+interface CommunityChatProps {
+    isModalMode?: boolean;
+}
+
+export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => {
   const { user: clerkUser, isSignedIn } = useUser();
   const [users, setUsers] = useState<ChatUser[]>([]);
   const [recentChats, setRecentChats] = useState<ChatUser[]>([]);
@@ -294,11 +296,22 @@ export const CommunityChat: React.FC = () => {
         const data = snap.val();
         if (data) {
             const sortedIds = Object.entries(data).sort((a: any, b: any) => b[1].timestamp - a[1].timestamp).map(e => e[0]);
-            setRecentChats(sortedIds.map(id => users.find(u => u.id === id)).filter(Boolean) as ChatUser[]);
+            setRecentChats(sortedIds.map(id => {
+                const u = users.find(usr => usr.id === id);
+                if (u) return { ...u, unreadCount: data[id].unreadCount || 0 };
+                return null;
+            }).filter(Boolean) as ChatUser[]);
         }
     });
     return () => unsubscribe();
   }, [isSignedIn, clerkUser, users]);
+
+  // Handle Unread Count Clearing when a user is selected
+  useEffect(() => {
+    if (selectedUser && !isGlobal && clerkUser) {
+        update(ref(db, `inbox/${clerkUser.id}/${selectedUser.id}`), { unreadCount: 0 });
+    }
+  }, [selectedUser, isGlobal, clerkUser]);
 
   useEffect(() => {
     if (isGlobal || !chatPath) {
@@ -354,7 +367,20 @@ export const CommunityChat: React.FC = () => {
     if (!isGlobal && selectedUser) {
         const timestamp = Date.now();
         update(ref(db, `inbox/${clerkUser.id}/${selectedUser.id}`), { timestamp });
-        update(ref(db, `inbox/${selectedUser.id}/${clerkUser.id}`), { timestamp });
+        
+        // Use a transaction to increment unread count safely for the recipient
+        const recipientInboxRef = ref(db, `inbox/${selectedUser.id}/${clerkUser.id}`);
+        runTransaction(recipientInboxRef, (currentData) => {
+            if (currentData === null) {
+                return { timestamp, unreadCount: 1 };
+            } else {
+                return {
+                    ...currentData,
+                    timestamp,
+                    unreadCount: (currentData.unreadCount || 0) + 1
+                };
+            }
+        });
     }
   };
 
@@ -376,7 +402,6 @@ export const CommunityChat: React.FC = () => {
     
     await update(ref(db, `connections/${chatId}`), { status: 'accepted' });
     
-    // EmailJS notification
     if (window.emailjs && selectedUser) {
       window.emailjs.send("service_default", "template_neural_link", {
         to_name: selectedUser.name,
@@ -396,7 +421,7 @@ export const CommunityChat: React.FC = () => {
   };
 
   return (
-    <section id="community" className="py-24 bg-black relative z-10 select-none overflow-hidden">
+    <section id="community" className={`${isModalMode ? 'py-0 h-full' : 'py-24 bg-black relative z-10 select-none overflow-hidden'}`}>
       <AnimatePresence>
         {viewingProfile && (
             <AgentProfileModal 
@@ -408,7 +433,7 @@ export const CommunityChat: React.FC = () => {
         )}
         
         {showSetup && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/98 backdrop-blur-3xl">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[21000] flex items-center justify-center p-4 bg-black/98 backdrop-blur-3xl">
              <div className="w-full max-w-lg bg-[#080808] border border-white/10 rounded-[3rem] p-12 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-red-600 shadow-[0_0_20px_rgba(225,0,0,0.5)]"></div>
                 <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Neural Link Sync</h3>
@@ -446,7 +471,7 @@ export const CommunityChat: React.FC = () => {
         {isSearching && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
-            className="fixed inset-0 z-[750] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-[21000] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4"
             onClick={(e) => { e.preventDefault(); setIsSearching(false); }}
           >
              <motion.div 
@@ -482,13 +507,15 @@ export const CommunityChat: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <div className="container mx-auto px-6 max-w-6xl">
-        <div className="mb-12 text-center">
-          <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Neural Grid</span>
-          <h2 className="text-white text-4xl md:text-5xl font-black uppercase tracking-tighter">Community Sector</h2>
-        </div>
+      <div className={`${isModalMode ? 'h-full max-w-full px-0' : 'container mx-auto px-6 max-w-6xl'}`}>
+        {!isModalMode && (
+            <div className="mb-12 text-center">
+                <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Neural Grid</span>
+                <h2 className="text-white text-4xl md:text-5xl font-black uppercase tracking-tighter">Community Sector</h2>
+            </div>
+        )}
 
-        <div className="w-full bg-[#080808] border border-white/5 rounded-[3.5rem] overflow-hidden shadow-2xl flex flex-col md:flex-row h-[800px] relative">
+        <div className={`w-full bg-[#080808] border border-white/5 rounded-[3.5rem] overflow-hidden shadow-2xl flex flex-col md:flex-row relative ${isModalMode ? 'h-full border-none rounded-none' : 'h-[800px]'}`}>
           
           <div className="w-full md:w-80 border-r border-white/5 flex flex-col bg-[#050505]/50">
             <div className="p-8 border-b border-white/5 flex items-center justify-between bg-black/30">
@@ -513,18 +540,31 @@ export const CommunityChat: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
               {recentChats.map(u => (
-                <button key={u.id} onClick={(e) => { e.preventDefault(); setIsGlobal(false); setSelectedUser(u); }} className={`w-full flex items-center gap-4 p-4 rounded-[2.2rem] transition-all border ${selectedUser?.id === u.id && !isGlobal ? 'bg-blue-600/10 border-blue-600/20' : 'border-transparent hover:bg-white/5'}`}>
+                <button 
+                    key={u.id} 
+                    onClick={(e) => { e.preventDefault(); setIsGlobal(false); setSelectedUser(u); }} 
+                    className={`w-full flex items-center gap-4 p-4 rounded-[2.2rem] transition-all border group relative ${
+                        selectedUser?.id === u.id && !isGlobal 
+                        ? 'bg-blue-600/10 border-blue-600/20 shadow-[0_0_15px_rgba(37,99,235,0.1)]' 
+                        : (u.unreadCount && u.unreadCount > 0) ? 'bg-blue-900/10 border-blue-500/30' : 'border-transparent hover:bg-white/5'
+                    }`}
+                >
                   <div className="relative flex-shrink-0">
                     <img src={u.avatar} className={`w-10 h-10 rounded-[1rem] border ${u.username === OWNER_USERNAME ? 'border-red-600 shadow-lg' : 'border-white/10'} object-cover`} alt="" />
                     {u.online && <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-black bg-green-500"></div>}
                   </div>
-                  <div className="text-left min-w-0">
-                    <p className="text-[11px] font-black text-white uppercase truncate flex items-center gap-1">
+                  <div className="text-left min-w-0 flex-1">
+                    <p className={`text-[11px] font-black uppercase truncate flex items-center gap-1 ${u.unreadCount && u.unreadCount > 0 ? 'text-blue-400' : 'text-white'}`}>
                         {u.name} 
                         {u.username === OWNER_USERNAME && <span className="owner-badge scale-[0.6] origin-left">OWNER</span>}
                     </p>
                     <p className="text-[9px] text-gray-600 font-bold uppercase truncate">@{u.username}</p>
                   </div>
+                  {u.unreadCount && u.unreadCount > 0 && (
+                      <div className="w-5 h-5 rounded-full bg-blue-600 text-white text-[9px] font-black flex items-center justify-center shadow-[0_0_10px_rgba(37,99,235,0.6)]">
+                          {u.unreadCount}
+                      </div>
+                  )}
                 </button>
               ))}
             </div>
@@ -549,7 +589,7 @@ export const CommunityChat: React.FC = () => {
                    <img src={msg.senderAvatar} className="w-10 h-10 rounded-[0.8rem] border border-white/5 object-cover cursor-pointer shadow-lg active:scale-90" alt="" onClick={(e) => { e.preventDefault(); const u = users.find(usr => usr.id === msg.senderId); if(u) setViewingProfile(u); }} />
                    <div className={`max-w-[75%] ${msg.senderId === clerkUser?.id ? 'items-end' : 'items-start'} flex flex-col`}>
                       <span className="text-[9px] font-black text-gray-600 uppercase mb-2">{msg.senderName}</span>
-                      <div className={`p-4 rounded-[1.5rem] text-[13px] font-medium border ${msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-gray-300 rounded-tl-none shadow-lg'}`}>{msg.text}</div>
+                      <div className={`p-4 rounded-[1.5rem] text-[13px] font-medium border break-words whitespace-pre-wrap ${msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-gray-300 rounded-tl-none shadow-lg'}`}>{msg.text}</div>
                    </div>
                 </div>
               ))}

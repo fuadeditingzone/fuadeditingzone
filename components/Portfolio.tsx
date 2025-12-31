@@ -15,7 +15,6 @@ import { useParallax } from '../contexts/ParallaxContext';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { useAnimatedCounter } from '../hooks/useAnimatedCounter';
 
-// Add YT Player types to global window scope for TypeScript
 declare global {
   interface Window {
     YT: any;
@@ -24,23 +23,56 @@ declare global {
   }
 }
 
-interface PortfolioProps {
-    openModal: (items: (GraphicWork | VideoWork)[], startIndex: number) => void;
-    isYouTubeApiReady: boolean;
-    playingVfxVideo: VideoWork | null;
-    setPlayingVfxVideo: (video: VideoWork | null) => void;
-    pipVideo: VideoWork | null;
-    setPipVideo: (video: VideoWork | null) => void;
-    activeYouTubeId: string;
-    setActiveYouTubeId: (id: string) => void;
-    isYtPlaying: boolean;
-    setIsYtPlaying: (playing: boolean) => void;
-    onPortfolioPlay?: () => void;
-    currentTime: number;
-    setCurrentTime: (time: number) => void;
-}
+const PortfolioSection: React.FC<{ 
+    title: string; 
+    subtitle: string; 
+    icon: React.ReactNode; 
+    works: any[]; 
+    onItemClick: (work: any) => void;
+    id: string;
+}> = ({ title, subtitle, icon, works, onItemClick, id }) => (
+    <div id={id} className="mb-24 last:mb-0">
+        <div className="flex items-center gap-4 mb-10 border-l-4 border-red-600 pl-6">
+            <div className="w-12 h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
+                {icon}
+            </div>
+            <div>
+                <span className="text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">{subtitle}</span>
+                <h3 className="text-white text-3xl font-black uppercase tracking-tighter">{title}</h3>
+            </div>
+        </div>
 
-const { graphicWorks, animeEdits, vfxEdits } = siteConfig.content.portfolio;
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {works.map((work) => (
+                <motion.div 
+                    key={work.id}
+                    whileHover={{ y: -8 }}
+                    onClick={(e) => { e.preventDefault(); onItemClick(work); }}
+                    className="group relative aspect-square bg-[#0a0a0a] rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer hover:border-red-600/50 transition-all duration-500 shadow-2xl"
+                >
+                    <img 
+                        src={work.imageUrl || work.thumbnailUrl || `https://i.ytimg.com/vi/${work.videoId}/mqdefault.jpg`} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[0.2] group-hover:grayscale-0"
+                        alt=""
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-8">
+                        <h4 className="text-white font-black uppercase tracking-widest text-lg leading-tight mb-2">{work.title || 'Untitled Masterpiece'}</h4>
+                        <div className="flex flex-wrap gap-2">
+                            {(work.tags || ['#SelectedLegend']).map((tag: string) => (
+                                <span key={tag} className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-600/10 px-2 py-1 rounded border border-red-600/20">{tag}</span>
+                            ))}
+                        </div>
+                    </div>
+                    {(work.videoId || work.url) && (
+                        <div className="absolute top-6 right-6 p-3 bg-red-600 rounded-full shadow-2xl scale-0 group-hover:scale-100 transition-transform duration-300">
+                            <PlayIcon className="w-4 h-4 text-white" />
+                        </div>
+                    )}
+                </motion.div>
+            ))}
+        </div>
+    </div>
+);
 
 const VfxVideoPlayer: React.FC<{
     video: VideoWork;
@@ -63,18 +95,13 @@ const VfxVideoPlayer: React.FC<{
     useEffect(() => {
         const videoEl = videoRef.current;
         if (!videoEl) return;
-        
         if (isPlaying && !isThisVideoInPip) {
-            if (currentTime > 0 && Math.abs(videoEl.currentTime - currentTime) > 1) {
-                videoEl.currentTime = currentTime;
-            }
+            if (currentTime > 0 && Math.abs(videoEl.currentTime - currentTime) > 1) videoEl.currentTime = currentTime;
             videoEl.play().catch(() => {});
             setHasActuallyPlayed(true);
         } else {
             videoEl.pause();
-            if (!isThisVideoInPip && videoEl.currentTime !== 0) {
-                videoEl.currentTime = 0;
-            }
+            if (!isThisVideoInPip && videoEl.currentTime !== 0) videoEl.currentTime = 0;
             if (!currentlyPlaying) setHasActuallyPlayed(false); 
         }
     }, [isPlaying, isThisVideoInPip, currentlyPlaying]);
@@ -92,41 +119,20 @@ const VfxVideoPlayer: React.FC<{
             if (videoRef.current) setCurrentTime(videoRef.current.currentTime);
             setPipVideo(video);
         }
-        if (isThisVideoInPip && isVisible) {
-            setPipVideo(null);
-        }
-    }, [isPlaying, hasActuallyPlayed, isVisible, isThisVideoInPip, video, setPipVideo]);
+        if (isThisVideoInPip && isVisible) setPipVideo(null);
+    }, [isPlaying, hasActuallyPlayed, isVisible, isThisVideoInPip, video]);
     
-    const handlePlayRequest = () => {
-        onPlayRequest(isPlaying ? null : video);
-    };
-
     return (
-        <div ref={containerRef} itemScope itemType="http://schema.org/VideoObject">
-            <InteractiveCard className={`relative group w-full aspect-square bg-black rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 select-none ${isPlaying ? 'shadow-2xl z-10 border-red-600/50' : 'opacity-90 hover:opacity-100 border-white/5'} border ${isThisVideoInPip ? 'opacity-30 pointer-events-none' : ''}`}>
-                <figure className="w-full h-full m-0 p-0" onClick={handlePlayRequest}>
-                    <video
-                        ref={videoRef}
-                        src={video.url}
-                        loop
-                        muted={isMuted}
-                        playsInline
-                        itemProp="contentUrl"
-                        className="w-full h-full object-contain"
-                        onCanPlay={() => setIsLoading(false)}
-                    />
-                    <meta itemProp="name" content={video.title || "VFX Portfolio Piece"} />
-                    <meta itemProp="description" content={video.description || "Cinematic VFX edit by Fuad Ahmed."} />
-                    <meta itemProp="uploadDate" content="2025-01-01" />
-                    <meta itemProp="thumbnailUrl" content={siteConfig.branding.profilePicUrl} />
-                
-                    <div className={`absolute inset-0 bg-black/20 transition-opacity duration-300 flex items-center justify-center select-none ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
-                         {!isPlaying && !isLoading && <PlayIcon className="w-8 h-8 md:w-12 md:h-12 text-white/80 drop-shadow-lg" />}
+        <div ref={containerRef}>
+            <InteractiveCard className={`relative group w-full aspect-square bg-black rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 ${isPlaying ? 'shadow-2xl z-10 border-red-600/50' : 'opacity-90 hover:opacity-100 border-white/5'} border ${isThisVideoInPip ? 'opacity-30 pointer-events-none' : ''}`}>
+                <figure className="w-full h-full m-0 p-0" onClick={() => onPlayRequest(isPlaying ? null : video)}>
+                    <video ref={videoRef} src={video.url} loop muted={isMuted} playsInline className="w-full h-full object-contain" onCanPlay={() => setIsLoading(false)} />
+                    <div className={`absolute inset-0 bg-black/20 transition-opacity flex items-center justify-center ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
+                         {!isPlaying && !isLoading && <PlayIcon className="w-8 h-8 text-white/80 drop-shadow-lg" />}
                     </div>
-
                     {isPlaying && (
-                        <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 p-2 bg-black/50 backdrop-blur-md rounded-full select-none z-20" onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}>
-                            {isMuted ? <VolumeOffIcon className="w-3 h-3 md:w-4 md:h-4 text-white" /> : <VolumeOnIcon className="w-3 h-3 md:w-4 md:h-4 text-white" />}
+                        <div className="absolute bottom-4 right-4 p-2 bg-black/50 backdrop-blur-md rounded-full z-20" onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}>
+                            {isMuted ? <VolumeOffIcon className="w-4 h-4 text-white" /> : <VolumeOnIcon className="w-4 h-4 text-white" />}
                         </div>
                     )}
                 </figure>
@@ -135,356 +141,147 @@ const VfxVideoPlayer: React.FC<{
     );
 };
 
-export const Portfolio: React.FC<PortfolioProps> = ({ 
-    openModal, 
-    isYouTubeApiReady,
-    playingVfxVideo,
-    setPlayingVfxVideo,
-    pipVideo,
-    setPipVideo,
-    activeYouTubeId,
-    setActiveYouTubeId,
-    isYtPlaying,
-    setIsYtPlaying,
-    onPortfolioPlay,
-    currentTime,
-    setCurrentTime
+export const Portfolio: React.FC<any> = ({ 
+    openModal, isYouTubeApiReady, playingVfxVideo, setPlayingVfxVideo, pipVideo, setPipVideo,
+    activeYouTubeId, setActiveYouTubeId, isYtPlaying, setIsYtPlaying, currentTime, setCurrentTime
 }) => {
     const [ytContainerRef, isYtVisible] = useIntersectionObserver({ threshold: 0.1 });
     const { videos: youtubeVideos, stats, loading, formatNumber } = useYouTubeChannelStats();
-    
-    const [currentVideoStats, setCurrentVideoStats] = useState<{ id: string; title: string; views: string; rawViews: number; likes: number } | null>(null);
-
-    const { y } = useParallax();
+    const [currentVideoStats, setCurrentVideoStats] = useState<any>(null);
     const playerRef = useRef<any>(null);
 
-    // Synchronize stats from hook data immediately
     useEffect(() => {
         if (!activeYouTubeId || youtubeVideos.length === 0) return;
         const preFetched = youtubeVideos.find(v => v.id === activeYouTubeId);
-        if (preFetched) {
-            setCurrentVideoStats(prev => ({
-                id: activeYouTubeId,
-                title: preFetched.title,
-                views: preFetched.viewCount,
-                rawViews: preFetched.rawViewCount || 0,
-                likes: preFetched.likeCount || (prev?.id === activeYouTubeId ? prev.likes : 0)
-            }));
-        }
+        if (preFetched) setCurrentVideoStats({ id: activeYouTubeId, title: preFetched.title, rawViews: preFetched.rawViewCount || 0, likes: preFetched.likeCount || 0 });
     }, [activeYouTubeId, youtubeVideos]);
 
-    // Live Stats Fetcher
-    useEffect(() => {
-        if (!activeYouTubeId) return;
-        const fetchStats = async () => {
-            try {
-                const apiKey = siteConfig.api.youtubeApiKey;
-                const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${activeYouTubeId}&key=${apiKey}`);
-                const ytData = await ytRes.json();
-                
-                if (ytData.items && ytData.items.length > 0) {
-                    const item = ytData.items[0];
-                    const stats = item.statistics;
-                    setCurrentVideoStats({
-                        id: activeYouTubeId,
-                        title: item.snippet.title,
-                        rawViews: parseInt(stats.viewCount),
-                        views: new Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(parseInt(stats.viewCount)),
-                        likes: parseInt(stats.likeCount) || 0
-                    });
-                }
-            } catch (error) {
-                console.error("Live stats fetch failed", error);
-            }
-        };
-        fetchStats();
-    }, [activeYouTubeId]);
-
-    // Counters for "Live" counting effect
-    const finalLikesCount = currentVideoStats ? currentVideoStats.likes : 0;
-    const animatedLikes = useAnimatedCounter(finalLikesCount, 2000, activeYouTubeId);
-    const animatedViews = useAnimatedCounter(currentVideoStats?.rawViews || 0, 3000, activeYouTubeId);
-
-    // YouTube Player Initialization & Sync
     useEffect(() => {
         if (!isYouTubeApiReady || !activeYouTubeId) return;
-        
-        if (pipVideo && pipVideo.videoId === activeYouTubeId) {
-            if (playerRef.current) {
-                playerRef.current.destroy();
-                playerRef.current = null;
-            }
-            return;
-        }
-
-        const container = document.getElementById('youtube-portfolio-player-inner');
-        if (!container) return;
-        if (playerRef.current) playerRef.current.destroy();
-
-        playerRef.current = new window.YT.Player('youtube-portfolio-player-inner', {
-            videoId: activeYouTubeId,
-            playerVars: {
-                autoplay: isYtPlaying ? 1 : 0,
-                modestbranding: 1,
-                rel: 0,
-                showinfo: 0,
-                start: Math.floor(currentTime) 
-            },
-            events: {
-                onStateChange: (event: any) => {
-                    if (event.data === window.YT.PlayerState.PLAYING) {
-                        setIsYtPlaying(true);
-                        if (onPortfolioPlay) onPortfolioPlay();
-                    } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
-                        setIsYtPlaying(false);
+        const initPlayer = () => {
+            if (playerRef.current) playerRef.current.destroy();
+            playerRef.current = new window.YT.Player('youtube-portfolio-player-inner', {
+                videoId: activeYouTubeId,
+                playerVars: { autoplay: isYtPlaying ? 1 : 0, modestbranding: 1, rel: 0, start: Math.floor(currentTime) },
+                events: {
+                    onStateChange: (e: any) => {
+                        if (e.data === window.YT.PlayerState.PLAYING) setIsYtPlaying(true);
+                        else if (e.data === window.YT.PlayerState.PAUSED || e.data === window.YT.PlayerState.ENDED) setIsYtPlaying(false);
                     }
                 }
-            }
-        });
+            });
+        };
+        initPlayer();
         return () => { if (playerRef.current) playerRef.current.destroy(); };
     }, [isYouTubeApiReady, activeYouTubeId, !!pipVideo]);
 
-    useEffect(() => {
-        if (!isYtPlaying) return;
-        const interval = setInterval(() => {
-            if (playerRef.current && playerRef.current.getCurrentTime) {
-                setCurrentTime(playerRef.current.getCurrentTime());
-            }
-        }, 1000);
-        return () => clearInterval(interval);
-    }, [isYtPlaying]);
+    const animatedLikes = useAnimatedCounter(currentVideoStats?.likes || 0, 2000, activeYouTubeId);
+    const animatedViews = useAnimatedCounter(currentVideoStats?.rawViews || 0, 3000, activeYouTubeId);
 
-    // Professional PiP Logic: Automatically transition when scrolling away
-    useEffect(() => {
-        if (isYtPlaying && !isYtVisible && activeYouTubeId) {
-            const currentVideo = animeEdits.find(v => v.videoId === activeYouTubeId);
-            if (currentVideo && !pipVideo) {
-                setPipVideo(currentVideo);
-            }
-        }
-        
-        if (isYtVisible && pipVideo && pipVideo.videoId === activeYouTubeId) {
-            setPipVideo(null);
-        }
-    }, [isYtVisible, isYtPlaying, activeYouTubeId, pipVideo, animeEdits, setPipVideo]);
-
-    const parallaxStyle = {
-      transform: `translateY(${y * -5}px)`,
-      transition: 'transform 0.1s ease-out',
-      willChange: 'transform' as const
-    };
-
-    const dynamicGraphicWorks = useMemo(() => {
-        const excludedKeywords = ["maldita", "salaar", "alight motion", "love me with", "one kiss", "naruto from telegram", "lungiman", "#shorts", "an amv edit with all styles", "empathy"];
-        let filteredVideos = youtubeVideos.filter(v => v.durationSeconds > 60);
-        filteredVideos = filteredVideos.filter(v => {
-             const titleLower = v.title.toLowerCase();
-             return !excludedKeywords.some(k => titleLower.includes(k));
-        });
-        filteredVideos.sort((a, b) => (b.rawViewCount || 0) - (a.rawViewCount || 0));
-        const finalSelection = filteredVideos.slice(0, 20);
-        return [...graphicWorks, ...finalSelection.map(v => ({ 
-            id: v.id, 
-            imageUrl: v.thumbnail, 
-            category: 'YouTube Thumbnails' as const,
-            title: v.title,
-            description: `Professional YouTube thumbnail design for: ${v.title}`
-        }))];
-    }, [youtubeVideos]);
-
-    const YoutubeEditsSection = useMemo(() => {
-        const middleIndex = Math.ceil(animeEdits.length / 2);
-        const leftAnimeEdits = animeEdits.slice(0, middleIndex);
-        const rightAnimeEdits = animeEdits.slice(middleIndex);
-
-        const isPipActiveForThisVideo = pipVideo && pipVideo.videoId === activeYouTubeId;
-
-        const ThumbnailButton: React.FC<{ video: VideoWork }> = ({ video }) => (
-            video.videoId ? (
-                <button
-                    onClick={() => {
-                        setActiveYouTubeId(video.videoId!);
-                        setIsYtPlaying(true); 
-                        setCurrentTime(0); 
-                        setPipVideo(null); 
-                        if (onPortfolioPlay) onPortfolioPlay();
-                    }}
-                    className={`relative w-full aspect-video rounded-xl transition-all duration-300 border border-transparent select-none group/thumb bg-black/40 p-0.5 ${activeYouTubeId === video.videoId ? 'opacity-100 scale-105 z-10 shadow-xl border-white/20 ring-2 ring-red-600' : 'opacity-40 hover:opacity-100'}`}
-                >
-                    <div className="w-full h-full rounded-[10px] overflow-hidden relative">
-                        <img src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt={`Thumbnail for ${video.title}`} className="w-full h-full object-contain transition-transform duration-500 group-hover/thumb:scale-110" />
-                    </div>
-                </button>
-            ) : null
-        );
-
-        return (
-            <div className="lg:flex lg:gap-12 lg:items-start max-w-[1700px] mx-auto animate-fade-in" ref={ytContainerRef}>
-                <div className="hidden lg:flex flex-col gap-6 w-[300px] flex-shrink-0 h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/50 px-4 pt-2">
-                        {leftAnimeEdits.map((video) => <ThumbnailButton key={video.id} video={video} />)}
-                </div>
-
-                <div className="flex-1 space-y-6 md:space-y-4">
-                    <div className="relative aspect-video w-full mx-auto rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-black border border-white/10">
-                        <div id="youtube-portfolio-player-inner" className={`w-full h-full transition-opacity duration-500 ${isPipActiveForThisVideo ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}></div>
-                        
-                        <AnimatePresence>
-                            {isPipActiveForThisVideo && (
-                                <motion.div 
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="absolute inset-0 z-20 bg-black flex flex-col items-center justify-center text-center p-6"
-                                >
-                                    <div className="w-16 h-16 md:w-20 md:h-20 bg-red-600/10 rounded-full flex items-center justify-center mb-6 animate-pulse border border-red-600/20">
-                                        <YouTubeIcon className="w-8 h-8 md:w-10 md:h-10 text-red-600" />
-                                    </div>
-                                    <h4 className="text-white font-black text-sm md:text-xl uppercase tracking-widest mb-2">Video playing in PiP mode</h4>
-                                    <p className="text-gray-500 text-[10px] md:text-xs font-medium max-w-xs mb-8">You can keep watching while exploring the rest of the portfolio.</p>
-                                    
-                                    <button 
-                                        onClick={() => setPipVideo(null)}
-                                        className="btn-angular bg-white text-black text-[9px] md:text-xs font-black px-8 py-3 uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center gap-2 group"
-                                    >
-                                        Return to View
-                                        <ChevronRightIcon className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform" />
-                                    </button>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-                    
-                    <div className="bg-[#0f0f0f] p-4 md:p-6 border-t border-white/5 space-y-5 select-none animate-fade-in">
-                        <div className="flex flex-col gap-1">
-                            <h3 className="text-white font-bold text-base md:text-2xl break-words tracking-tight leading-tight line-clamp-2">{currentVideoStats?.title || 'Syncing Visual Data...'}</h3>
-                            <div className="flex items-center gap-2 text-gray-500 text-[10px] md:text-xs">
-                                <span className="flex items-center gap-1">
-                                    <EyeIcon className="w-3 h-3" />
-                                    {currentVideoStats ? formatNumber(animatedViews) : '...'} views
-                                </span>
-                                <span>•</span>
-                                <span>Published on YouTube</span>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <div className="flex items-center gap-3 md:gap-4 flex-wrap">
-                                <a href={`https://www.youtube.com/channel/${siteConfig.api.channelId}`} target="_blank" rel="noopener noreferrer" className="relative flex-shrink-0 group">
-                                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border border-white/10 ring-2 ring-red-600/20 group-hover:ring-red-600 transition-all">
-                                        <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} alt={stats.channelTitle} className="w-full h-full object-cover object-top bg-gray-800 ring-1 ring-white/10" />
-                                    </div>
-                                </a>
-                                <div className="flex flex-col min-w-0">
-                                    <span className="text-white font-bold text-sm md:text-base truncate">{stats.channelTitle || siteConfig.branding.name}</span>
-                                    <span className="text-gray-400 text-[10px] md:text-xs font-medium mb-1">{loading ? '...' : formatNumber(stats.subscribers)} subscribers</span>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col gap-2 min-w-[140px]">
-                                <div className="flex items-center justify-end">
-                                     <div 
-                                        className="flex items-center gap-2 px-6 py-2.5 transition-all rounded-full bg-white/5 border border-white/10 text-red-500 cursor-default"
-                                     >
-                                        <HandThumbUpIcon className="w-4 h-4 md:w-5 md:h-5 fill-red-500" />
-                                        <span className="text-xs md:text-sm font-black min-w-[3ch] text-center">
-                                            {currentVideoStats ? formatNumber(animatedLikes) : '...'}
-                                        </span>
-                                     </div>
-                                </div>
-                                <p className="text-[8px] text-right text-gray-500 uppercase tracking-widest font-black pr-2">Total Community Support</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="lg:hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-4 max-w-5xl mx-auto pt-2 px-1">
-                        {animeEdits.map((video) => <ThumbnailButton key={video.id} video={video} />)}
-                    </div>
-                </div>
-
-                <div className="hidden lg:flex flex-col gap-6 w-[300px] flex-shrink-0 h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/50 px-4 pt-2">
-                        {rightAnimeEdits.map((video) => <ThumbnailButton key={video.id} video={video} />)}
-                </div>
-            </div>
-        );
-    }, [animeEdits, activeYouTubeId, isYtPlaying, currentVideoStats, setIsYtPlaying, onPortfolioPlay, ytContainerRef, isYouTubeApiReady, currentTime, setCurrentTime, stats, loading, formatNumber, animatedLikes, animatedViews, finalLikesCount, pipVideo, setPipVideo]);
-
-    const GraphicDesignContent = useMemo(() => {
-        const categories: GraphicWork['category'][] = ['Photo Manipulation', 'YouTube Thumbnails', 'Banner Designs'];
-        return (
-            <div className="space-y-12 md:space-y-16">
-                {categories.map((cat) => {
-                    const filtered = dynamicGraphicWorks.filter(w => w.category === cat);
-                    const CategoryIcon = cat === 'Photo Manipulation' ? PhotoManipulationIcon : 
-                                         cat === 'YouTube Thumbnails' ? ThumbnailIcon : BannerIcon;
-                    
-                    let gridAspect = 'aspect-video';
-                    if (cat === 'Photo Manipulation') gridAspect = 'aspect-square';
-                    if (cat === 'Banner Designs') gridAspect = 'aspect-[3/1] md:aspect-[3.5/1]';
-
-                    const gridClass = cat === 'Banner Designs' 
-                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6" 
-                        : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4";
-
-                    return (
-                        <div key={cat} className="space-y-4">
-                            <div className="flex items-center gap-3 border-l-4 border-red-600 pl-4 mb-6">
-                                <CategoryIcon className="w-5 h-5 text-red-500" />
-                                <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-wider">{cat}</h3>
-                            </div>
-                            <div className={gridClass}>
-                                {filtered.map((work) => {
-                                    const origIdx = dynamicGraphicWorks.findIndex(item => item.id === work.id);
-                                    return (
-                                        <div key={work.id} onClick={() => openModal(dynamicGraphicWorks, origIdx)} itemScope itemType="http://schema.org/ImageObject">
-                                            <InteractiveCard className={`relative group rounded-lg overflow-hidden bg-[#0a0a0a] cursor-pointer shadow-md hover:shadow-xl transition-all duration-500 border border-white/5 ${gridAspect}`}>
-                                                <figure className="w-full h-full m-0 p-0 transition-transform duration-300 group-hover:scale-105">
-                                                  <LazyImage 
-                                                    src={work.imageUrl} 
-                                                    alt={`${work.title || work.category} - Digital Art by Fuad Ahmed`} 
-                                                    className="relative w-full h-full object-contain" 
-                                                  />
-                                                  <figcaption className="sr-only" itemProp="caption">{work.title} - {work.category} work at Fuad Editing Zone.</figcaption>
-                                                </figure>
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                                                     <span className="text-[8px] font-black text-white uppercase tracking-widest bg-red-600 px-1.5 py-0.5 rounded">View</span>
-                                                </div>
-                                            </InteractiveCard>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    }, [dynamicGraphicWorks, openModal]);
+    const graphicWorks = siteConfig.content.portfolio.graphicWorks;
+    const vfxEdits = siteConfig.content.portfolio.vfxEdits;
+    const animeEdits = siteConfig.content.portfolio.animeEdits;
 
     return (
-        <section id="portfolio" className="select-none" style={parallaxStyle}>
-            <div className="max-w-[1800px] mx-auto space-y-12 md:space-y-24 py-8 md:py-12 px-2 sm:px-6 lg:px-8">
-                <div className="relative p-2 md:p-4">
-                    <header className="text-center mb-10 md:mb-14">
-                        <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter">Graphic Design</h2>
-                        <p className="text-gray-500 text-xs md:text-sm font-bold uppercase tracking-widest mt-2">Professional Digital Composition & Visualization</p>
-                        <div className="h-1 w-20 bg-red-600 mx-auto mt-4"></div>
-                    </header>
-                    {GraphicDesignContent}
+        <section id="portfolio" className="py-24 bg-[#050505] relative z-10 select-none overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-[0.02] flex items-center justify-center select-none overflow-hidden">
+                <span className="text-[40vw] font-black uppercase tracking-tighter">PORTFOLIO</span>
+            </div>
+
+            <div className="container mx-auto px-6 max-w-7xl">
+                <div className="text-center mb-20">
+                    <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-4 block">The Showroom</span>
+                    <h2 className="text-white text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none">Completed Missions</h2>
                 </div>
-                <div id="video-editing" className="relative p-2 md:p-4 space-y-12 md:space-y-20">
-                    <header className="text-center">
-                        <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter">Video Editing</h2>
-                        <p className="text-gray-500 text-xs md:text-sm font-bold uppercase tracking-widest mt-2">Cinematic VFX & Professional Motion Design</p>
-                        <div className="h-1 w-20 bg-red-600 mx-auto mt-4"></div>
-                    </header>
-                    <div><h3 className="text-xl md:text-2xl font-bold text-white uppercase mb-8 ml-4 border-l-4 border-red-600 pl-4">YouTube Edits</h3>{YoutubeEditsSection}</div>
-                    <div><h3 className="text-xl md:text-2xl font-bold text-white uppercase mb-8 ml-4 border-l-4 border-red-600 pl-4">Cinematic VFX</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-8 px-1 animate-fade-in">
-                            {vfxEdits.map((video) => <VfxVideoPlayer key={video.id} video={video} currentlyPlaying={playingVfxVideo} pipVideo={pipVideo} onPlayRequest={v => setPlayingVfxVideo(v)} setPipVideo={setPipVideo} currentTime={currentTime} setCurrentTime={setCurrentTime} />)}
+
+                {/* YouTube Preview Sector */}
+                <div id="video-editing" className="mb-24">
+                    <div className="flex items-center gap-4 mb-10 border-l-4 border-red-600 pl-6">
+                        <div className="w-12 h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
+                            <YouTubeIcon className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <span className="text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">Sector YouTube</span>
+                            <h3 className="text-white text-3xl font-black uppercase tracking-tighter">Visual Transmissions</h3>
+                        </div>
+                    </div>
+
+                    <div className="lg:flex lg:gap-12 lg:items-start" ref={ytContainerRef}>
+                        <div className="flex-1 space-y-6">
+                            <div className="relative aspect-video w-full rounded-[2.5rem] overflow-hidden shadow-2xl bg-black border border-white/10">
+                                <div id="youtube-portfolio-player-inner" className="w-full h-full"></div>
+                            </div>
+                            <div className="bg-[#0f0f0f] p-8 border border-white/5 rounded-[2rem]">
+                                <h3 className="text-white font-bold text-xl mb-4">{currentVideoStats?.title || 'Syncing Visual Data...'}</h3>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full overflow-hidden border border-red-600/30">
+                                            <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div>
+                                            <p className="text-white font-black text-sm uppercase">{stats.channelTitle}</p>
+                                            <p className="text-gray-500 text-[10px] uppercase font-bold">{formatNumber(stats.subscribers)} Agents Synced</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-6">
+                                        <div className="text-center">
+                                            <p className="text-white font-black text-lg">{formatNumber(animatedViews)}</p>
+                                            <p className="text-[8px] text-gray-500 uppercase font-black">Reach</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-red-600 font-black text-lg">{formatNumber(animatedLikes)}</p>
+                                            <p className="text-[8px] text-gray-500 uppercase font-black">Support</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="hidden lg:flex flex-col gap-4 w-[300px] flex-shrink-0 h-[650px] overflow-y-auto custom-scrollbar px-4">
+                            {animeEdits.map((video: any) => (
+                                <button key={video.id} onClick={() => { setActiveYouTubeId(video.videoId); setIsYtPlaying(true); }} className={`relative aspect-video rounded-2xl overflow-hidden border transition-all ${activeYouTubeId === video.videoId ? 'border-red-600 ring-4 ring-red-600/20' : 'border-white/10 opacity-50 hover:opacity-100'}`}>
+                                    <img src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"><PlayIcon className="w-8 h-8 text-white" /></div>
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </div>
+
+                <PortfolioSection id="graphic-design" title="Graphic Architecture" subtitle="Sector Alpha" icon={<PhotoManipulationIcon className="w-6 h-6" />} works={graphicWorks} onItemClick={openModal} />
+                <div className="mb-24">
+                     <div className="flex items-center gap-4 mb-10 border-l-4 border-red-600 pl-6">
+                        <div className="w-12 h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
+                            <SparklesIcon className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <span className="text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">Sector Beta</span>
+                            <h3 className="text-white text-3xl font-black uppercase tracking-tighter">Cinematic VFX</h3>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {vfxEdits.map((video: any) => (
+                            <VfxVideoPlayer key={video.id} video={video} currentlyPlaying={playingVfxVideo} pipVideo={pipVideo} onPlayRequest={setPlayingVfxVideo} setPipVideo={setPipVideo} currentTime={currentTime} setCurrentTime={setCurrentTime} />
+                        ))}
+                    </div>
+                </div>
             </div>
+
+            <AnimatePresence>
+                {openModal.selectedWork && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-6" onClick={() => openModal(null)}>
+                        <motion.div initial={{ scale: 0.9, y: 40 }} animate={{ scale: 1, y: 0 }} className="relative w-full max-w-6xl aspect-video md:aspect-auto md:h-[85vh] rounded-[3rem] overflow-hidden shadow-[0_0_150px_rgba(220,38,38,0.3)] bg-black border border-white/10" onClick={e => e.stopPropagation()}>
+                            <button onClick={() => openModal(null)} className="absolute top-8 right-8 z-[600] p-4 bg-black/60 hover:bg-red-600 rounded-full text-white transition-all border border-white/10"><CloseIcon className="w-6 h-6" /></button>
+                            <div className="w-full h-full relative">
+                                {openModal.selectedWork.videoId ? <iframe src={`https://www.youtube.com/embed/${openModal.selectedWork.videoId}?autoplay=1`} className="w-full h-full" /> : <img src={openModal.selectedWork.imageUrl} className="w-full h-full object-contain" />}
+                                <div className="absolute bottom-0 left-0 right-0 p-12 bg-gradient-to-t from-black via-black/80 to-transparent">
+                                    <h3 className="text-white text-3xl font-black uppercase tracking-tighter">{openModal.selectedWork.title}</h3>
+                                    <p className="text-gray-400 text-sm italic mt-2">{openModal.selectedWork.description}</p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </section>
     );
 };

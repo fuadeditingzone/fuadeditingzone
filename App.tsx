@@ -10,7 +10,7 @@ import { Home } from './components/Home';
 import { Portfolio } from './components/Portfolio';
 import { Contact } from './components/Contact';
 import { AboutAndFooter } from './components/AboutAndFooter';
-import { CommunityChat } from './components/CommunityChat'; // Added
+import { CommunityChat } from './components/CommunityChat';
 import { ModalViewer, GalleryGridModal } from './components/ModalViewer';
 import { ContextMenu } from './components/ContextMenu';
 import { VFXBackground } from './components/VFXBackground';
@@ -22,15 +22,11 @@ import { ServicesListPopup } from './components/ServicesListPopup';
 import { VideoPipPlayer } from './components/VideoPipPlayer';
 import { ServiceSelectionModal } from './components/ServiceSelectionModal';
 import { YouTubeRedirectPopup } from './components/YouTubeRedirectPopup';
-import { IntroPresentation } from './components/IntroPresentation';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
+import { FloatingMessenger } from './components/FloatingMessenger';
 
 export default function App() {
   const { isSignedIn, isLoaded: isClerkLoaded } = useUser();
-  const [showIntro, setShowIntro] = useState(() => {
-    if (typeof window !== 'undefined') return !localStorage.getItem('fez_intro_seen');
-    return true;
-  });
   
   const [isYouTubeApiReady, setIsYouTubeApiReady] = useState(false);
   const [modalState, setModalState] = useState<{ items: ModalItem[]; currentIndex: number } | null>(null);
@@ -51,21 +47,41 @@ export default function App() {
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
-  const isAnyOverlayActive = !!(showIntro || modalState || isGalleryGridOpen || singleImageViewerState || isServicesPopupOpen || selectionTarget || isYouTubeRedirectOpen || isMediaSidebarOpen || contextMenu || isLockActive);
+  const isAnyOverlayActive = !!(modalState || isGalleryGridOpen || singleImageViewerState || isServicesPopupOpen || selectionTarget || isYouTubeRedirectOpen || isMediaSidebarOpen || contextMenu || isLockActive);
 
-  // --- 5-Minute STRICT Access Lock ---
+  // --- POPUP INTERRUPTION PREVENTION: Global Scroll Lock ---
+  useEffect(() => {
+    if (isAnyOverlayActive) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = 'unset';
+      document.body.style.touchAction = 'auto';
+    }
+  }, [isAnyOverlayActive]);
+
+  // Load YouTube IFrame API
+  useEffect(() => {
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+      window.onYouTubeIframeAPIReady = () => setIsYouTubeApiReady(true);
+    } else {
+      setIsYouTubeApiReady(true);
+    }
+  }, []);
+
+  // --- 5-Minute Access Lock logic ---
   useEffect(() => {
     if (isSignedIn) {
         setIsLockActive(false);
         return;
     }
-
     const timer = setTimeout(() => {
-        if (!isSignedIn && isClerkLoaded) {
-            setIsLockActive(true);
-        }
-    }, 300000); // 5 minutes
-
+        if (!isSignedIn && isClerkLoaded) setIsLockActive(true);
+    }, 300000); 
     return () => clearTimeout(timer);
   }, [isSignedIn, isClerkLoaded]);
 
@@ -113,61 +129,40 @@ export default function App() {
   return (
     <ParallaxProvider>
       <div className="text-white min-h-screen bg-black" onContextMenu={e => { e.preventDefault(); if(!isAnyOverlayActive) setContextMenu({ x: e.clientX, y: e.clientY }); }}>
-          <AnimatePresence>
-            {showIntro && <IntroPresentation onFinished={() => { localStorage.setItem('fez_intro_seen', 'true'); setShowIntro(false); }} />}
-          </AnimatePresence>
           <VFXBackground /><MediaGridBackground />
-          <div className={`transition-all fixed top-0 left-0 right-0 z-50 ${(isNavVisible && !showIntro) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
+          <div className={`transition-all fixed top-0 left-0 right-0 z-50 ${(isNavVisible) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
             <DesktopHeader onScrollTo={handleScrollTo} /><MobileHeader onScrollTo={handleScrollTo} />
           </div>
           <MediaSidebar isOpen={isMediaSidebarOpen} onClose={() => setIsMediaSidebarOpen(false)} activeYouTubeId={activeYouTubeId} onSelectYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
           
           <AnimatePresence>
-              {!showIntro && (
-                  <motion.main initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="main-content relative z-10 pb-20 md:pb-0">
-                      <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
-                      <Portfolio openModal={handleOpenModal} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
-                      <CommunityChat />
-                      <Contact onStartOrder={setSelectionTarget} />
-                      <AboutAndFooter onReplayIntro={() => setShowIntro(true)} />
-                  </motion.main>
-              )}
+            <motion.main initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="main-content relative z-10 pb-20 md:pb-0">
+                <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
+                <Portfolio openModal={handleOpenModal} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
+                <CommunityChat />
+                <Contact onStartOrder={setSelectionTarget} />
+                <AboutAndFooter />
+            </motion.main>
           </AnimatePresence>
 
-          {/* Non-dismissible Verify Overlay after 5 minutes */}
+          <FloatingMessenger />
+
           <AnimatePresence>
             {isLockActive && (
                 <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     className="fixed inset-0 z-[1000000] bg-black/95 flex flex-col items-center justify-center p-6"
                 >
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-red-600/5 blur-[160px] rounded-full pointer-events-none"></div>
                     <div className="relative w-full max-w-[520px] bg-white rounded-[4rem] overflow-hidden shadow-[0_0_200px_rgba(0,0,0,1)]">
-                        <div className="p-12 md:p-20 text-center bg-white">
+                        <div className="p-12 md:p-20 text-center">
                              <div className="w-24 h-24 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-10 border-2 border-red-600/20 shadow-inner">
                                 <SparklesIcon className="w-12 h-12 text-red-600" />
                             </div>
                             <h2 className="text-zinc-900 text-4xl font-black uppercase tracking-tighter mb-6 leading-none">Access Locked</h2>
-                            <p className="text-zinc-500 text-sm font-bold leading-relaxed mb-12 uppercase tracking-[0.4em] text-[11px]">Your 5-minute preview has expired. Verification required to continue exploring the Zone.</p>
-                            <div className="flex justify-center scale-110">
-                                <SignIn 
-                                    routing="hash"
-                                    appearance={{
-                                        elements: {
-                                            rootBox: "w-full",
-                                            card: "shadow-none border-none p-0",
-                                            header: "hidden",
-                                            footer: "hidden",
-                                            formButtonPrimary: "bg-red-600 hover:bg-red-700 h-20 rounded-3xl font-black uppercase tracking-[0.6em] text-[13px] shadow-3xl transition-all",
-                                        }
-                                    }}
-                                />
-                            </div>
+                            <p className="text-zinc-500 text-sm font-bold mb-12 uppercase tracking-[0.4em] text-[11px]">Verification required to continue exploring the Zone.</p>
+                            <SignIn routing="hash" />
                         </div>
                     </div>
-                    <p className="mt-12 text-white/30 text-[10px] font-black uppercase tracking-[1em]">Fuad Ahmed • Artist Verification Required</p>
                 </motion.div>
             )}
           </AnimatePresence>
@@ -180,7 +175,7 @@ export default function App() {
           {pipVideo && <VideoPipPlayer video={pipVideo} onClose={() => setPipVideo(null)} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />}
           {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} onClose={() => setContextMenu(null)} onGalleryOpen={() => { setContextMenu(null); setIsGalleryGridOpen(true); }} />}
           <PwaInstallPrompt />
-          <div className={`transition-all fixed bottom-0 left-0 right-0 z-40 ${(isNavVisible && !showIntro) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
+          <div className={`transition-all fixed bottom-0 left-0 right-0 z-40 ${(isNavVisible) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
             <MobileFooterNav onScrollTo={handleScrollTo} />
           </div>
       </div>
