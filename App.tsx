@@ -141,72 +141,65 @@ export default function App() {
     }
   }, [isSignedIn, user]);
 
-  // Handle URL Routing logic
-  const handleRouting = useCallback(async () => {
-    const path = window.location.pathname;
-    
-    // Check for @username profile links
-    if (path.startsWith('/@')) {
-      const handle = path.replace('/@', '');
-      if (handle) {
-        const usersSnap = await get(ref(db, 'users'));
-        const userData = usersSnap.val();
-        if (userData) {
-          const foundUser = Object.values(userData).find((u: any) => u.username === handle) as any;
-          if (foundUser) setViewingProfileId(foundUser.id);
-        }
-      }
-    } 
-    // Check for unique portfolio items
-    else if (path.startsWith('/portfolio/')) {
-      const itemId = path.replace('/portfolio/', '');
-      if (itemId) {
-        const allItems = [
-          ...siteConfig.content.portfolio.graphicWorks,
-          ...siteConfig.content.portfolio.animeEdits,
-          ...siteConfig.content.portfolio.vfxEdits
-        ];
-        const foundIdx = allItems.findIndex(item => String(item.id) === itemId);
-        if (foundIdx !== -1) {
-          setModalState({ items: allItems, currentIndex: foundIdx });
-        }
-      }
-    }
-  }, []);
-
+  // Dynamic Routing Logic
   useEffect(() => {
+    const handleRouting = async () => {
+      const path = window.location.pathname;
+      
+      if (path.startsWith('/@')) {
+        const handle = path.replace('/@', '');
+        if (handle) {
+          const usersSnap = await get(ref(db, 'users'));
+          const userData = usersSnap.val();
+          if (userData) {
+            const foundUser = Object.values(userData).find((u: any) => u.username === handle) as any;
+            if (foundUser) setViewingProfileId(foundUser.id);
+          }
+        }
+      } 
+      else if (path.startsWith('/portfolio/')) {
+        const itemId = path.replace('/portfolio/', '');
+        if (itemId) {
+          const allItems = [
+            ...siteConfig.content.portfolio.graphicWorks,
+            ...siteConfig.content.portfolio.animeEdits,
+            ...siteConfig.content.portfolio.vfxEdits
+          ];
+          const foundIdx = allItems.findIndex(item => String(item.id) === itemId);
+          if (foundIdx !== -1) {
+            setModalState({ items: allItems, currentIndex: foundIdx });
+          }
+        }
+      }
+    };
+
     handleRouting();
     window.addEventListener('popstate', handleRouting);
     return () => window.removeEventListener('popstate', handleRouting);
-  }, [handleRouting]);
+  }, []);
 
-  const handleOpenProfile = async (userId: string) => {
+  const handleOpenProfile = (userId: string) => {
     setViewingProfileId(userId);
-    const snap = await get(ref(db, `users/${userId}/username`));
-    const uname = snap.val();
-    if (uname) {
-      window.history.pushState(null, '', `/@${uname}`);
-    }
+    get(ref(db, `users/${userId}/username`)).then((snap) => {
+      const uname = snap.val();
+      if (uname) window.history.pushState(null, '', `/@${uname}`);
+    });
   };
 
   const handleCloseProfile = () => {
     setViewingProfileId(null);
-    if (!modalState) {
-        window.history.pushState(null, '', '/');
-    }
+    if (!modalState) window.history.pushState(null, '', '/');
   };
 
   const handleOpenModal = (items: ModalItem[], index: number) => {
-    const item = items[index];
     setModalState({ items, currentIndex: index });
+    const item = items[index];
     window.history.pushState(null, '', `/portfolio/${item.id}`);
   };
 
   const handleCloseModal = () => {
     setModalState(null);
-    if (!viewingProfileId) {
-        window.history.pushState(null, '', '/');
-    }
+    if (!viewingProfileId) window.history.pushState(null, '', '/');
   };
 
   // Push Notification Token Setup
