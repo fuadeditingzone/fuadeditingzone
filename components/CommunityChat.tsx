@@ -114,7 +114,6 @@ const AgentProfileModal: React.FC<{
       } else if (socialState.friendStatus === 'pending') {
           await remove(ref(db, `social/${currentUser.id}/requests/received/${user.id}`));
           await remove(ref(db, `social/${user.id}/requests/sent/${currentUser.id}`));
-          // FIX: targetUser was not defined; using user.id from the props instead.
           await set(ref(db, `social/${currentUser.id}/friends/${user.id}`), true);
           await set(ref(db, `social/${user.id}/friends/${currentUser.id}`), true);
           await set(ref(db, `social/${currentUser.id}/following/${user.id}`), true);
@@ -265,9 +264,9 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                     <div className="w-11 h-11 rounded-2xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0"><SearchIcon className="w-5 h-5" /></div>
                     <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Scan Operators</p></div>
                 </button>
-                <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id, 'identity')} className="w-full flex items-center gap-4 p-4 rounded-[1.5rem] hover:bg-white/5 transition-all">
-                    <div className="w-11 h-11 rounded-2xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0"><i className="fa-solid fa-gear text-lg"></i></div>
-                    <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Settings</p></div>
+                <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id)} className="w-full flex items-center gap-4 p-4 rounded-[1.5rem] hover:bg-white/5 transition-all group">
+                    <div className="w-11 h-11 rounded-2xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0 group-hover:bg-red-600 group-hover:text-white transition-all"><UserCircleIcon className="w-6 h-6" /></div>
+                    <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Profile</p></div>
                 </button>
             </div>
 

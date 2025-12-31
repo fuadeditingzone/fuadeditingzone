@@ -38,12 +38,12 @@ const db = getDatabase(app);
 
 export default function App() {
   const { isSignedIn, user } = useUser();
-  const [route, setRoute] = useState<'home' | 'marketplace'>(
-    window.location.pathname === '/marketplace' ? 'marketplace' : 'home'
+  const [route, setRoute] = useState<'home' | 'marketplace' | 'community'>(
+    window.location.pathname === '/marketplace' ? 'marketplace' : 
+    window.location.pathname === '/community' ? 'community' : 'home'
   );
   const [isYouTubeApiReady, setIsYouTubeApiReady] = useState(false);
   const [modalState, setModalState] = useState<{ items: ModalItem[]; currentIndex: number } | null>(null);
-  const [isCommunityChatOpen, setIsCommunityChatOpen] = useState(false);
   const [targetUserId, setTargetUserId] = useState<string | null>(null);
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   
@@ -55,7 +55,7 @@ export default function App() {
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
-  // Daily Spotlight Logic (Runs once every 24h by the first visitor)
+  // Daily Spotlight Logic
   useEffect(() => {
     const checkDailySpotlight = async () => {
       const today = new Date().toISOString().split('T')[0];
@@ -92,15 +92,16 @@ export default function App() {
 
   useEffect(() => {
     const handlePopState = () => {
-      setRoute(window.location.pathname === '/marketplace' ? 'marketplace' : 'home');
+      const path = window.location.pathname;
+      setRoute(path === '/marketplace' ? 'marketplace' : path === '/community' ? 'community' : 'home');
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const navigateTo = (path: 'home' | 'marketplace') => {
+  const navigateTo = (path: 'home' | 'marketplace' | 'community') => {
     setRoute(path);
-    window.history.pushState(null, '', path === 'home' ? '/' : '/marketplace');
+    window.history.pushState(null, '', path === 'home' ? '/' : `/${path}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -139,28 +140,35 @@ export default function App() {
             <DesktopHeader 
               onScrollTo={handleScrollTo} 
               onNavigateMarketplace={() => navigateTo('marketplace')}
-              onOpenChatWithUser={(id) => { setTargetUserId(id); setIsCommunityChatOpen(true); }} 
+              onOpenChatWithUser={(id) => { setTargetUserId(id); navigateTo('community'); }} 
               onOpenProfile={handleOpenProfile} 
               activeRoute={route}
             />
             <MobileHeader 
               onScrollTo={handleScrollTo} 
               onNavigateMarketplace={() => navigateTo('marketplace')}
-              onOpenChatWithUser={(id) => { setTargetUserId(id); setIsCommunityChatOpen(true); }} 
+              onOpenChatWithUser={(id) => { setTargetUserId(id); navigateTo('community'); }} 
               onOpenProfile={handleOpenProfile} 
             />
           </div>
           
           <main className="relative z-10 pt-20">
-            {route === 'home' ? (
+            {route === 'home' && (
               <>
                 <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
                 <Portfolio openModal={(items, index) => setModalState({ items, currentIndex: index })} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
-                <CommunityChat onShowProfile={handleOpenProfile} />
+                <div className="py-20 text-center">
+                    <button onClick={() => navigateTo('community')} className="group relative px-12 py-6 bg-red-600/10 border border-red-600/30 rounded-3xl overflow-hidden transition-all hover:bg-red-600 hover:border-red-600">
+                        <span className="relative z-10 font-black uppercase tracking-[0.4em] text-sm text-red-500 group-hover:text-white transition-colors">Join Community Hub</span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-800 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                </div>
                 <Contact onStartOrder={() => {}} />
                 <AboutAndFooter />
               </>
-            ) : (
+            )}
+            
+            {route === 'marketplace' && (
               <div className="container mx-auto px-4 py-10 min-h-[90vh]">
                 <div className="text-center mb-12">
                     <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-4 block">Visual Ecosystem</span>
@@ -170,18 +178,18 @@ export default function App() {
                 <ExploreFeed onOpenProfile={handleOpenProfile} onOpenModal={(items, index) => setModalState({ items, currentIndex: index })} />
               </div>
             )}
-          </main>
 
-          <AnimatePresence>
-            {isCommunityChatOpen && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[900000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4" onClick={() => setIsCommunityChatOpen(false)}>
-                    <motion.div initial={{ scale: 0.9, y: 40 }} animate={{ scale: 1, y: 0 }} className="relative w-full max-w-6xl h-[85vh] bg-[#050505] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-                        <CommunityChat isModalMode={true} initialTargetUserId={targetUserId} onShowProfile={handleOpenProfile} />
-                        <button onClick={() => setIsCommunityChatOpen(false)} className="absolute top-6 right-6 z-[50] p-3 rounded-full bg-white/5 hover:bg-red-600 transition-all"><CloseIcon className="w-6 h-6" /></button>
-                    </motion.div>
-                </motion.div>
+            {route === 'community' && (
+              <div className="container mx-auto px-4 py-10 min-h-[90vh]">
+                <div className="text-center mb-12">
+                    <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-4 block">Network Infrastructure</span>
+                    <h2 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">Community Hub</h2>
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4">Real-time collaboration node</p>
+                </div>
+                <CommunityChat onShowProfile={handleOpenProfile} initialTargetUserId={targetUserId} />
+              </div>
             )}
-          </AnimatePresence>
+          </main>
 
           <ProfileModal 
             isOpen={!!viewingProfileId} 
@@ -193,7 +201,7 @@ export default function App() {
           {isYouTubeRedirectOpen && <YouTubeRedirectPopup onClose={() => setIsYouTubeRedirectOpen(false)} onConfirm={() => { setIsYouTubeRedirectOpen(false); handleScrollTo('portfolio'); }} />}
           {pipVideo && <VideoPipPlayer video={pipVideo} onClose={() => setPipVideo(null)} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />}
           <PwaInstallPrompt />
-          <MobileFooterNav onScrollTo={handleScrollTo} onNavigateMarketplace={() => navigateTo('marketplace')} activeRoute={route} />
+          <MobileFooterNav onScrollTo={handleScrollTo} onNavigateMarketplace={() => navigateTo('marketplace')} activeRoute={route} onNavigateCommunity={() => navigateTo('community')} />
       </div>
     </ParallaxProvider>
   );
