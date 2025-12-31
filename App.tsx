@@ -199,7 +199,7 @@ export default function App() {
 
   return (
     <ParallaxProvider>
-      <div className="text-white min-h-screen bg-black overflow-x-hidden flex flex-col">
+      <div className="text-white min-h-screen bg-black overflow-x-hidden flex flex-col h-screen max-h-screen">
           <VFXBackground /><MediaGridBackground />
           <div className="fixed top-0 left-0 right-0 z-[100]">
             <DesktopHeader 
@@ -219,7 +219,7 @@ export default function App() {
             />
           </div>
           
-          <main className="relative z-10 pt-20 flex-1 flex flex-col min-h-0">
+          <main className={`relative z-10 pt-20 flex-1 flex flex-col min-h-0 ${route === 'community' ? 'h-full overflow-hidden' : ''}`}>
             {route === 'home' && (
               <div className="flex flex-col">
                 <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
@@ -247,11 +247,10 @@ export default function App() {
             )}
 
             {route === 'community' && (
-              <div className="flex-1 flex flex-col min-h-0 container mx-auto px-4 py-6 md:py-10">
-                <div className="text-center mb-6 md:mb-8 flex-shrink-0">
-                    <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-2 md:mb-4 block">Network Infrastructure</span>
-                    <h1 className="text-white text-4xl md:text-8xl font-black uppercase tracking-tighter leading-none">Community Hub</h1>
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-2 md:mt-4">Real-time collaboration node</p>
+              <div className="flex-1 flex flex-col min-h-0 h-full max-h-full pb-32 md:pb-6">
+                <div className="text-center mb-4 md:mb-8 flex-shrink-0 px-4 mt-2">
+                    <span className="text-[9px] font-black uppercase tracking-[0.6em] text-red-600 mb-1 block">Network Infrastructure</span>
+                    <h1 className="text-white text-3xl md:text-6xl font-black uppercase tracking-tighter leading-none">Community Hub</h1>
                 </div>
                 <CommunityChat onShowProfile={handleOpenProfile} initialTargetUserId={targetUserId} />
               </div>
