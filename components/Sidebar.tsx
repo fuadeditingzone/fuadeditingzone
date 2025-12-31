@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   SignedIn, 
   SignedOut, 
@@ -28,9 +27,8 @@ interface NavProps {
   onScrollTo: (section: 'home' | 'portfolio' | 'contact' | 'video-editing' | 'about') => void;
 }
 
-const RequestHub: React.FC = () => {
+const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void }> = ({ isOpen, setIsOpen }) => {
     const { user } = useUser();
-    const [isOpen, setIsOpen] = useState(false);
     const [requests, setRequests] = useState<{received: any[], sent: any[]}>({received: [], sent: []});
 
     useEffect(() => {
@@ -139,9 +137,8 @@ const RequestHub: React.FC = () => {
     );
 };
 
-const NotificationHub: React.FC = () => {
+const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void }> = ({ isOpen, setIsOpen }) => {
     const { user } = useUser();
-    const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
 
     useEffect(() => {
@@ -224,6 +221,14 @@ const NavLink: React.FC<{ onClick: () => void; children: React.ReactNode }> = ({
 export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
   const [isSpinning, setIsSpinning] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isRequestsOpen, setIsRequestsOpen] = useState(false);
+
+  const openSettings = useCallback(() => {
+    setIsNotificationsOpen(false);
+    setIsRequestsOpen(false);
+    setIsProfileOpen(true);
+  }, []);
 
   return (
     <>
@@ -245,8 +250,8 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
           <div className="flex items-center gap-6">
               <SignedIn>
                 <div className="flex items-center gap-3 border-r border-white/10 pr-6">
-                    <RequestHub />
-                    <NotificationHub />
+                    <RequestHub isOpen={isRequestsOpen} setIsOpen={(v) => { setIsRequestsOpen(v); if(v) setIsNotificationsOpen(false); }} />
+                    <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); if(v) setIsRequestsOpen(false); }} />
                 </div>
               </SignedIn>
               <SignedOut>
@@ -255,7 +260,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
               </SignedOut>
               <SignedIn>
                 <div className="flex items-center gap-4">
-                    <button onClick={() => setIsProfileOpen(true)} className="relative p-2.5 rounded-xl bg-white/5 hover:bg-red-600/10 border border-white/5 transition-all text-gray-400 hover:text-white group" title="Agent Settings">
+                    <button onClick={openSettings} className="relative p-2.5 rounded-xl bg-white/5 hover:bg-red-600/10 border border-white/5 transition-all text-gray-400 hover:text-white group" title="Agent Settings">
                         <i className="fa-solid fa-gear text-[18px] group-hover:rotate-90 transition-transform duration-500"></i>
                     </button>
                     <UserButton appearance={{ elements: { userButtonAvatarBox: "w-11 h-11 border-[3px] border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.4)]" } }} />
@@ -270,22 +275,34 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
 
 export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
     const [isSpinning, setIsSpinning] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [isRequestsOpen, setIsRequestsOpen] = useState(false);
+
+    const openSettings = useCallback(() => {
+        setIsNotificationsOpen(false);
+        setIsRequestsOpen(false);
+        setIsProfileOpen(true);
+    }, []);
+
     return (
         <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-20 px-6 select-none bg-black/60 backdrop-blur-xl border-b border-white/5">
             <div onClick={() => { setIsSpinning(true); onScrollTo('home'); setTimeout(() => setIsSpinning(false), 2000); }} className="flex items-center gap-3">
                 <img src={siteConfig.branding.logoUrl} alt="Logo" className={`h-9 w-9 rounded-full ${isSpinning ? 'logo-3d-spin' : ''}`} />
                 <span className="font-black text-white tracking-widest text-[10px] uppercase leading-none">FEZ GRID</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
                 <SignedIn>
-                    <div className="flex items-center gap-3">
-                        <RequestHub />
-                        <NotificationHub />
+                    <div className="flex items-center gap-2.5">
+                        <RequestHub isOpen={isRequestsOpen} setIsOpen={(v) => { setIsRequestsOpen(v); if(v) setIsNotificationsOpen(false); }} />
+                        <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); if(v) setIsRequestsOpen(false); }} />
+                        <button onClick={openSettings} className="p-2 text-gray-400 hover:text-white transition-all active:scale-90"><i className="fa-solid fa-gear text-[16px]"></i></button>
                         <UserButton appearance={{ elements: { userButtonAvatarBox: "w-10 h-10 border-2 border-red-600" } }} />
                     </div>
                 </SignedIn>
                 <SignedOut><SignInButton mode="modal"><button className="text-[9px] font-black text-red-500 uppercase tracking-widest bg-red-600/10 px-4 py-2 rounded-lg border border-red-600/30">Verify</button></SignInButton></SignedOut>
             </div>
+            <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
         </header>
     );
 };

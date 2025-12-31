@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, push, onChildAdded, onValue, set, update, get, remove, runTransaction, query, limitToLast } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { SparklesIcon, SendIcon, UserCircleIcon, GlobeAltIcon, CheckCircleIcon, CloseIcon, ChatBubbleIcon, VolumeOffIcon, VolumeOnIcon, EyeIcon, HandThumbUpIcon, ChevronRightIcon, SearchIcon } from './Icons';
+import { SparklesIcon, SendIcon, UserCircleIcon, GlobeAltIcon, CheckCircleIcon, CloseIcon, ChatBubbleIcon, VolumeOffIcon, VolumeOnIcon, EyeIcon, HandThumbUpIcon, ChevronRightIcon, SearchIcon, ChevronLeftIcon } from './Icons';
 
 const firebaseConfig = {
   databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
@@ -328,6 +327,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTab, setSearchTab] = useState<'all' | 'blocked'>('all');
   const [socialListView, setSocialListView] = useState<{ type: string; ids: string[] } | null>(null);
+  const [showConverationOnMobile, setShowConversationOnMobile] = useState(false);
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -488,7 +488,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                 user={viewingProfile} 
                 currentUser={clerkUser}
                 onClose={() => setViewingProfile(null)} 
-                onMessage={() => { setIsGlobal(false); setSelectedUser(viewingProfile); }}
+                onMessage={() => { setIsGlobal(false); setSelectedUser(viewingProfile); setShowConversationOnMobile(true); }}
                 isBlocked={blockedIds.includes(viewingProfile.id)}
                 isMuted={mutedIds.includes(viewingProfile.id)}
                 onToggleBlock={() => toggleBlock(viewingProfile.id)}
@@ -589,13 +589,13 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
       <div className={`${isModalMode ? 'h-full max-w-full px-0' : 'container mx-auto px-4 md:px-6 max-w-6xl h-[85vh] md:h-[800px] my-6 md:my-0'}`}>
         <div className="w-full bg-[#080808] border border-white/5 rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-2xl flex flex-col md:flex-row h-full min-h-0">
           
-          <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-white/5 flex flex-col bg-[#050505]/50 flex-shrink-0 min-h-0">
+          <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-white/5 flex flex-col bg-[#050505]/50 flex-shrink-0 min-h-0 ${showConverationOnMobile ? 'hidden md:flex' : 'flex'}`}>
             <div className="p-6 md:p-8 border-b border-white/5 bg-black/30 flex-shrink-0">
                <span className="text-[10px] font-black text-white uppercase tracking-widest">Global Signals</span>
             </div>
             
             <div className="p-3 md:p-4 space-y-2 flex-shrink-0 border-b border-white/5">
-                <button onClick={() => { setIsGlobal(true); setSelectedUser(null); }} className={`w-full flex items-center gap-4 p-4 rounded-[1.8rem] md:rounded-[2.2rem] transition-all border ${isGlobal ? 'bg-red-600/10 border-red-600/20' : 'border-transparent hover:bg-white/5'}`}>
+                <button onClick={() => { setIsGlobal(true); setSelectedUser(null); setShowConversationOnMobile(true); }} className={`w-full flex items-center gap-4 p-4 rounded-[1.8rem] md:rounded-[2.2rem] transition-all border ${isGlobal ? 'bg-red-600/10 border-red-600/20' : 'border-transparent hover:bg-white/5'}`}>
                     <div className={`w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center border flex-shrink-0 ${isGlobal ? 'bg-red-600 border-red-500 text-white shadow-lg' : 'bg-white/5 border-white/10 text-gray-500'}`}>
                         <GlobeAltIcon className="w-5 h-5" />
                     </div>
@@ -618,7 +618,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
 
             <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 custom-scrollbar min-h-0 pr-2">
               {inboxUsers.map(u => (
-                <button key={u.id} onClick={() => { setIsGlobal(false); setSelectedUser(u); }} className={`w-full flex items-center gap-4 p-4 rounded-[1.8rem] md:rounded-[2.2rem] transition-all border ${selectedUser?.id === u.id && !isGlobal ? 'bg-red-600/10 border-red-600/20' : 'border-transparent hover:bg-white/5'}`}>
+                <button key={u.id} onClick={() => { setIsGlobal(false); setSelectedUser(u); setShowConversationOnMobile(true); }} className={`w-full flex items-center gap-4 p-4 rounded-[1.8rem] md:rounded-[2.2rem] transition-all border ${selectedUser?.id === u.id && !isGlobal ? 'bg-red-600/10 border-red-600/20' : 'border-transparent hover:bg-white/5'}`}>
                   <div className="relative flex-shrink-0">
                     <img src={u.avatar} className={`w-10 h-10 rounded-[1rem] border ${u.username === OWNER_HANDLE ? 'border-red-600' : u.username === ADMIN_HANDLE ? 'border-blue-600' : 'border-white/10'} object-cover`} alt="" />
                     {u.online && <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-black bg-green-500"></div>}
@@ -636,8 +636,13 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col bg-black min-h-0 min-w-0 relative">
+          <div className={`flex-1 flex flex-col bg-black min-h-0 min-w-0 relative ${showConverationOnMobile ? 'flex' : 'hidden md:flex'}`}>
             <div className="p-6 md:p-8 border-b border-white/5 flex items-center gap-4 bg-black/40 backdrop-blur-xl flex-shrink-0 z-10">
+               {/* Mobile Back Button */}
+               <button onClick={() => setShowConversationOnMobile(false)} className="md:hidden p-2 text-white hover:text-red-500 transition-colors">
+                  <ChevronLeftIcon className="w-6 h-6" />
+               </button>
+               
                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-red-600/15 flex items-center justify-center border border-red-600/30 overflow-hidden flex-shrink-0">
                   {isGlobal ? <GlobeAltIcon className="w-6 h-6 text-red-600" /> : <img src={selectedUser?.avatar} className="w-full h-full object-cover rounded-2xl cursor-pointer" onClick={() => selectedUser && setViewingProfile(selectedUser)} />}
                </div>
@@ -647,7 +652,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-6 custom-scrollbar scroll-smooth min-h-0 relative bg-black/20">
+            <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 custom-scrollbar scroll-smooth min-h-0 relative bg-black/20">
               {needsUnlock ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md z-[20] p-8 text-center">
                       <div className="w-16 h-16 bg-red-600/10 rounded-full flex items-center justify-center mb-6 border border-red-600/30 shadow-2xl">
@@ -669,11 +674,11 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
                         </div>
                     ) : (
                         filteredMessages.map(msg => (
-                            <div key={msg.id} className={`flex gap-4 md:gap-5 ${msg.senderId === clerkUser?.id ? 'flex-row-reverse' : 'flex-row'} items-end min-w-0`}>
-                            <img src={msg.senderAvatar} className="w-9 h-9 md:w-10 md:h-10 rounded-xl border border-white/5 object-cover cursor-pointer flex-shrink-0 shadow-lg active:scale-90" alt="" onClick={() => { const u = users.find(usr => usr.id === msg.senderId); if(u) setViewingProfile(u); }} />
+                            <div key={msg.id} className={`flex gap-3 md:gap-5 ${msg.senderId === clerkUser?.id ? 'flex-row-reverse' : 'flex-row'} items-end min-w-0`}>
+                            <img src={msg.senderAvatar} className="w-8 h-8 md:w-10 md:h-10 rounded-xl border border-white/5 object-cover cursor-pointer flex-shrink-0 shadow-lg active:scale-90" alt="" onClick={() => { const u = users.find(usr => usr.id === msg.senderId); if(u) setViewingProfile(u); }} />
                             <div className={`max-w-[85%] ${msg.senderId === clerkUser?.id ? 'items-end' : 'items-start'} flex flex-col min-w-0`}>
                                 <span className="text-[9px] font-black text-gray-600 uppercase mb-2 truncate max-w-full px-1">{msg.senderName}</span>
-                                <div className={`p-4 rounded-[1.5rem] text-[13px] font-medium border whitespace-pre-wrap ${msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-gray-300 rounded-tl-none shadow-lg'}`} style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{msg.text}</div>
+                                <div className={`p-3 md:p-4 rounded-[1.5rem] text-[12px] md:text-[13px] font-medium border whitespace-pre-wrap ${msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-gray-300 rounded-tl-none shadow-lg'}`} style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{msg.text}</div>
                             </div>
                             </div>
                         ))
@@ -683,13 +688,13 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
               )}
             </div>
 
-            <div className="p-6 md:p-10 border-t border-white/5 flex-shrink-0 bg-black/40 z-10">
+            <div className="p-4 md:p-10 border-t border-white/5 flex-shrink-0 bg-black/40 z-10">
               {isSignedIn ? (
                 <form onSubmit={handleSendMessage} className={`flex gap-3 bg-white/5 border border-white/10 rounded-[1.5rem] md:rounded-[2rem] p-1.5 md:p-2 transition-all shadow-inner ${needsUnlock ? 'opacity-20 pointer-events-none grayscale' : ''}`}>
-                    <input value={inputValue} onChange={e => setInputValue(e.target.value)} disabled={needsUnlock} placeholder={isGlobal ? "Broadcast Signal..." : "Agent Synchronization..."} className="flex-1 bg-transparent px-4 md:px-6 py-3 md:py-4 text-sm font-bold text-white outline-none min-w-0" />
-                    <button type="submit" disabled={!inputValue.trim() || needsUnlock} className="bg-red-600 text-white w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-xl md:rounded-2xl active:scale-90 transition-all shadow-2xl flex-shrink-0 disabled:opacity-50"><SendIcon className="w-5 h-5" /></button>
+                    <input value={inputValue} onChange={e => setInputValue(e.target.value)} disabled={needsUnlock} placeholder={isGlobal ? "Broadcast..." : "Signal..."} className="flex-1 bg-transparent px-3 md:px-6 py-3 md:py-4 text-sm font-bold text-white outline-none min-w-0 placeholder:opacity-50" />
+                    <button type="submit" disabled={!inputValue.trim() || needsUnlock} className="bg-red-600 text-white w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-xl md:rounded-2xl active:scale-90 transition-all shadow-2xl flex-shrink-0 disabled:opacity-50"><SendIcon className="w-5 h-5" /></button>
                 </form>
-              ) : <div className="text-center py-4"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-4 md:py-5 px-8 md:px-16 rounded-2xl uppercase text-[10px] tracking-[0.4em] shadow-2xl active:scale-95 transition-all">Establish Credentials</button></SignInButton></div>}
+              ) : <div className="text-center py-2 md:py-4"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-4 md:py-5 px-8 md:px-16 rounded-2xl uppercase text-[10px] tracking-[0.4em] shadow-2xl active:scale-95 transition-all">Establish Credentials</button></SignInButton></div>}
             </div>
           </div>
         </div>
