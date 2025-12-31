@@ -123,7 +123,6 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
             if (!uploadRes.ok) throw new Error('Upload failed');
             const { url } = await uploadRes.json();
 
-            // Extract tags from caption (words starting with #)
             const tags = postCaption.match(/#\w+/g) || [];
 
             const postData = {
@@ -140,26 +139,15 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
 
             await push(ref(db, 'explore_posts'), postData);
             
-            // Success cleanup
             setPostTitle('');
             setPostCaption('');
             setSelectedFile(null);
             setShowUploadForm(false);
         } catch (err) {
             console.error(err);
-            alert("Protocol Failure: Check R2 Worker Link.");
+            alert("Protocol Failure: Ensure the Cloudflare Worker is active and correctly configured.");
         } finally {
             setIsUploading(false);
-        }
-    };
-
-    const copyProfileLink = () => {
-        const handle = targetUser?.username || clerkUser?.username;
-        if (handle) {
-            const fullUrl = `https://fuadeditingzone.pages.dev/@${handle}`;
-            navigator.clipboard.writeText(fullUrl);
-            setCopyFeedback("Link Copied!");
-            setTimeout(() => setCopyFeedback(null), 2000);
         }
     };
 
@@ -168,12 +156,15 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
         setIsSaving(true);
         try {
             await update(ref(db, `users/${clerkUser.id}/profile`), profileData);
-            setCopyFeedback("Profile Saved!");
+            setCopyFeedback("Profile Synchronized!");
             setTimeout(() => {
                 setCopyFeedback(null);
                 setIsSaving(false);
             }, 1500);
-        } catch (e) { setIsSaving(false); }
+        } catch (e) { 
+            setIsSaving(false);
+            alert("Failed to synchronize profile data.");
+        }
     };
 
     const isOwner = targetUser?.username === OWNER_HANDLE || (!isViewingOther && clerkUser?.username === OWNER_HANDLE);
@@ -194,7 +185,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                         exit={{ opacity: 0, scale: 0.95, y: 20 }} 
                         className="relative w-full max-w-5xl h-full max-h-[85vh] bg-[#050505] rounded-[3rem] border border-white/10 flex flex-col overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]"
                     >
-                        {/* Instagram Header */}
+                        {/* Header */}
                         <div className="flex-shrink-0 p-6 md:px-12 flex items-center bg-black/50 border-b border-white/5 z-20">
                             <button onClick={onClose} className="mr-6 p-2 rounded-full hover:bg-white/5 transition-all">
                                 <ChevronLeftIcon className="w-7 h-7 text-white" />
@@ -207,7 +198,6 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
 
                         {/* Scrollable Content */}
                         <div className="flex-1 overflow-y-auto custom-scrollbar">
-                            {/* Profile Info Section */}
                             <div className="p-8 md:p-12 space-y-10">
                                 <div className="flex flex-col md:flex-row items-center gap-10">
                                     <div className="relative group flex-shrink-0">
@@ -229,7 +219,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                                         <button className="px-6 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-black text-[10px] uppercase tracking-widest text-white transition-all">Message</button>
                                                     </>
                                                 ) : (
-                                                    <button onClick={() => setActiveTab('identity')} className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl font-black text-[10px] uppercase tracking-widest text-white transition-all">Edit Profile</button>
+                                                    <button onClick={() => setActiveTab('identity')} className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl font-black text-[10px] uppercase tracking-widest text-white transition-all">Edit Identity</button>
                                                 )}
                                             </div>
                                         </div>
@@ -243,23 +233,23 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                         <div className="space-y-1">
                                             <p className="text-lg font-black text-white">{targetUser?.name || clerkUser.fullName}</p>
                                             <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">{profileData.role} • {profileData.profession || 'Creative'}</p>
-                                            <p className="text-zinc-300 text-sm leading-relaxed max-w-lg">{profileData.bio || 'Silence is a primary frequency.'}</p>
+                                            <p className="text-zinc-300 text-sm leading-relaxed max-w-lg">{profileData.bio || 'Frequency established.'}</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Tabs Navigation */}
-                                <div className="flex justify-center border-t border-white/5 pt-4">
+                                <div className="flex justify-center border-t border-white/5 pt-4 sticky top-0 bg-[#050505] z-10">
                                     {(['identity', 'credentials', 'networks', 'posts'] as TabType[]).map(tab => (
                                         <button key={tab} onClick={() => setActiveTab(tab)} className={`px-6 md:px-10 py-4 text-[10px] font-black uppercase tracking-[0.2em] relative ${activeTab === tab ? 'text-white' : 'text-zinc-600 hover:text-zinc-400'}`}>
-                                            {tab === 'posts' ? 'My Posts' : tab}
+                                            {tab === 'posts' ? 'Portfolio' : tab}
                                             {activeTab === tab && <motion.div layoutId="profileTabLine" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600" />}
                                         </button>
                                     ))}
                                 </div>
 
                                 {/* Tab Content Container */}
-                                <div className="min-h-[300px] pb-10">
+                                <div className="min-h-[400px] pb-32">
                                     {activeTab === 'posts' && (
                                         <div className="space-y-8">
                                             {!isViewingOther && (
@@ -269,7 +259,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                                             onClick={() => setShowUploadForm(true)}
                                                             className="flex items-center gap-3 bg-red-600 text-white font-black py-4 px-10 rounded-2xl uppercase text-[10px] tracking-widest shadow-2xl hover:bg-red-700 transition-all"
                                                         >
-                                                            <SparklesIcon className="w-4 h-4" /> New Signal
+                                                            <SparklesIcon className="w-4 h-4" /> Deploy New Signal
                                                         </button>
                                                     ) : (
                                                         <motion.div 
@@ -277,19 +267,19 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                                             className="w-full max-w-md bg-white/5 border border-white/10 rounded-[2rem] p-6 space-y-4"
                                                         >
                                                             <div className="flex justify-between items-center mb-2">
-                                                                <span className="text-[10px] font-black text-white uppercase tracking-widest">Post Protocol</span>
+                                                                <span className="text-[10px] font-black text-white uppercase tracking-widest">Protocol Upload</span>
                                                                 <button onClick={() => setShowUploadForm(false)} className="p-1 hover:bg-white/10 rounded-full transition-all"><CloseIcon className="w-4 h-4 text-zinc-500" /></button>
                                                             </div>
                                                             <input 
                                                                 value={postTitle} 
                                                                 onChange={e => setPostTitle(e.target.value)} 
-                                                                placeholder="Project Title" 
+                                                                placeholder="Project Name" 
                                                                 className="w-full bg-black border border-white/10 rounded-xl p-4 text-sm text-white outline-none focus:border-red-600 transition-all"
                                                             />
                                                             <textarea 
                                                                 value={postCaption} 
                                                                 onChange={e => setPostCaption(e.target.value)} 
-                                                                placeholder="Caption & #tags..." 
+                                                                placeholder="Description & #tags..." 
                                                                 className="w-full bg-black border border-white/10 rounded-xl p-4 text-sm text-white outline-none resize-none h-24 focus:border-red-600 transition-all"
                                                             />
                                                             <div className="flex gap-2">
@@ -298,14 +288,14 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                                                     onClick={() => fileInputRef.current?.click()}
                                                                     className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border transition-all text-[10px] font-black uppercase ${selectedFile ? 'bg-green-600/20 border-green-600/40 text-green-500' : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10'}`}
                                                                 >
-                                                                    <PhotoManipulationIcon className="w-4 h-4" /> {selectedFile ? 'Ready' : 'Choose Media'}
+                                                                    <PhotoManipulationIcon className="w-4 h-4" /> {selectedFile ? 'File Ready' : 'Choose Media'}
                                                                 </button>
                                                                 <button 
                                                                     disabled={isUploading || !selectedFile || !postTitle}
                                                                     onClick={handleUpload}
-                                                                    className="flex-1 bg-red-600 text-white p-4 rounded-xl font-black uppercase tracking-widest text-[10px] disabled:opacity-50 flex items-center justify-center gap-2"
+                                                                    className="flex-1 bg-red-600 text-white p-4 rounded-xl font-black uppercase tracking-widest text-[10px] disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
                                                                 >
-                                                                    {isUploading ? 'Uploading...' : <><SendIcon className="w-3.5 h-3.5" /> Upload</>}
+                                                                    {isUploading ? 'Syncing...' : <><SendIcon className="w-3.5 h-3.5" /> Upload</>}
                                                                 </button>
                                                             </div>
                                                         </motion.div>
@@ -348,25 +338,22 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                     {activeTab === 'identity' && (
                                         <div className="space-y-8 max-w-2xl mx-auto">
                                             <div className="p-8 bg-white/5 rounded-[2rem] border border-white/10 shadow-inner">
-                                                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-4">Identity Bio</p>
+                                                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-4">Identification Bio</p>
                                                 {isViewingOther ? (
                                                     <p className="text-white text-lg italic leading-relaxed">"{profileData.bio || '...'}"</p>
                                                 ) : (
-                                                    <textarea value={profileData.bio} onChange={e => setProfileData({...profileData, bio: e.target.value})} className="bg-transparent text-white text-lg w-full resize-none outline-none italic custom-scrollbar" rows={4} placeholder="Establishing frequency..." />
+                                                    <textarea value={profileData.bio} onChange={e => setProfileData({...profileData, bio: e.target.value})} className="bg-transparent text-white text-lg w-full resize-none outline-none italic custom-scrollbar" rows={6} placeholder="Update your identity status..." />
                                                 )}
                                             </div>
-                                            {!isViewingOther && (
-                                                <button onClick={handleSave} className="w-full py-6 bg-red-600 text-white font-black uppercase tracking-widest text-sm rounded-2xl shadow-2xl active:scale-95 transition-all">Save Profile Changes</button>
-                                            )}
                                         </div>
                                     )}
 
                                     {activeTab === 'credentials' && (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
                                             <div className="p-6 bg-white/5 rounded-2xl border border-white/10">
                                                 <p className="text-[10px] text-zinc-500 font-black uppercase mb-2">Category</p>
                                                 {!isViewingOther ? (
-                                                    <select value={profileData.role} onChange={e => setProfileData({...profileData, role: e.target.value})} className="bg-transparent text-white font-black w-full outline-none appearance-none">
+                                                    <select value={profileData.role} onChange={e => setProfileData({...profileData, role: e.target.value})} className="bg-transparent text-white font-black w-full outline-none appearance-none cursor-pointer">
                                                         <option value="Client">Client</option>
                                                         <option value="Designer">Designer</option>
                                                         <option value="Editor">Editor</option>
@@ -376,20 +363,20 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                             <div className="p-6 bg-white/5 rounded-2xl border border-white/10">
                                                 <p className="text-[10px] text-zinc-500 font-black uppercase mb-2">Expertise</p>
                                                 {!isViewingOther ? (
-                                                    <input value={profileData.profession} onChange={e => setProfileData({...profileData, profession: e.target.value})} className="bg-transparent text-white font-black w-full outline-none" placeholder="Mastery Name" />
+                                                    <input value={profileData.profession} onChange={e => setProfileData({...profileData, profession: e.target.value})} className="bg-transparent text-white font-black w-full outline-none" placeholder="Primary Skillset" />
                                                 ) : <p className="text-white font-black">{profileData.profession || 'Specialist'}</p>}
                                             </div>
                                             <div className="p-6 bg-white/5 rounded-2xl border border-white/10 md:col-span-2">
-                                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-2">Work Experience</p>
+                                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-2">Professional Experience</p>
                                                 {!isViewingOther ? (
-                                                    <input value={profileData.experience} onChange={e => setProfileData({...profileData, experience: e.target.value})} className="bg-transparent text-white font-black w-full outline-none" placeholder="Years of Mastery" />
-                                                ) : <p className="text-white font-black">{profileData.experience || 'Verified Legend'}</p>}
+                                                    <input value={profileData.experience} onChange={e => setProfileData({...profileData, experience: e.target.value})} className="bg-transparent text-white font-black w-full outline-none" placeholder="Years of activity..." />
+                                                ) : <p className="text-white font-black">{profileData.experience || 'Verified Operator'}</p>}
                                             </div>
                                         </div>
                                     )}
                                     
                                     {activeTab === 'networks' && (
-                                        <div className="space-y-4">
+                                        <div className="space-y-4 max-w-2xl mx-auto">
                                             {['instagram', 'facebook', 'tiktok', 'behance', 'twitter'].map(platform => {
                                                 const handle = (profileData as any)[platform];
                                                 if (isViewingOther && !handle) return null;
@@ -397,14 +384,14 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                                     <div key={platform} className="p-6 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-between">
                                                         <div className="flex items-center gap-4">
                                                             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-red-500"><SparklesIcon className="w-5 h-5" /></div>
-                                                            <div>
+                                                            <div className="min-w-0">
                                                                 <p className="text-[10px] text-zinc-500 font-black uppercase">{platform}</p>
                                                                 {!isViewingOther ? (
-                                                                    <input value={handle} onChange={e => setProfileData({...profileData, [platform]: e.target.value})} className="bg-transparent text-white font-black outline-none" placeholder="@username" />
-                                                                ) : <p className="text-white font-black">@{handle}</p>}
+                                                                    <input value={handle} onChange={e => setProfileData({...profileData, [platform]: e.target.value})} className="bg-transparent text-white font-black outline-none w-full" placeholder="@username" />
+                                                                ) : <p className="text-white font-black truncate">@{handle}</p>}
                                                             </div>
                                                         </div>
-                                                        {handle && isViewingOther && <ChevronRightIcon className="w-5 h-5 text-red-500" />}
+                                                        {handle && isViewingOther && <ChevronRightIcon className="w-5 h-5 text-red-500 flex-shrink-0" />}
                                                     </div>
                                                 );
                                             })}
@@ -413,6 +400,20 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                 </div>
                             </div>
                         </div>
+
+                        {/* Persistent Save Footer for Settings */}
+                        {!isViewingOther && (activeTab !== 'posts') && (
+                            <div className="p-6 md:px-12 border-t border-white/10 bg-black/80 backdrop-blur-md absolute bottom-0 left-0 right-0 z-30">
+                                <button 
+                                    onClick={handleSave} 
+                                    disabled={isSaving}
+                                    className="w-full py-5 bg-red-600 text-white font-black uppercase tracking-[0.4em] text-[11px] rounded-2xl shadow-[0_10px_40px_rgba(220,38,38,0.3)] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                >
+                                    {isSaving ? 'Synchronizing...' : copyFeedback ? copyFeedback : 'Save Global Profile Changes'}
+                                    {!isSaving && !copyFeedback && <CheckCircleIcon className="w-4 h-4" />}
+                                </button>
+                            </div>
+                        )}
                     </motion.div>
                 </div>
             )}
