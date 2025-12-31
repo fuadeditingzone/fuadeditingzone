@@ -132,6 +132,22 @@ export default function App() {
     } else { setIsYouTubeApiReady(true); }
   }, []);
 
+  const normalizedModalItems = useMemo(() => {
+    if (!modalState) return [];
+    return modalState.items.map(item => {
+        const post = item as any;
+        if (post.mediaUrl) {
+            return {
+                ...post,
+                imageUrl: post.mediaType === 'image' ? post.mediaUrl : undefined,
+                url: post.mediaType === 'video' ? post.mediaUrl : undefined,
+                category: post.targetSection || 'Marketplace Post'
+            };
+        }
+        return item;
+    });
+  }, [modalState]);
+
   return (
     <ParallaxProvider>
       <div className="text-white min-h-screen bg-black overflow-x-hidden">
@@ -140,6 +156,7 @@ export default function App() {
             <DesktopHeader 
               onScrollTo={handleScrollTo} 
               onNavigateMarketplace={() => navigateTo('marketplace')}
+              onNavigateCommunity={() => navigateTo('community')}
               onOpenChatWithUser={(id) => { setTargetUserId(id); navigateTo('community'); }} 
               onOpenProfile={handleOpenProfile} 
               activeRoute={route}
@@ -147,6 +164,7 @@ export default function App() {
             <MobileHeader 
               onScrollTo={handleScrollTo} 
               onNavigateMarketplace={() => navigateTo('marketplace')}
+              onNavigateCommunity={() => navigateTo('community')}
               onOpenChatWithUser={(id) => { setTargetUserId(id); navigateTo('community'); }} 
               onOpenProfile={handleOpenProfile} 
             />
@@ -196,12 +214,12 @@ export default function App() {
             onClose={() => setViewingProfileId(null)} 
             viewingUserId={viewingProfileId} 
           />
-          {modalState && <ModalViewer state={modalState} onClose={() => setModalState(null)} onNext={(idx) => setModalState({...modalState, currentIndex: idx})} onPrev={(idx) => setModalState({...modalState, currentIndex: idx})} />}
+          {modalState && <ModalViewer state={{ ...modalState, items: normalizedModalItems }} onClose={() => setModalState(null)} onNext={(idx) => setModalState({...modalState, currentIndex: idx})} onPrev={(idx) => setModalState({...modalState, currentIndex: idx})} />}
           {isServicesPopupOpen && <ServicesListPopup onClose={() => setIsServicesPopupOpen(false)} />}
           {isYouTubeRedirectOpen && <YouTubeRedirectPopup onClose={() => setIsYouTubeRedirectOpen(false)} onConfirm={() => { setIsYouTubeRedirectOpen(false); handleScrollTo('portfolio'); }} />}
           {pipVideo && <VideoPipPlayer video={pipVideo} onClose={() => setPipVideo(null)} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />}
           <PwaInstallPrompt />
-          <MobileFooterNav onScrollTo={handleScrollTo} onNavigateMarketplace={() => navigateTo('marketplace')} activeRoute={route} onNavigateCommunity={() => navigateTo('community')} />
+          <MobileFooterNav onScrollTo={handleScrollTo} onNavigateMarketplace={() => navigateTo('marketplace')} onNavigateCommunity={() => navigateTo('community')} activeRoute={route} />
       </div>
     </ParallaxProvider>
   );

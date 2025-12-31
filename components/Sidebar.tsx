@@ -114,9 +114,9 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarket
         </div>
         <nav className="flex items-center gap-8">
             <button onClick={() => onScrollTo('home')} className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeRoute === 'home' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>Home</button>
-            <button onClick={() => onScrollTo('portfolio')} className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-all">Work</button>
+            <button onClick={() => onScrollTo('portfolio')} className={`text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-all`}>Work</button>
             <button onClick={onNavigateMarketplace} className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeRoute === 'marketplace' ? 'text-red-500' : 'text-gray-400 hover:text-white'}`}>Marketplace</button>
-            <button onClick={() => onNavigateCommunity ? onNavigateCommunity() : window.location.pathname = '/community'} className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeRoute === 'community' ? 'text-red-500' : 'text-gray-400 hover:text-white'}`}>Community</button>
+            <button onClick={onNavigateCommunity} className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeRoute === 'community' ? 'text-red-500' : 'text-gray-400 hover:text-white'}`}>Community</button>
             <button onClick={() => onScrollTo('contact')} className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-all border px-4 py-1.5 rounded-lg border-red-600/30 hover:bg-red-600 hover:text-white">Order</button>
         </nav>
         <div className="flex items-center gap-4">
