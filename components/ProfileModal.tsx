@@ -1,8 +1,10 @@
+
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, update, onValue, set, remove, push, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+// FIX: Added 'get' to the firebase-database imports to resolve "Cannot find name 'get'" error
+import { getDatabase, ref, update, onValue, set, remove, push, query, orderByChild, equalTo, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { CloseIcon, CheckCircleIcon, UserCircleIcon, SparklesIcon, GlobeAltIcon, CopyIcon, InstagramIcon, FacebookIcon, ChevronRightIcon, TikTokIcon, BehanceIcon, GalleryIcon, ChevronLeftIcon, PlayIcon, PhotoManipulationIcon, SendIcon } from './Icons';
 import { siteConfig } from '../config';
 
@@ -31,7 +33,6 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
     const [userPosts, setUserPosts] = useState<any[]>([]);
     const [socialState, setSocialState] = useState({ isFollowing: false, friendStatus: 'none', followers: 0, following: 0 });
 
-    // Upload state
     const [showUploadForm, setShowUploadForm] = useState(forceOpenUpload);
     const [isUploading, setIsUploading] = useState(false);
     const [postTitle, setPostTitle] = useState('');
@@ -64,7 +65,6 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                     if (data) {
                         setTargetUser(data);
                         if (data.profile) setProfileData(prev => ({ ...prev, ...data.profile }));
-                        // Update Browser URL to /@username
                         if (data.username) {
                             window.history.pushState(null, '', `/@${data.username}`);
                         }
@@ -111,41 +111,55 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
     };
 
     const handleUpload = async () => {
-        if (!clerkUser || !selectedFile || !postTitle.trim()) return;
+        if (!clerkUser || !postCaption.trim()) return;
+
+        // Check limit
+        const today = new Date().toISOString().split('T')[0];
+        const userPostCountRef = ref(db, `post_limits/${clerkUser.id}/${today}`);
+        const currentCountSnap = await get(userPostCountRef);
+        const currentCount = currentCountSnap.val() || 0;
+
+        if (currentCount >= 5) {
+            alert("Limit reached: 5 posts per day.");
+            return;
+        }
+
         setIsUploading(true);
-
         try {
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-            formData.append('folder', 'UserPosts');
+            let mediaUrl = "";
+            let mediaType: 'image' | 'video' | 'text' = 'text';
 
-            // FUAD FIXED WORKER URL
-            const uploadRes = await fetch('https://quiet-haze-1898.fuadeditingzone.workers.dev', {
-                method: 'POST',
-                body: formData
-            });
+            if (selectedFile) {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                formData.append('folder', 'UserPosts');
 
-            if (!uploadRes.ok) {
-                const errorData = await uploadRes.json();
-                throw new Error(errorData.error || 'Upload protocol interrupted');
+                const uploadRes = await fetch('https://quiet-haze-1898.fuadeditingzone.workers.dev', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!uploadRes.ok) throw new Error('Upload failed');
+                const result = await uploadRes.json();
+                mediaUrl = result.url;
+                mediaType = selectedFile.type.startsWith('video') ? 'video' : 'image';
             }
-            const { url } = await uploadRes.json();
 
             const tags = postCaption.match(/#\w+/g) || [];
-
             const postData = {
                 userId: clerkUser.id,
-                userName: clerkUser.fullName || clerkUser.username,
+                userName: clerkUser.username || clerkUser.fullName,
                 userAvatar: clerkUser.imageUrl,
-                mediaUrl: url,
-                mediaType: selectedFile.type.startsWith('video') ? 'video' : 'image',
+                mediaUrl,
+                mediaType,
                 title: postTitle.trim(),
                 caption: postCaption.trim(),
-                tags: tags,
+                tags,
                 timestamp: Date.now()
             };
 
             await push(ref(db, 'explore_posts'), postData);
+            await set(userPostCountRef, currentCount + 1);
             
             setPostTitle('');
             setPostCaption('');
@@ -153,7 +167,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
             setShowUploadForm(false);
         } catch (err: any) {
             console.error(err);
-            alert(`Signal Error: ${err.message}`);
+            alert(`Error: ${err.message}`);
         } finally {
             setIsUploading(false);
         }
@@ -175,9 +189,21 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
         }
     };
 
-    const isOwner = targetUser?.username === OWNER_HANDLE || (!isViewingOther && clerkUser?.username === OWNER_HANDLE);
-    const isAdmin = targetUser?.username === ADMIN_HANDLE || (!isViewingOther && clerkUser?.username === ADMIN_HANDLE);
-    const isImmune = isOwner || isAdmin;
+    const isVerified = (username: string) => username === OWNER_HANDLE || username === ADMIN_HANDLE;
+    const isOwner = targetUser?.username === OWNER_HANDLE;
+    const isAdmin = targetUser?.username === ADMIN_HANDLE;
+
+    const renderBio = (text: string) => {
+        const parts = text.split(/(@\w+|#\w+)/g);
+        return parts.map((part, i) => {
+            if (part.startsWith('@')) {
+                return <span key={i} className="mention-link">{part}</span>;
+            } else if (part.startsWith('#')) {
+                return <span key={i} className="text-red-500 font-bold">{part}</span>;
+            }
+            return part;
+        });
+    };
 
     if (!isLoaded || !clerkUser) return null;
 
@@ -212,12 +238,16 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                         <div className={`w-28 h-28 md:w-44 md:h-44 rounded-full border-4 p-1.5 transition-all ${isOwner ? 'border-red-600 shadow-2xl' : isAdmin ? 'border-blue-600 shadow-2xl' : 'border-white/10'}`}>
                                             <img src={isViewingOther ? targetUser?.avatar : clerkUser.imageUrl} className="w-full h-full object-cover rounded-full" />
                                         </div>
-                                        {isImmune && <span className={`absolute -top-1 -right-1 px-3 py-1 rounded-lg text-[8px] font-black uppercase text-white ${isOwner ? 'bg-red-600' : 'bg-blue-600'}`}>{isOwner ? 'Owner' : 'Admin'}</span>}
                                     </div>
 
                                     <div className="flex-1 text-center md:text-left space-y-4 md:space-y-6">
                                         <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4">
-                                            <h3 className="text-xl md:text-4xl font-light text-white lowercase">@{targetUser?.username || clerkUser.username}</h3>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="text-xl md:text-4xl font-light text-white lowercase">@{targetUser?.username || clerkUser.username}</h3>
+                                                {isVerified(targetUser?.username || clerkUser.username) && (
+                                                    <i className={`fa-solid fa-circle-check text-xl md:text-2xl ${isOwner ? 'verified-badge-owner' : 'verified-badge-admin'}`}></i>
+                                                )}
+                                            </div>
                                             <div className="flex gap-2">
                                                 {isViewingOther ? (
                                                     <>
@@ -241,7 +271,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                         <div className="space-y-1">
                                             <p className="text-base md:text-lg font-black text-white">{targetUser?.name || clerkUser.fullName}</p>
                                             <p className="text-zinc-500 text-xs md:text-sm font-bold uppercase tracking-widest">{profileData.role} • {profileData.profession || 'Creative'}</p>
-                                            <p className="text-zinc-300 text-xs md:text-sm leading-relaxed max-w-lg">{profileData.bio || 'Frequency established.'}</p>
+                                            <p className="text-zinc-300 text-xs md:text-sm leading-relaxed max-w-lg">{renderBio(profileData.bio || 'Frequency established.')}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -281,13 +311,13 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                                             <input 
                                                                 value={postTitle} 
                                                                 onChange={e => setPostTitle(e.target.value)} 
-                                                                placeholder="Project Name" 
+                                                                placeholder="Project Name (Optional)" 
                                                                 className="w-full bg-black border border-white/10 rounded-xl p-4 text-sm text-white outline-none focus:border-red-600 transition-all"
                                                             />
                                                             <textarea 
                                                                 value={postCaption} 
                                                                 onChange={e => setPostCaption(e.target.value)} 
-                                                                placeholder="Caption & #tags..." 
+                                                                placeholder="Caption & #tags... Use @name to mention" 
                                                                 className="w-full bg-black border border-white/10 rounded-xl p-4 text-sm text-white outline-none resize-none h-24 focus:border-red-600 transition-all"
                                                             />
                                                             <div className="flex gap-2">
@@ -299,7 +329,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                                                     <PhotoManipulationIcon className="w-4 h-4" /> {selectedFile ? 'Ready' : 'Choose Media'}
                                                                 </button>
                                                                 <button 
-                                                                    disabled={isUploading || !selectedFile || !postTitle}
+                                                                    disabled={isUploading || !postCaption}
                                                                     onClick={handleUpload}
                                                                     className="flex-1 bg-red-600 text-white p-4 rounded-xl font-black uppercase tracking-widest text-[10px] disabled:opacity-50 flex items-center justify-center gap-2"
                                                                 >
@@ -325,11 +355,15 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                                                     <video src={post.mediaUrl} className="w-full h-full object-cover" />
                                                                     <PlayIcon className="absolute top-2 right-2 w-4 h-4 text-white opacity-80" />
                                                                 </div>
-                                                            ) : (
+                                                            ) : post.mediaType === 'image' ? (
                                                                 <img src={post.mediaUrl} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center p-2 bg-white/5">
+                                                                    <p className="text-[8px] text-zinc-500 line-clamp-4">{post.caption}</p>
+                                                                </div>
                                                             )}
                                                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 md:p-4 text-center">
-                                                                <p className="text-[8px] md:text-[10px] font-black text-white uppercase tracking-tighter line-clamp-2 mb-1">{post.title}</p>
+                                                                <p className="text-[8px] md:text-[10px] font-black text-white uppercase tracking-tighter line-clamp-2 mb-1">{post.title || post.caption}</p>
                                                             </div>
                                                         </div>
                                                     ))
@@ -343,9 +377,9 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                             <div className="p-6 md:p-8 bg-white/5 rounded-[1.5rem] md:rounded-[2rem] border border-white/10 shadow-inner">
                                                 <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-4">Bio</p>
                                                 {isViewingOther ? (
-                                                    <p className="text-white text-base md:text-lg italic leading-relaxed">"{profileData.bio || '...'}"</p>
+                                                    <p className="text-white text-base md:text-lg italic leading-relaxed">"{renderBio(profileData.bio || '...')}"</p>
                                                 ) : (
-                                                    <textarea value={profileData.bio} onChange={e => setProfileData({...profileData, bio: e.target.value})} className="bg-transparent text-white text-base md:text-lg w-full resize-none outline-none italic custom-scrollbar" rows={6} placeholder="How do you want people to see you?" />
+                                                    <textarea value={profileData.bio} onChange={e => setProfileData({...profileData, bio: e.target.value})} className="bg-transparent text-white text-base md:text-lg w-full resize-none outline-none italic custom-scrollbar" rows={6} placeholder="Update your status... Use @mentions!" />
                                                 )}
                                             </div>
                                         </div>

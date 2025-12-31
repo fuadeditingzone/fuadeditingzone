@@ -1,7 +1,8 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
   <head>
-    <!-- [CACHE BUSTER: v33.0.0 - 2025-05-24] -->
+    <!-- [CACHE BUSTER: v34.0.0 - 2025-05-24] -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
@@ -34,25 +35,26 @@
         -webkit-tap-highlight-color: transparent;
       }
       
-      .owner-badge {
-        background: #ff0000 !important;
-        color: white !important;
-        padding: 2px 8px !important;
-        border-radius: 4px !important;
-        font-weight: 900 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.1em !important;
-        box-shadow: 0 0 15px rgba(255, 0, 0, 0.6) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        font-size: 8px !important;
+      .verified-badge-owner {
+        color: #ff0000;
+        filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.5));
       }
+      
+      .verified-badge-admin {
+        color: #0095f6; /* Instagram Blue */
+        filter: drop-shadow(0 0 5px rgba(0, 149, 246, 0.5));
+      }
+
+      .mention-link {
+        color: #ff0000;
+        font-weight: 800;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      .mention-link:hover { opacity: 0.8; }
 
       .neon-glow-red {
         text-shadow: 0 0 10px rgba(220, 38, 38, 0.8), 0 0 20px rgba(220, 38, 38, 0.4);
-      }
-      
-      .neon-glow-blue {
-        text-shadow: 0 0 10px rgba(37, 99, 235, 0.8), 0 0 20px rgba(37, 99, 235, 0.4);
       }
 
       .cl-modalBackdrop { background: rgba(0,0,0,0.96) !important; backdrop-filter: blur(15px) !important; }
@@ -62,18 +64,11 @@
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 0, 0.5) !important; border-radius: 10px !important; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent !important; }
 
-      /* Glassmorphism Classes */
       .glass-modal {
         background: rgba(10, 10, 10, 0.75) !important;
         backdrop-filter: blur(20px) saturate(180%) !important;
         -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
         border: 1px solid rgba(255, 255, 255, 0.08) !important;
-      }
-
-      .service-card-selected {
-        border-color: #ff0000 !important;
-        box-shadow: 0 0 40px rgba(255, 0, 0, 0.4), inset 0 0 20px rgba(255, 0, 0, 0.1) !important;
-        transform: translateY(-5px) scale(1.02);
       }
 
       @media (max-width: 767px) {
@@ -87,7 +82,6 @@
     "react": "https://esm.sh/react@19.0.0",
     "react/": "https://esm.sh/react@19.0.0/",
     "react-dom": "https://esm.sh/react-dom@19.0.0",
-    "react-dom/": "https://esm.sh/react-dom@19.0.0/",
     "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
     "react/jsx-runtime": "https://esm.sh/react@19.0.0/jsx-runtime",
     "@google/genai": "https://esm.sh/@google/genai@1.34.0",

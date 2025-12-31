@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   SignedIn, 
@@ -9,7 +10,7 @@ import {
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, onValue, set, remove, push, update, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { siteConfig } from '../config';
-import { HomeIcon, BriefcaseIcon, VfxIcon, UserCircleIcon, ChatBubbleIcon, SparklesIcon, CloseIcon, CheckCircleIcon } from './Icons';
+import { HomeIcon, BriefcaseIcon, VfxIcon, UserCircleIcon, ChatBubbleIcon, SparklesIcon, CloseIcon, CheckCircleIcon, GlobeAltIcon } from './Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const firebaseConfig = {
@@ -25,7 +26,7 @@ const db = getDatabase();
 const OWNER_HANDLE = 'fuadeditingzone';
 
 interface NavProps {
-  onScrollTo: (section: 'home' | 'portfolio' | 'graphic-design' | 'contact' | 'video-editing' | 'about') => void;
+  onScrollTo: (section: string) => void;
   onOpenChatWithUser?: (userId: string) => void;
   onOpenProfile?: (userId: string) => void;
 }
@@ -174,7 +175,6 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
             text: `[MISSION UPDATE]\nProject: ${notif.orderName}\nStatus: ${action === 'accept' ? 'LOCKED & ACCEPTED' : 'ABORTED'}${reason ? '\nReason: ' + reason : ''}`,
             timestamp: Date.now()
         });
-        // Note: Individual notifications are NOT removed as they must be persistent
         await markAsRead(notif.id);
     };
 
@@ -241,7 +241,6 @@ const NavLink: React.FC<{ onClick: () => void; children: React.ReactNode }> = ({
 export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUser, onOpenProfile }) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
-  const { user } = useUser();
 
   return (
     <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-20 px-10 bg-black/40 backdrop-blur-md border-b border-white/5">
@@ -252,6 +251,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUs
         <nav className="flex items-center gap-2">
             <NavLink onClick={() => onScrollTo('home')}>Home</NavLink>
             <NavLink onClick={() => onScrollTo('portfolio')}>Work</NavLink>
+            <NavLink onClick={() => onScrollTo('explore')}>Marketplace</NavLink>
             <NavLink onClick={() => onScrollTo('contact')}>Order</NavLink>
         </nav>
         <div className="flex items-center gap-4">
@@ -276,7 +276,6 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUs
 export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUser, onOpenProfile }) => {
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [isRequestsOpen, setIsRequestsOpen] = useState(false);
-    const { user } = useUser();
 
     return (
         <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-[9999] h-20 px-6 bg-transparent">
@@ -299,8 +298,8 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onOpenChatWithUse
 export const MobileFooterNav: React.FC<{ onScrollTo: (target: any) => void }> = ({ onScrollTo }) => (
     <nav className="md:hidden fixed bottom-6 left-6 right-6 z-40 bg-black/80 backdrop-blur-3xl rounded-[2rem] h-16 flex justify-around items-center shadow-2xl border border-white/10">
         <button onClick={() => onScrollTo('home')} className="p-2 text-zinc-500 hover:text-white"><HomeIcon className="w-5 h-5" /></button>
+        <button onClick={() => onScrollTo('explore')} className="p-2 text-zinc-500 hover:text-white"><GlobeAltIcon className="w-5 h-5" /></button>
         <button onClick={() => onScrollTo('portfolio')} className="p-2 text-zinc-500 hover:text-white"><BriefcaseIcon className="w-5 h-5" /></button>
-        <button onClick={() => onScrollTo('video-editing')} className="p-2 text-zinc-500 hover:text-white"><VfxIcon className="w-5 h-5" /></button>
         <button onClick={() => onScrollTo('contact')} className="p-2 text-zinc-500 hover:text-white"><ChatBubbleIcon className="w-5 h-5" /></button>
     </nav>
 );
