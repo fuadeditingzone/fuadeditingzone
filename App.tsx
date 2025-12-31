@@ -261,6 +261,7 @@ export default function App() {
             isOpen={!!viewingProfileId} 
             onClose={() => setViewingProfileId(null)} 
             viewingUserId={viewingProfileId} 
+            onOpenModal={handleSetModal}
           />
           {modalState && (
             <ModalViewer 

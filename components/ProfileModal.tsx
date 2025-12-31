@@ -7,7 +7,7 @@ import {
   CloseIcon, CheckCircleIcon, UserCircleIcon, SparklesIcon, GlobeAltIcon, 
   CopyIcon, InstagramIcon, FacebookIcon, ChevronRightIcon, TikTokIcon, 
   BehanceIcon, GalleryIcon, ChevronLeftIcon, PlayIcon, PhotoManipulationIcon, 
-  SendIcon, YouTubeIcon, BriefcaseIcon, ThumbnailIcon, VfxIcon 
+  SendIcon, YouTubeIcon, BriefcaseIcon, ThumbnailIcon, VfxIcon, EyeIcon
 } from './Icons';
 import { siteConfig } from '../config';
 
@@ -36,7 +36,14 @@ const NETWORK_ICONS: Record<string, any> = {
     'Portfolio': GlobeAltIcon
 };
 
-export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; viewingUserId?: string | null }> = ({ isOpen, onClose, viewingUserId }) => {
+interface ProfileModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  viewingUserId?: string | null;
+  onOpenModal?: (items: any[], index: number) => void;
+}
+
+export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, viewingUserId, onOpenModal }) => {
     const { user: clerkUser, isLoaded } = useUser();
     const [activeTab, setActiveTab] = useState<TabType>('posts');
     const [targetUser, setTargetUser] = useState<any>(null);
@@ -63,11 +70,10 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                 const data = snap.val() || {};
                 setTargetUser(data);
                 
-                // Initialize default profile data if missing
                 const initializedData = {
                     ...data,
                     profile: {
-                        bio: 'Intelligence identity established.',
+                        bio: 'Identity synchronized with the FEZ network.',
                         origin: 'Sylhet, Bangladesh',
                         profession: 'Visual Architecture',
                         skills: ['After Effects Master', 'Photoshop Expert', 'Premiere Pro', 'Cinema 4D', 'AI Integration', 'Color Science', 'Cinematography'],
@@ -114,7 +120,6 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
         }
     }, [isOpen, currentProfileId, isEditing]);
 
-    // Live list resolver
     useEffect(() => {
         if (userListMode && isOpen) {
             const listIds = userListMode === 'followers' ? socialState.followers : socialState.following;
@@ -305,7 +310,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                         ) : (
                                             <>
                                                 <p className="text-lg md:text-xl font-black text-white">{targetUser?.name || clerkUser.fullName}</p>
-                                                <p className="text-zinc-400 text-sm md:text-base leading-relaxed italic">"{targetUser?.profile?.bio || 'Frequency synchronized.'}"</p>
+                                                <p className="text-zinc-400 text-sm md:text-base leading-relaxed italic">"{targetUser?.profile?.bio || 'Frequency synchronized with the network.'}"</p>
                                             </>
                                         )}
                                     </div>
@@ -329,17 +334,22 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                         {userPosts.length === 0 ? (
                                             <div className="col-span-full py-20 text-center flex flex-col items-center gap-4 opacity-20">
                                                 <GalleryIcon className="w-16 h-16" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest">No Signals Captured</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest">No signals captured.</p>
                                             </div>
                                         ) : (
                                             userPosts.map((post, i) => (
-                                                <div key={i} className="aspect-square bg-white/5 rounded-xl overflow-hidden group relative cursor-pointer border border-white/5 shadow-lg">
+                                                <div 
+                                                  key={i} 
+                                                  onClick={() => onOpenModal?.(userPosts, i)}
+                                                  className="aspect-square bg-white/5 rounded-xl overflow-hidden group relative cursor-pointer border border-white/5 shadow-lg"
+                                                >
                                                     {post.mediaType === 'video' ? <video src={post.mediaUrl} className="w-full h-full object-cover" /> : <img src={post.mediaUrl} className="w-full h-full object-cover" alt="" />}
                                                     <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center p-4">
                                                         <div className="flex gap-4">
                                                             <div className="text-[10px] font-black text-red-500"><i className="fa-solid fa-heart"></i> {Object.keys(post.likes || {}).length}</div>
                                                             <div className="text-[10px] font-black text-white"><i className="fa-solid fa-comment"></i> {Object.keys(post.comments || {}).length}</div>
                                                         </div>
+                                                        <div className="mt-4"><EyeIcon className="w-6 h-6 text-white/50" /></div>
                                                     </div>
                                                 </div>
                                             ))
@@ -350,7 +360,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                                 {activeTab === 'identity' && (
                                     <div className="max-w-3xl mx-auto space-y-8">
                                         <div className="p-10 bg-white/5 rounded-[2.5rem] border border-white/10 italic text-xl md:text-3xl text-zinc-300 font-light leading-relaxed text-center">
-                                            "{targetUser?.profile?.bio || 'Intelligence identity established.'}"
+                                            "{targetUser?.profile?.bio || 'Identity identity established.'}"
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="p-6 bg-[#080808] border border-white/5 rounded-2xl">
