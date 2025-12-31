@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@clerk/clerk-react';
@@ -52,7 +51,7 @@ export const ExploreFeed: React.FC = () => {
         try {
             const formData = new FormData();
             formData.append('file', selectedFile);
-            formData.append('folder', 'Explore');
+            formData.append('folder', 'UserPosts');
 
             const uploadRes = await fetch('https://fuadeditingzone.pages.dev/api/upload', {
                 method: 'POST',

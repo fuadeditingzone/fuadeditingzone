@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, push, onChildAdded, onValue, set, update, get, remove, runTransaction, query, limitToLast } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { SparklesIcon, SendIcon, UserCircleIcon, GlobeAltIcon, CheckCircleIcon, CloseIcon, ChatBubbleIcon, VolumeOffIcon, VolumeOnIcon, EyeIcon, HandThumbUpIcon, ChevronRightIcon, SearchIcon, ChevronLeftIcon } from './Icons';
+import { SparklesIcon, SendIcon, UserCircleIcon, GlobeAltIcon, CheckCircleIcon, CloseIcon, ChatBubbleIcon, VolumeOffIcon, VolumeOnIcon, EyeIcon, HandThumbUpIcon, ChevronRightIcon, SearchIcon, ChevronLeftIcon, GalleryIcon, PhotoManipulationIcon } from './Icons';
 import { ProfileModal } from './ProfileModal';
 import { siteConfig } from '../config';
 
@@ -88,7 +88,6 @@ const AgentProfileModal: React.FC<{
                 if (s1.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'requested' }));
                 else {
                     onValue(reqRecRef, (s2) => {
-                        // FIX: Updated logic to set friendStatus to 'pending' when a request is found from the target user
                         if (s2.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'pending' }));
                         else setSocialState(prev => ({ ...prev, friendStatus: 'none' }));
                     });
@@ -116,7 +115,6 @@ const AgentProfileModal: React.FC<{
           await set(ref(db, `social/${currentUser.id}/requests/sent/${user.id}`), { timestamp: Date.now() });
           await set(ref(db, `social/${user.id}/requests/received/${currentUser.id}`), { timestamp: Date.now() });
       } else if (socialState.friendStatus === 'pending') {
-          // FIX: Corrected bidirectional friendship logic and replaced undefined targetId with user.id and currentUser.id
           await remove(ref(db, `social/${currentUser.id}/requests/received/${user.id}`));
           await remove(ref(db, `social/${user.id}/requests/sent/${currentUser.id}`));
           await set(ref(db, `social/${currentUser.id}/friends/${user.id}`), true);
@@ -165,7 +163,7 @@ const AgentProfileModal: React.FC<{
   );
 };
 
-export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserId?: string | null; onShowProfile?: (id: string) => void }> = ({ isModalMode, initialTargetUserId, onShowProfile }) => {
+export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserId?: string | null; onShowProfile?: (id: string, tab?: any, openUpload?: boolean) => void }> = ({ isModalMode, initialTargetUserId, onShowProfile }) => {
   const { user: clerkUser, isSignedIn } = useUser();
   const [users, setUsers] = useState<ChatUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
@@ -235,7 +233,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
   return (
     <section id="community" className={`${isModalMode ? 'h-full w-full' : 'py-12 md:py-24 bg-black relative z-10 select-none overflow-hidden'}`}>
       <AnimatePresence>
-        {viewingProfile && <AgentProfileModal user={viewingProfile} currentUser={clerkUser} onClose={() => setViewingProfile(null)} onMessage={() => { setIsGlobal(false); setSelectedUser(viewingProfile); setShowConversationOnMobile(true); }} onShowFullProfile={onShowProfile} />}
+        {viewingProfile && <AgentProfileModal user={viewingProfile} currentUser={clerkUser} onClose={() => setViewingProfile(null)} onMessage={() => { setIsGlobal(false); setSelectedUser(viewingProfile); setShowConversationOnMobile(true); }} onShowFullProfile={(id) => onShowProfile?.(id)} />}
         {isSearchOpen && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[80000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4">
                 <div className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col max-h-[80dvh]">
@@ -273,11 +271,15 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                     <div className={`w-11 h-11 rounded-2xl flex items-center justify-center border flex-shrink-0 ${isGlobal ? 'bg-red-600 text-white' : 'bg-white/5 text-zinc-500'}`}><GlobeAltIcon className="w-5 h-5" /></div>
                     <div className="text-left"><p className={`text-[11px] font-black uppercase tracking-widest ${isGlobal ? 'text-white' : 'text-zinc-500'}`}>Public Hub</p></div>
                 </button>
+                <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id, 'posts', true)} className="w-full flex items-center gap-4 p-4 rounded-[2rem] hover:bg-white/5 transition-all group">
+                    <div className="w-11 h-11 rounded-2xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0 group-hover:bg-red-600 group-hover:text-white transition-all"><PhotoManipulationIcon className="w-5 h-5" /></div>
+                    <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Deploy Signal</p></div>
+                </button>
                 <button onClick={() => setIsSearchOpen(true)} className="w-full flex items-center gap-4 p-4 rounded-[2rem] hover:bg-white/5 transition-all">
                     <div className="w-11 h-11 rounded-2xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0"><SearchIcon className="w-5 h-5" /></div>
                     <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Scan Operators</p></div>
                 </button>
-                <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id)} className="w-full flex items-center gap-4 p-4 rounded-[2rem] hover:bg-white/5 transition-all">
+                <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id, 'identity')} className="w-full flex items-center gap-4 p-4 rounded-[2rem] hover:bg-white/5 transition-all">
                     <div className="w-11 h-11 rounded-2xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0"><i className="fa-solid fa-gear text-lg"></i></div>
                     <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Settings</p></div>
                 </button>

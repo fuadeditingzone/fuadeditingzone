@@ -45,6 +45,8 @@ export default function App() {
   const [isCommunityChatOpen, setIsCommunityChatOpen] = useState(false);
   const [targetUserId, setTargetUserId] = useState<string | null>(null);
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
+  const [profileInitialTab, setProfileInitialTab] = useState<'identity' | 'credentials' | 'networks' | 'posts'>('identity');
+  const [profileAutoOpenUpload, setProfileAutoOpenUpload] = useState(false);
   const [isServicesPopupOpen, setIsServicesPopupOpen] = useState(false);
   const [isYouTubeRedirectOpen, setIsYouTubeRedirectOpen] = useState(false);
   const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.content.portfolio.animeEdits[0].videoId || 'oAEDU-nycsE');
@@ -81,8 +83,10 @@ export default function App() {
     return () => window.removeEventListener('popstate', handleRouting);
   }, []);
 
-  const handleOpenProfile = (userId: string) => {
+  const handleOpenProfile = (userId: string, tab: any = 'identity', openUpload = false) => {
     setViewingProfileId(userId);
+    setProfileInitialTab(tab);
+    setProfileAutoOpenUpload(openUpload);
     get(ref(db, `users/${userId}/username`)).then((snap) => {
       const uname = snap.val();
       if (uname) window.history.pushState(null, '', `/@${uname}`);
@@ -91,6 +95,7 @@ export default function App() {
 
   const handleCloseProfile = () => {
     setViewingProfileId(null);
+    setProfileAutoOpenUpload(false);
     window.history.pushState(null, '', '/');
   };
 
@@ -158,7 +163,13 @@ export default function App() {
             )}
           </AnimatePresence>
 
-          <ProfileModal isOpen={!!viewingProfileId} onClose={handleCloseProfile} viewingUserId={viewingProfileId} />
+          <ProfileModal 
+            isOpen={!!viewingProfileId} 
+            onClose={handleCloseProfile} 
+            viewingUserId={viewingProfileId} 
+            initialTab={profileInitialTab} 
+            forceOpenUpload={profileAutoOpenUpload}
+          />
           {modalState && <ModalViewer state={modalState} onClose={handleCloseModal} onNext={(idx) => handleOpenModal(modalState.items, idx)} onPrev={(idx) => handleOpenModal(modalState.items, idx)} />}
           {isServicesPopupOpen && <ServicesListPopup onClose={() => setIsServicesPopupOpen(false)} />}
           {isYouTubeRedirectOpen && <YouTubeRedirectPopup onClose={() => setIsYouTubeRedirectOpen(false)} onConfirm={() => { setIsYouTubeRedirectOpen(false); handleScrollTo('portfolio'); }} />}

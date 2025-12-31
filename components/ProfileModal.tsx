@@ -22,9 +22,9 @@ const ADMIN_HANDLE = 'studiomuzammil';
 
 type TabType = 'identity' | 'credentials' | 'networks' | 'posts';
 
-export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; viewingUserId?: string | null }> = ({ isOpen, onClose, viewingUserId }) => {
+export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; viewingUserId?: string | null; initialTab?: TabType; forceOpenUpload?: boolean }> = ({ isOpen, onClose, viewingUserId, initialTab = 'identity', forceOpenUpload = false }) => {
     const { user: clerkUser, isLoaded } = useUser();
-    const [activeTab, setActiveTab] = useState<TabType>('identity');
+    const [activeTab, setActiveTab] = useState<TabType>(initialTab);
     const [isSaving, setIsSaving] = useState(false);
     const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
     const [targetUser, setTargetUser] = useState<any>(null);
@@ -32,7 +32,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
     const [socialState, setSocialState] = useState({ isFollowing: false, friendStatus: 'none', followers: 0, following: 0 });
 
     // Upload state
-    const [showUploadForm, setShowUploadForm] = useState(false);
+    const [showUploadForm, setShowUploadForm] = useState(forceOpenUpload);
     const [isUploading, setIsUploading] = useState(false);
     const [postTitle, setPostTitle] = useState('');
     const [postCaption, setPostCaption] = useState('');
@@ -55,6 +55,8 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
 
     useEffect(() => {
         if (isOpen) {
+            setActiveTab(initialTab);
+            setShowUploadForm(forceOpenUpload);
             const loadId = viewingUserId || clerkUser?.id;
             if (loadId) {
                 onValue(ref(db, `users/${loadId}`), (snap) => {
@@ -83,7 +85,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
                 });
             }
         }
-    }, [isOpen, viewingUserId, clerkUser]);
+    }, [isOpen, viewingUserId, clerkUser, initialTab, forceOpenUpload]);
 
     useEffect(() => {
         if (!isViewingOther || !clerkUser || !viewingUserId) return;
@@ -99,8 +101,6 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
 
     const handleAction = async (type: 'follow' | 'friend') => {
         if (!clerkUser || !viewingUserId) return;
-        const isTargetAdmin = targetUser?.username === OWNER_HANDLE || targetUser?.username === ADMIN_HANDLE;
-        
         const path = type === 'follow' ? `social/${clerkUser.id}/following/${viewingUserId}` : `social/${clerkUser.id}/requests/sent/${viewingUserId}`;
         await set(ref(db, path), { timestamp: Date.now() });
         if (type === 'friend') setSocialState(prev => ({ ...prev, friendStatus: 'requested' }));
@@ -113,7 +113,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; view
         try {
             const formData = new FormData();
             formData.append('file', selectedFile);
-            formData.append('folder', 'Explore');
+            formData.append('folder', 'UserPosts');
 
             const uploadRes = await fetch('https://fuadeditingzone.pages.dev/api/upload', {
                 method: 'POST',
