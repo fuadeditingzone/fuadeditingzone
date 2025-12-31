@@ -77,6 +77,12 @@ const AgentProfileModal: React.FC<{
 
   const handleFollow = async () => {
       if (!currentUser) return;
+      
+      // Admin Protection
+      if (user.username === OWNER_HANDLE || user.username === ADMIN_HANDLE) {
+          // Limited actions for admins
+      }
+
       const path = `social/${currentUser.id}/following/${user.id}`;
       if (socialState.isFollowing) {
           await remove(ref(db, path));
@@ -97,30 +103,30 @@ const AgentProfileModal: React.FC<{
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={onClose}>
-      <div className="w-full max-w-[450px] bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col items-center shadow-2xl max-h-[90dvh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-[450px] bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col items-center shadow-2xl max-h-[90dvh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
         <div className="relative mb-6 cursor-pointer" onClick={() => onShowFullProfile?.(user.id)}>
             <img src={user.avatar} className={`w-32 h-32 rounded-[3rem] border-4 p-1 ${isOwner ? 'border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.5)]' : isAdmin ? 'border-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'border-white/10'} object-cover`} alt="" />
-            {isOwner && <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase">Owner</span>}
+            {(isOwner || isAdmin) && <span className={`absolute -top-2 -right-2 ${isOwner ? 'bg-red-600' : 'bg-blue-600'} text-white text-[8px] font-black px-2 py-1 rounded-lg uppercase`}>{isOwner ? 'Owner' : 'Admin'}</span>}
         </div>
         <div className="text-center w-full mb-8">
             <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-1 cursor-pointer" onClick={() => onShowFullProfile?.(user.id)}>{user.name}</h2>
-            <p className={`font-black uppercase text-[10px] tracking-[0.3em] ${isOwner ? 'text-red-500' : 'text-zinc-500'}`}>@{user.username}</p>
+            <p className={`font-black uppercase text-[10px] tracking-[0.3em] ${isOwner ? 'text-red-500' : isAdmin ? 'text-blue-500' : 'text-zinc-500'}`}>@{user.username}</p>
         </div>
         
         <div className="w-full space-y-4 mb-10">
             <div className="p-6 bg-white/5 rounded-3xl border border-white/5"><p className="text-[12px] text-zinc-400 italic">"{user.profile?.bio || 'Frequency established.'}"</p></div>
             <div className="flex gap-3">
-                <button onClick={handleFollow} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white'}`}>
+                <button onClick={handleFollow} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white shadow-xl hover:bg-red-700'}`}>
                     {socialState.isFollowing ? 'Following' : 'Follow'}
                 </button>
-                <button onClick={handleFriendAction} className="flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest bg-white/5 border border-white/10 hover:bg-white/10 text-white">
+                <button onClick={handleFriendAction} className="flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all">
                     {socialState.friendStatus === 'accepted' ? 'Linked' : socialState.friendStatus === 'requested' ? 'Pending' : 'Add Friend'}
                 </button>
             </div>
         </div>
         <div className="flex flex-col gap-2 w-full">
-            <button onClick={() => { onMessage(); onClose(); }} className="w-full py-5 bg-red-600 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl shadow-2xl">Message</button>
-            <button onClick={() => { onShowFullProfile?.(user.id); onClose(); }} className="w-full py-4 bg-white/5 text-zinc-500 hover:text-white font-black uppercase tracking-[0.2em] text-[9px] rounded-xl">View Profile</button>
+            <button onClick={() => { onMessage(); onClose(); }} className="w-full py-5 bg-red-600 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl shadow-2xl transition-all hover:bg-red-700">Message</button>
+            <button onClick={() => { onShowFullProfile?.(user.id); onClose(); }} className="w-full py-4 bg-white/5 text-zinc-500 hover:text-white font-black uppercase tracking-[0.2em] text-[9px] rounded-xl transition-all">View Profile</button>
         </div>
       </div>
     </motion.div>
@@ -177,7 +183,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[80000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4">
                 <div className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col max-h-[80dvh]">
                     <div className="flex justify-between items-center mb-8"><h3 className="text-2xl font-black text-white uppercase tracking-tighter">Find Operator</h3><button onClick={() => setIsSearchOpen(false)}><CloseIcon className="w-6 h-6 text-zinc-500" /></button></div>
-                    <div className="relative mb-8"><SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" /><input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search..." className="w-full bg-black border border-white/10 rounded-2xl py-5 pl-14 text-white outline-none focus:border-red-600 transition-all" /></div>
+                    <div className="relative mb-8"><SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" /><input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Username search..." className="w-full bg-black border border-white/10 rounded-2xl py-5 pl-14 text-white outline-none focus:border-red-600 transition-all" /></div>
                     <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
                         {users.filter(u => u.username?.toLowerCase().includes(searchQuery.toLowerCase()) && u.id !== clerkUser?.id).map(u => (
                             <button key={u.id} onClick={() => { setViewingProfile(u); setIsSearchOpen(false); }} className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-red-600/30 transition-all text-left">
@@ -219,7 +225,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 custom-scrollbar bg-black/20">
               {messages.map(msg => (
                 <div key={msg.id} className={`flex gap-4 ${msg.senderId === clerkUser?.id ? 'flex-row-reverse' : 'flex-row'} items-end`}>
-                    <img src={msg.senderAvatar} className="w-10 h-10 rounded-xl border border-white/5 object-cover cursor-pointer" onClick={() => onShowProfile?.(msg.senderId)} />
+                    <img src={msg.senderAvatar} className="w-10 h-10 rounded-xl border border-white/5 object-cover cursor-pointer shadow-lg" onClick={() => onShowProfile?.(msg.senderId)} />
                     <div className={`max-w-[80%] ${msg.senderId === clerkUser?.id ? 'items-end' : 'items-start'} flex flex-col`}>
                         <span className="text-[9px] font-black text-zinc-600 uppercase mb-2 px-1 truncate max-w-full">{msg.senderName}</span>
                         <div className={`p-4 rounded-[1.5rem] text-[13px] border whitespace-pre-wrap ${msg.text.startsWith('[ORDER INQUIRY]') ? 'bg-red-600/20 border-red-600/50 text-white font-bold' : (msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-zinc-300 rounded-tl-none')}`}>{msg.text}</div>
@@ -230,8 +236,8 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             </div>
             <div className="p-4 md:p-10 border-t border-white/5 bg-black/40">
               {isSignedIn ? (
-                <form onSubmit={handleSendMessage} className="flex gap-3 bg-white/5 border border-white/10 rounded-[2rem] p-2"><input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="Signal message..." className="flex-1 bg-transparent px-4 md:px-6 py-3 text-sm font-bold text-white outline-none" /><button type="submit" disabled={!inputValue.trim()} className="bg-red-600 text-white w-12 h-12 flex items-center justify-center rounded-2xl transition-all shadow-2xl disabled:opacity-50"><SendIcon className="w-5 h-5" /></button></form>
-              ) : <div className="text-center py-4"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-4 px-12 rounded-2xl uppercase text-[10px] tracking-widest">Connect to Network</button></SignInButton></div>}
+                <form onSubmit={handleSendMessage} className="flex gap-3 bg-white/5 border border-white/10 rounded-[2rem] p-2"><input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="Frequency message..." className="flex-1 bg-transparent px-4 md:px-6 py-3 text-sm font-bold text-white outline-none" /><button type="submit" disabled={!inputValue.trim()} className="bg-red-600 text-white w-12 h-12 flex items-center justify-center rounded-2xl transition-all shadow-2xl disabled:opacity-50"><SendIcon className="w-5 h-5" /></button></form>
+              ) : <div className="text-center py-4"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-4 px-12 rounded-2xl uppercase text-[10px] tracking-widest shadow-lg">Login to Transmit</button></SignInButton></div>}
             </div>
           </div>
         </div>

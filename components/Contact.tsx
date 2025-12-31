@@ -55,9 +55,9 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
     e.preventDefault();
     if (!isSignedIn || !user || !selectedTier) return;
     
-    // Hard $5 Rule
-    const budgetValue = parseInt(formData.customPrice);
-    if (isNaN(budgetValue) || budgetValue < 5) {
+    // Minimum Order Logic
+    const budgetVal = parseInt(formData.customPrice);
+    if (isNaN(budgetVal) || budgetVal < 5) {
         alert("Minimum order is $5");
         return;
     }
@@ -109,80 +109,87 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
   };
 
   return (
-    <section ref={intersectionRef} id="contact" className="py-20 bg-black relative z-10 overflow-hidden">
+    <section ref={intersectionRef} id="contact" className="py-20 md:py-24 bg-[#050505] relative z-10 overflow-hidden">
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="mb-12 text-center">
           <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Marketplace</span>
-          <h2 className="text-white text-4xl md:text-6xl font-black uppercase tracking-tighter">Order Now</h2>
+          <h2 className="text-white text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none">Order Project</h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {SERVICE_TIERS.map(tier => (
-                    <button key={tier.id} onClick={(e) => { e.preventDefault(); setSelectedTier(tier.id); if(tier.id !== 'custom') setFormData(f => ({...f, customPrice: tier.price, customTime: tier.delivery})); }} className={`flex flex-col p-4 rounded-[1.5rem] border transition-all duration-500 bg-white/5 ${selectedTier === tier.id ? 'border-red-600 shadow-xl' : 'border-white/10'}`}>
-                        <tier.icon className={`w-5 h-5 mb-3 ${selectedTier === tier.id ? 'text-red-500' : 'text-zinc-600'}`} />
+                    <button key={tier.id} type="button" onClick={() => { setSelectedTier(tier.id); if(tier.id !== 'custom') setFormData(f => ({...f, customPrice: tier.price, customTime: tier.delivery})); }} className={`flex flex-col p-5 rounded-[1.5rem] border transition-all duration-500 bg-white/5 ${selectedTier === tier.id ? 'border-red-600 shadow-xl' : 'border-white/10 hover:border-white/20'}`}>
+                        <tier.icon className={`w-5 h-5 mb-4 ${selectedTier === tier.id ? 'text-red-500' : 'text-zinc-600'}`} />
                         <h4 className="text-[9px] font-black text-white uppercase truncate">{tier.name}</h4>
                     </button>
                 ))}
             </div>
 
-            <div className="bg-[#080808] border border-white/10 rounded-[2rem] p-6 md:p-10 space-y-6">
+            <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-8 md:p-10 space-y-6 shadow-2xl">
                 {!isSignedIn ? (
-                    <SignInButton mode="modal"><button className="w-full bg-red-600 py-6 rounded-2xl font-black uppercase tracking-[0.6em] text-[11px]">Log in to Order</button></SignInButton>
+                    <SignInButton mode="modal"><button type="button" className="w-full bg-red-600 py-6 rounded-2xl font-black uppercase tracking-[0.6em] text-[11px] hover:bg-red-700 transition-all">Connect to Order</button></SignInButton>
                 ) : (
                     <>
                         <div className="space-y-4">
-                            <p className="text-[10px] font-black text-zinc-500 uppercase">Category:</p>
+                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Mission Category:</p>
                             <div className="flex flex-wrap gap-2">
                                 {RECOMMENDED_TAGS.map(tag => (
-                                    <button key={tag} type="button" onClick={() => setFormData({...formData, customName: tag})} className={`px-4 py-2 rounded-xl border text-[9px] font-black uppercase transition-all ${formData.customName === tag ? 'bg-red-600 text-white' : 'bg-white/5 border-white/10 text-zinc-500'}`}>{tag}</button>
+                                    <button key={tag} type="button" onClick={() => setFormData({...formData, customName: tag})} className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${formData.customName === tag ? 'bg-red-600 border-red-500 text-white shadow-lg' : 'bg-white/5 border-white/10 text-zinc-500 hover:text-white'}`}>{tag}</button>
                                 ))}
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="relative">
-                                <label className="text-[10px] font-black text-zinc-400 uppercase mb-2 block">Budget ($)</label>
-                                <div className="relative">
-                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-red-600 font-black">$</span>
-                                    <input required type="number" min="5" value={formData.customPrice} onChange={e => setFormData({...formData, customPrice: e.target.value})} className="w-full bg-black border border-white/10 rounded-2xl py-4 pl-10 text-white font-black" placeholder="Min 5" />
+                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 block ml-1">Budget ($)</label>
+                                <div className="relative flex items-center">
+                                    <span className="absolute left-5 text-red-600 font-black text-lg">$</span>
+                                    <input required type="number" min="5" value={formData.customPrice} onChange={e => setFormData({...formData, customPrice: e.target.value})} className="w-full h-16 bg-black border border-white/10 rounded-2xl py-4 pl-12 pr-6 text-lg font-black text-white outline-none focus:border-red-600 transition-all" placeholder="Min 5" />
                                 </div>
                             </div>
                             <div className="relative">
-                                <label className="text-[10px] font-black text-zinc-400 uppercase mb-2 block">Delivery (Days)</label>
-                                <input required type="number" min="1" value={formData.customTime} onChange={e => setFormData({...formData, customTime: e.target.value})} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-white font-black" placeholder="Days" />
+                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 block ml-1">Delivery Time (Days)</label>
+                                <div className="relative flex items-center">
+                                    <ClockIcon className="absolute left-5 w-5 h-5 text-zinc-600" />
+                                    <input required type="number" min="1" value={formData.customTime} onChange={e => setFormData({...formData, customTime: e.target.value})} className="w-full h-16 bg-black border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-lg font-black text-white outline-none focus:border-red-600 transition-all" placeholder="Days" />
+                                </div>
                             </div>
                         </div>
-                        <textarea required rows={4} value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} className="w-full bg-black border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none" placeholder="Project Description..." />
-                        <button type="submit" className="w-full py-6 bg-red-600 text-white font-black uppercase tracking-[0.6em] text-[11px] rounded-2xl hover:bg-red-700 transition-all">
-                            {status === 'submitting' ? 'Placing Order...' : 'Confirm Order'}
+                        
+                        <textarea required rows={4} value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} className="w-full bg-black border border-white/10 rounded-2xl px-6 py-5 text-sm text-white outline-none focus:border-red-600 transition-all shadow-inner resize-none" placeholder="Project details and mission goals..." />
+                        
+                        <button type="submit" disabled={status === 'submitting' || !selectedTier} className={`w-full py-6 md:py-8 rounded-2xl text-[11px] font-black uppercase tracking-[0.5em] transition-all flex items-center justify-center gap-4 ${!selectedTier ? 'bg-white/5 text-zinc-600 cursor-not-allowed' : 'bg-red-600 text-white shadow-xl hover:bg-red-700 active:scale-95'}`}>
+                            {status === 'submitting' ? <SparklesIcon className="w-5 h-5 animate-spin" /> : 'Deploy Order'}
                         </button>
                     </>
                 )}
             </div>
           </form>
 
-          <div className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-8 flex flex-col h-[600px]">
-                <h3 className="text-xl font-black text-white uppercase tracking-widest mb-8 pb-8 border-b border-white/5">Order Status</h3>
-                <div className="space-y-6 overflow-y-auto custom-scrollbar flex-1">
+          <div className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-8 md:p-10 shadow-2xl flex flex-col h-full min-h-[500px] max-h-[80vh]">
+                <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-widest mb-8 pb-8 border-b border-white/5 flex-shrink-0">Order Database</h3>
+                <div className="space-y-6 overflow-y-auto custom-scrollbar flex-1 pr-2">
                     {userOrders.length === 0 ? (
                         <div className="py-24 text-center opacity-10 flex flex-col items-center gap-6">
-                            <SparklesIcon className="w-16 h-16" />
-                            <p className="text-[11px] uppercase font-black">Waiting for Mission</p>
+                            <SparklesIcon className="w-16 h-16 md:w-20 md:h-20" />
+                            <p className="text-[11px] uppercase font-black tracking-widest">Awaiting Command</p>
                         </div>
                     ) : (
                         userOrders.map((order, idx) => (
-                            <div key={idx} className="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                                <div className="flex justify-between items-start mb-4">
-                                    <p className="text-[14px] font-black text-white uppercase">{order.service}</p>
-                                    <span className={`text-[8px] font-black uppercase px-2 py-1 rounded border ${order.status === 'Pending' ? 'text-yellow-500' : 'text-green-500'}`}>{order.status}</span>
+                            <motion.div key={idx} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="p-6 md:p-8 bg-white/5 border border-white/10 rounded-[2rem] shadow-lg group hover:border-red-600/30 transition-all duration-500">
+                                <div className="flex justify-between items-start mb-6 gap-4">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[14px] md:text-[15px] font-black text-white uppercase tracking-wider truncate">{order.service}</p>
+                                    </div>
+                                    <span className={`text-[8px] font-black uppercase px-2.5 py-1 rounded-lg border flex-shrink-0 ${order.status === 'Pending' ? 'text-yellow-500 border-yellow-500/20 bg-yellow-500/5' : order.status === 'Accepted' ? 'text-green-500 border-green-500/20 bg-green-500/5' : 'text-red-500 border-red-500/20 bg-red-500/5'}`}>{order.status}</span>
                                 </div>
-                                <div className="flex gap-4 text-[9px] font-black text-zinc-500 uppercase">
-                                    <span>Budget: <span className="text-white">{order.price}</span></span>
-                                    <span>Time: <span className="text-white">{order.delivery}</span></span>
+                                <div className="grid grid-cols-2 gap-3 opacity-80">
+                                    <div className="bg-black/60 p-4 rounded-xl border border-white/5 text-[9px] font-black text-zinc-400 uppercase tracking-widest text-center">Budget: <span className="text-white">{order.price}</span></div>
+                                    <div className="bg-black/60 p-4 rounded-xl border border-white/5 text-[9px] font-black text-zinc-400 uppercase tracking-widest text-center">Time: <span className="text-white">{order.delivery}</span></div>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))
                     )}
                 </div>
