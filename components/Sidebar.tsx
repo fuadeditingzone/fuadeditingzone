@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   SignedIn, 
   SignedOut, 
@@ -7,7 +7,7 @@ import {
   useUser
 } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, onValue, set, remove, push, update, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, ref, onValue, set, remove, push, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { siteConfig } from '../config';
 import { HomeIcon, BriefcaseIcon, VfxIcon, UserCircleIcon, ChatBubbleIcon, SparklesIcon, CloseIcon, CheckCircleIcon } from './Icons';
 import { ProfileModal } from './ProfileModal';
@@ -26,10 +26,10 @@ const db = getDatabase();
 const OWNER_HANDLE = 'fuadeditingzone';
 
 interface NavProps {
-  onScrollTo: (section: 'home' | 'portfolio' | 'contact' | 'video-editing' | 'about') => void;
+  onScrollTo: (section: 'home' | 'portfolio' | 'graphic-design' | 'contact' | 'video-editing' | 'about') => void;
 }
 
-const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void }> = ({ isOpen, setIsOpen }) => {
+const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; onShowUser: (id: string) => void }> = ({ isOpen, setIsOpen, onShowUser }) => {
     const { user } = useUser();
     const [requests, setRequests] = useState<{received: any[], sent: any[]}>({received: [], sent: []});
 
@@ -63,7 +63,6 @@ const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void }>
             await set(ref(db, `social/${user.id}/friends/${targetId}`), true);
             await set(ref(db, `social/${targetId}/friends/${user.id}`), true);
             
-            // Auto-follow logic: Establishing mutual connection
             await set(ref(db, `social/${user.id}/following/${targetId}`), true);
             await set(ref(db, `social/${targetId}/followers/${user.id}`), true);
             await set(ref(db, `social/${targetId}/following/${user.id}`), true);
@@ -113,13 +112,13 @@ const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void }>
                                     </div>
                                 ) : (
                                     requests.received.map(r => (
-                                        <div key={r.id} className="flex items-center gap-4 mb-4 bg-white/5 p-4 rounded-3xl border border-white/5 shadow-inner">
+                                        <div key={r.id} onClick={() => onShowUser(r.id)} className="flex items-center gap-4 mb-4 bg-white/5 p-4 rounded-3xl border border-white/5 shadow-inner cursor-pointer hover:border-red-600/30 transition-all">
                                             <img src={r.avatar} className="w-12 h-12 rounded-2xl object-cover ring-2 ring-white/5 shadow-lg" />
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-[12px] font-black text-white uppercase truncate">{r.name}</p>
                                                 <p className="text-[10px] text-gray-500 font-bold">@{r.username}</p>
                                             </div>
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                                                 <button onClick={() => handleAction(r.id, 'accept')} className="bg-red-600 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-red-700 transition-all shadow-lg active:scale-90"><CheckCircleIcon className="w-5 h-5" /></button>
                                                 <button onClick={() => handleAction(r.id, 'reject')} className="bg-white/10 text-gray-400 w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-all active:scale-90"><CloseIcon className="w-5 h-5" /></button>
                                             </div>
@@ -159,7 +158,7 @@ const RequestHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void }>
     );
 };
 
-const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void }> = ({ isOpen, setIsOpen }) => {
+const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => void; onShowUser: (id: string) => void; onGoToInbox: () => void }> = ({ isOpen, setIsOpen, onShowUser, onGoToInbox }) => {
     const { user } = useUser();
     const [notifications, setNotifications] = useState<any[]>([]);
     const isOwner = user?.username === OWNER_HANDLE;
@@ -188,9 +187,7 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
 
     const handleOrderAction = async (notif: any, action: 'accept' | 'reject') => {
         if (!user) return;
-        
         await update(ref(db, `orders/${notif.fromId}/${notif.orderKey}`), { status: action === 'accept' ? 'Accepted' : 'Rejected' });
-        
         await push(ref(db, `notifications/${notif.fromId}`), {
             type: action === 'accept' ? 'order_accepted' : 'order_rejected',
             fromId: user.id,
@@ -200,8 +197,17 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
             read: false,
             orderName: notif.orderName
         });
-
         await remove(ref(db, `notifications/${user.id}/${notif.id}`));
+    };
+
+    const handleNotificationClick = (n: any) => {
+        if (n.type === 'request_accepted' || n.type === 'friend_request') {
+            onShowUser(n.fromId);
+        } else if (n.type === 'order_accepted' || n.type === 'order_rejected') {
+            onGoToInbox();
+        }
+        markAsRead(n.id);
+        setIsOpen(false);
     };
 
     const unreadCount = notifications.filter(n => !n.read).length;
@@ -227,7 +233,7 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
                                 </div>
                             ) : (
                                 notifications.map((n) => (
-                                    <div key={n.id} onClick={() => !n.orderKey && markAsRead(n.id)} className={`p-5 mb-2 rounded-3xl transition-all cursor-pointer flex flex-col gap-4 border border-transparent ${!n.read ? 'bg-red-600/5 border-red-600/10' : 'hover:bg-white/5 opacity-60'}`}>
+                                    <div key={n.id} onClick={() => handleNotificationClick(n)} className={`p-5 mb-2 rounded-3xl transition-all cursor-pointer flex flex-col gap-4 border border-transparent ${!n.read ? 'bg-red-600/5 border-red-600/10' : 'hover:bg-white/5 opacity-60'}`}>
                                         <div className="flex items-start gap-4">
                                             <img src={n.fromAvatar} className="w-11 h-11 rounded-2xl object-cover flex-shrink-0 shadow-lg ring-2 ring-white/5" />
                                             <div className="min-w-0 flex-1">
@@ -247,7 +253,6 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
                                             </div>
                                             {!n.read && <div className="w-2 h-2 bg-red-600 rounded-full mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(220,38,38,1)]"></div>}
                                         </div>
-
                                         {n.type === 'new_order' && isOwner && (
                                             <div className="flex gap-2 w-full pt-1">
                                                 <button onClick={(e) => { e.stopPropagation(); handleOrderAction(n, 'accept'); }} className="flex-1 py-3 bg-red-600 text-white font-black uppercase text-[9px] tracking-widest rounded-xl hover:bg-red-700 transition-all">Accept</button>
@@ -276,6 +281,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
 
   const openSettings = useCallback(() => {
     setIsNotificationsOpen(false);
@@ -295,24 +301,22 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
           </div>
           <nav className="flex items-center gap-2">
               <NavLink onClick={() => onScrollTo('home')}>Home</NavLink>
-              <NavLink onClick={() => onScrollTo('portfolio')}>Portfolio</NavLink>
+              <NavLink onClick={() => onScrollTo('portfolio')}>Video</NavLink>
+              <NavLink onClick={() => onScrollTo('graphic-design')}>Graphic</NavLink>
               <NavLink onClick={() => onScrollTo('video-editing')}>VFX</NavLink>
               <NavLink onClick={() => onScrollTo('about')}>About</NavLink>
-              <NavLink onClick={() => onScrollTo('contact')}>Hire Me</NavLink>
+              <NavLink onClick={() => onScrollTo('contact')}>Order</NavLink>
           </nav>
           <div className="flex items-center gap-4">
               <SignedIn>
                 <div className="flex items-center gap-3 border-r border-white/10 pr-6">
-                    <RequestHub isOpen={isRequestsOpen} setIsOpen={(v) => { setIsRequestsOpen(v); if(v) setIsNotificationsOpen(false); }} />
-                    <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); if(v) setIsRequestsOpen(false); }} />
-                    <button onClick={openSettings} className="relative p-2.5 rounded-xl bg-white/5 hover:bg-red-600/10 border border-white/5 transition-all text-gray-400 hover:text-white group" title="Agent Settings">
-                        <i className="fa-solid fa-gear text-[18px] group-hover:rotate-90 transition-transform duration-500"></i>
-                    </button>
+                    <RequestHub isOpen={isRequestsOpen} setIsOpen={(v) => { setIsRequestsOpen(v); if(v) setIsNotificationsOpen(false); }} onShowUser={setViewingUserId} />
+                    <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); if(v) setIsRequestsOpen(false); }} onShowUser={setViewingUserId} onGoToInbox={() => {}} />
                 </div>
               </SignedIn>
               <SignedOut>
                 <SignInButton mode="modal"><button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.4em] transition-all">Log In</button></SignInButton>
-                <button onClick={() => onScrollTo('contact')} className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2.5 uppercase tracking-[0.3em] transition-all shadow-lg">Start Project</button>
+                <button onClick={() => onScrollTo('contact')} className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2.5 uppercase tracking-[0.3em] transition-all shadow-lg">Order Now</button>
               </SignedOut>
               <SignedIn>
                 <UserButton appearance={{ elements: { userButtonAvatarBox: "w-11 h-11 border-[3px] border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.4)]" } }} />
@@ -329,12 +333,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [isRequestsOpen, setIsRequestsOpen] = useState(false);
-
-    const openSettings = useCallback(() => {
-        setIsNotificationsOpen(false);
-        setIsRequestsOpen(false);
-        setIsProfileOpen(true);
-    }, []);
+    const [viewingUserId, setViewingUserId] = useState<string | null>(null);
 
     const toggleNotifications = (v: boolean) => {
         setIsNotificationsOpen(v);
@@ -361,9 +360,8 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
             <div className="flex items-center gap-2.5">
                 <SignedIn>
                     <div className="flex items-center gap-2.5">
-                        <RequestHub isOpen={isRequestsOpen} setIsOpen={toggleRequests} />
-                        <NotificationHub isOpen={isNotificationsOpen} setIsOpen={toggleNotifications} />
-                        <button onClick={openSettings} className="p-2 text-gray-400 hover:text-white transition-all active:scale-90"><i className="fa-solid fa-gear text-[16px]"></i></button>
+                        <RequestHub isOpen={isRequestsOpen} setIsOpen={toggleRequests} onShowUser={setViewingUserId} />
+                        <NotificationHub isOpen={isNotificationsOpen} setIsOpen={toggleNotifications} onShowUser={setViewingUserId} onGoToInbox={() => {}} />
                         <UserButton appearance={{ elements: { userButtonAvatarBox: "w-10 h-10 border-2 border-red-600" } }} />
                     </div>
                 </SignedIn>
@@ -381,13 +379,13 @@ const FooterNavLink: React.FC<{ icon: React.ReactNode, label: string, onClick: (
     </button>
 );
 
-export const MobileFooterNav: React.FC<{ onScrollTo: (section: 'home' | 'portfolio' | 'contact' | 'video-editing' | 'about') => void; }> = ({ onScrollTo }) => {
+export const MobileFooterNav: React.FC<{ onScrollTo: (section: 'home' | 'portfolio' | 'graphic-design' | 'contact' | 'video-editing' | 'about') => void; }> = ({ onScrollTo }) => {
     return (
         <nav className="md:hidden fixed bottom-6 left-6 right-6 z-40 bg-black/80 backdrop-blur-3xl rounded-[2rem] h-18 flex justify-around items-center shadow-2xl border border-white/10 p-2">
             <FooterNavLink icon={<HomeIcon className="w-5 h-5" />} label="Home" onClick={() => onScrollTo('home')} />
-            <FooterNavLink icon={<BriefcaseIcon className="w-5 h-5" />} label="Gallery" onClick={() => onScrollTo('portfolio')} />
+            <FooterNavLink icon={<BriefcaseIcon className="w-5 h-5" />} label="Graphic" onClick={() => onScrollTo('graphic-design')} />
             <FooterNavLink icon={<VfxIcon className="w-5 h-5" />} label="VFX" onClick={() => onScrollTo('video-editing')} />
-            <FooterNavLink icon={<ChatBubbleIcon className="w-5 h-5" />} label="Hire" onClick={() => onScrollTo('contact')} />
+            <FooterNavLink icon={<ChatBubbleIcon className="w-5 h-5" />} label="Order" onClick={() => onScrollTo('contact')} />
             <FooterNavLink icon={<UserCircleIcon className="w-5 h-5" />} label="About" onClick={() => onScrollTo('about')} />
         </nav>
     );

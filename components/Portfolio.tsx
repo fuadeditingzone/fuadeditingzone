@@ -1,34 +1,22 @@
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { GraphicWork, VideoWork } from '../hooks/types';
-import { LazyImage } from './LazyImage';
 import { siteConfig } from '../config';
 import { 
-    PlayIcon, VolumeOnIcon, VolumeOffIcon, HandThumbUpIcon, 
-    GlobeAltIcon, SparklesIcon, CloseIcon, CheckCircleIcon,
-    ShareIcon, DownloadIcon, ThreeDotsIcon, PhotoManipulationIcon,
-    ThumbnailIcon, BannerIcon, EyeIcon, YouTubeIcon, ChevronRightIcon
+    PlayIcon, VolumeOnIcon, VolumeOffIcon, SparklesIcon, PhotoManipulationIcon, YouTubeIcon, ChevronRightIcon
 } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { InteractiveCard } from './InteractiveCard';
-import { useParallax } from '../contexts/ParallaxContext';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { useAnimatedCounter } from '../hooks/useAnimatedCounter';
-
-declare global {
-  interface Window {
-    YT: any;
-    onYouTubeIframeAPIReady: () => void;
-    gapi: any;
-  }
-}
 
 const PortfolioSection: React.FC<{ 
     title: string; 
     subtitle: string; 
     icon: React.ReactNode; 
     works: any[]; 
-    onItemClick: (work: any) => void;
+    onItemClick: (items: any[], index: number) => void;
     id: string;
     nextSectionId?: string;
     nextSectionTitle?: string;
@@ -40,31 +28,31 @@ const PortfolioSection: React.FC<{
         visible: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.12,
-                delayChildren: 0.2
+                staggerChildren: 0.08,
+                delayChildren: 0.1
             }
         }
     };
 
     const itemVariants = {
-        hidden: { opacity: 0, y: 30, scale: 0.92 },
+        hidden: { opacity: 0, y: 20, scale: 0.95 },
         visible: { 
             opacity: 1, 
             y: 0, 
             scale: 1,
-            transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] }
+            transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
         }
     };
 
     return (
-        <div id={id} ref={ref as any} className="mb-32 last:mb-0">
-            <div className="flex items-center gap-4 mb-10 border-l-4 border-red-600 pl-6">
-                <div className="w-12 h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
+        <div id={id} ref={ref as any} className="mb-20 md:mb-32 last:mb-0">
+            <div className="flex items-center gap-4 mb-8 md:mb-10 border-l-4 border-red-600 pl-6">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
                     {icon}
                 </div>
                 <div>
-                    <span className="text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">{subtitle}</span>
-                    <h3 className="text-white text-3xl font-black uppercase tracking-tighter">{title}</h3>
+                    <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">{subtitle}</span>
+                    <h3 className="text-white text-2xl md:text-3xl font-black uppercase tracking-tighter">{title}</h3>
                 </div>
             </div>
 
@@ -72,47 +60,42 @@ const PortfolioSection: React.FC<{
                 variants={containerVariants}
                 initial="hidden"
                 animate={inView ? "visible" : "hidden"}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
             >
-                {works.map((work) => (
+                {works.map((work, index) => (
                     <motion.div 
                         key={work.id}
                         variants={itemVariants}
-                        whileHover={{ y: -8, scale: 1.02 }}
-                        onClick={(e) => { e.preventDefault(); onItemClick(work); }}
-                        className="group relative aspect-square bg-[#0a0a0a] rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer hover:border-red-600/50 transition-all duration-500 shadow-2xl"
+                        whileHover={{ y: -5, scale: 1.01 }}
+                        onClick={() => onItemClick(works, index)}
+                        className="group relative aspect-square bg-[#0a0a0a] rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer hover:border-red-600/50 transition-all duration-500 shadow-2xl"
                     >
                         <img 
                             src={work.imageUrl || work.thumbnailUrl || `https://i.ytimg.com/vi/${work.videoId}/mqdefault.jpg`} 
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[0.2] group-hover:grayscale-0"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             alt=""
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-8">
-                            <h4 className="text-white font-black uppercase tracking-widest text-lg leading-tight mb-2">{work.title || 'Untitled Masterpiece'}</h4>
-                            <div className="flex flex-wrap gap-2">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6 md:p-8">
+                            <h4 className="text-white font-black uppercase tracking-widest text-base md:text-lg leading-tight mb-2 truncate">{work.title || 'Masterpiece'}</h4>
+                            <div className="flex flex-wrap gap-1.5 md:gap-2">
                                 {(work.tags || ['#CreativeWork']).map((tag: string) => (
-                                    <span key={tag} className="text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-600/10 px-2 py-1 rounded border border-red-600/20">{tag}</span>
+                                    <span key={tag} className="text-[7px] md:text-[8px] font-black text-red-500 uppercase tracking-widest bg-red-600/10 px-1.5 py-0.5 rounded border border-red-600/20">{tag}</span>
                                 ))}
                             </div>
                         </div>
-                        {(work.videoId || work.url) && (
-                            <div className="absolute top-6 right-6 p-3 bg-red-600 rounded-full shadow-2xl scale-0 group-hover:scale-100 transition-transform duration-300">
-                                <PlayIcon className="w-4 h-4 text-white" />
-                            </div>
-                        )}
                     </motion.div>
                 ))}
             </motion.div>
             
             {nextSectionId && (
-                <div className="mt-16 flex justify-center">
+                <div className="mt-12 md:mt-16 flex justify-center">
                     <button 
                         onClick={() => document.getElementById(nextSectionId)?.scrollIntoView({ behavior: 'smooth' })}
-                        className="group flex flex-col items-center gap-4 transition-all hover:scale-105"
+                        className="group flex flex-col items-center gap-3 md:gap-4 transition-all hover:scale-105"
                     >
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-white">View {nextSectionTitle}</span>
-                        <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-red-600 group-hover:bg-red-600/10 transition-all">
-                            <ChevronRightIcon className="w-5 h-5 rotate-90 text-zinc-500 group-hover:text-red-500" />
+                        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-white">Next: {nextSectionTitle}</span>
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-red-600 group-hover:bg-red-600/10 transition-all">
+                            <ChevronRightIcon className="w-4 h-4 md:w-5 md:h-5 rotate-90 text-zinc-500 group-hover:text-red-500" />
                         </div>
                     </button>
                 </div>
@@ -135,7 +118,6 @@ const VfxVideoPlayer: React.FC<{
     const [containerRef, isVisible] = useIntersectionObserver({ threshold: 0.5 });
     const [isMuted, setIsMuted] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
-    const [hasActuallyPlayed, setHasActuallyPlayed] = useState(false);
 
     const isPlaying = currentlyPlaying?.id === video.id;
     const isThisVideoInPip = pipVideo?.id === video.id;
@@ -144,35 +126,15 @@ const VfxVideoPlayer: React.FC<{
         const videoEl = videoRef.current;
         if (!videoEl) return;
         if (isPlaying && !isThisVideoInPip) {
-            if (currentTime > 0 && Math.abs(videoEl.currentTime - currentTime) > 1) videoEl.currentTime = currentTime;
             videoEl.play().catch(() => {});
-            setHasActuallyPlayed(true);
         } else {
             videoEl.pause();
-            if (!isThisVideoInPip && videoEl.currentTime !== 0) videoEl.currentTime = 0;
-            if (!currentlyPlaying) setHasActuallyPlayed(false); 
         }
-    }, [isPlaying, isThisVideoInPip, currentlyPlaying]);
-
-    useEffect(() => {
-        if (!isPlaying || isThisVideoInPip) return;
-        const interval = setInterval(() => {
-            if (videoRef.current) setCurrentTime(videoRef.current.currentTime);
-        }, 1000);
-        return () => clearInterval(interval);
     }, [isPlaying, isThisVideoInPip]);
 
-    useEffect(() => {
-        if (isPlaying && hasActuallyPlayed && !isVisible && !isThisVideoInPip) {
-            if (videoRef.current) setCurrentTime(videoRef.current.currentTime);
-            setPipVideo(video);
-        }
-        if (isThisVideoInPip && isVisible) setPipVideo(null);
-    }, [isPlaying, hasActuallyPlayed, isVisible, isThisVideoInPip, video]);
-    
     return (
         <motion.div ref={containerRef as any} variants={variants}>
-            <InteractiveCard className={`relative group w-full aspect-square bg-black rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 ${isPlaying ? 'shadow-2xl z-10 border-red-600/50' : 'opacity-90 hover:opacity-100 border-white/5'} border ${isThisVideoInPip ? 'opacity-30 pointer-events-none' : ''}`}>
+            <InteractiveCard className={`relative group w-full aspect-square bg-black rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 ${isPlaying ? 'shadow-2xl z-10 border-red-600/50' : 'opacity-90 hover:opacity-100 border-white/5'} border ${isThisVideoInPip ? 'opacity-30 pointer-events-none' : ''}`}>
                 <figure className="w-full h-full m-0 p-0" onClick={() => onPlayRequest(isPlaying ? null : video)}>
                     <video ref={videoRef} src={video.url} loop muted={isMuted} playsInline className="w-full h-full object-contain" onCanPlay={() => setIsLoading(false)} />
                     <div className={`absolute inset-0 bg-black/20 transition-opacity flex items-center justify-center ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
@@ -193,11 +155,9 @@ export const Portfolio: React.FC<any> = ({
     openModal, isYouTubeApiReady, playingVfxVideo, setPlayingVfxVideo, pipVideo, setPipVideo,
     activeYouTubeId, setActiveYouTubeId, isYtPlaying, setIsYtPlaying, currentTime, setCurrentTime
 }) => {
-    const [ytContainerRef, isYtVisible] = useIntersectionObserver({ threshold: 0.1 });
     const { videos: youtubeVideos, stats, loading, formatNumber } = useYouTubeChannelStats();
     const [currentVideoStats, setCurrentVideoStats] = useState<any>(null);
     const playerRef = useRef<any>(null);
-
     const [vfxRef, vfxInView] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
 
     useEffect(() => {
@@ -210,20 +170,22 @@ export const Portfolio: React.FC<any> = ({
         if (!isYouTubeApiReady || !activeYouTubeId) return;
         const initPlayer = () => {
             if (playerRef.current) playerRef.current.destroy();
-            playerRef.current = new window.YT.Player('youtube-portfolio-player-inner', {
+            // FIX: Using type casting to access YT property on window object
+            playerRef.current = new (window as any).YT.Player('youtube-portfolio-player-inner', {
                 videoId: activeYouTubeId,
-                playerVars: { autoplay: isYtPlaying ? 1 : 0, modestbranding: 1, rel: 0, start: Math.floor(currentTime) },
+                playerVars: { autoplay: 0, modestbranding: 1, rel: 0 },
                 events: {
                     onStateChange: (e: any) => {
-                        if (e.data === window.YT.PlayerState.PLAYING) setIsYtPlaying(true);
-                        else if (e.data === window.YT.PlayerState.PAUSED || e.data === window.YT.PlayerState.ENDED) setIsYtPlaying(false);
+                        // FIX: Using type casting to access YT property on window object
+                        if (e.data === (window as any).YT.PlayerState.PLAYING) setIsYtPlaying(true);
+                        else if (e.data === (window as any).YT.PlayerState.PAUSED || e.data === (window as any).YT.PlayerState.ENDED) setIsYtPlaying(false);
                     }
                 }
             });
         };
         initPlayer();
         return () => { if (playerRef.current) playerRef.current.destroy(); };
-    }, [isYouTubeApiReady, activeYouTubeId, !!pipVideo]);
+    }, [isYouTubeApiReady, activeYouTubeId]);
 
     const animatedLikes = useAnimatedCounter(currentVideoStats?.likes || 0, 2000, activeYouTubeId);
     const animatedViews = useAnimatedCounter(currentVideoStats?.rawViews || 0, 3000, activeYouTubeId);
@@ -237,171 +199,130 @@ export const Portfolio: React.FC<any> = ({
         visible: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.15,
-                delayChildren: 0.3
+                staggerChildren: 0.1,
+                delayChildren: 0.2
             }
         }
     };
 
     const itemVariants = {
-        hidden: { opacity: 0, scale: 0.9, y: 20 },
+        hidden: { opacity: 0, scale: 0.95, y: 15 },
         visible: { 
-            opacity: 1, 
-            scale: 1, 
-            y: 0,
-            transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+            opacity: 1, scale: 1, y: 0,
+            transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
         }
     };
 
     return (
-        <section id="portfolio" className="py-24 bg-[#050505] relative z-10 select-none overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-[0.02] flex items-center justify-center select-none overflow-hidden">
-                <span className="text-[40vw] font-black uppercase tracking-tighter">WORKS</span>
-            </div>
-
-            <div className="container mx-auto px-6 max-w-7xl">
-                <div className="text-center mb-20">
-                    <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-4 block">Portfolio</span>
-                    <h2 className="text-white text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none">My Best Work</h2>
+        <section id="portfolio" className="py-20 md:py-24 bg-[#050505] relative z-10 select-none overflow-hidden">
+            <div className="container mx-auto px-4 md:px-6 max-w-7xl">
+                <div className="text-center mb-16 md:mb-20">
+                    <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-4 block">Video</span>
+                    <h2 className="text-white text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none">YouTube Edits</h2>
                 </div>
 
-                {/* YouTube Preview Sector */}
-                <div id="video-editing" className="mb-32">
-                    <div className="flex items-center gap-4 mb-10 border-l-4 border-red-600 pl-6">
-                        <div className="w-12 h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
-                            <YouTubeIcon className="w-6 h-6" />
+                {/* YouTube Sector First */}
+                <div id="video-editing" className="mb-20 md:mb-32">
+                    <div className="flex items-center gap-4 mb-8 md:mb-10 border-l-4 border-red-600 pl-6">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
+                            <YouTubeIcon className="w-5 h-5 md:w-6 md:h-6" />
                         </div>
                         <div>
-                            <span className="text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">Videos</span>
-                            <h3 className="text-white text-3xl font-black uppercase tracking-tighter">YouTube Content</h3>
+                            <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">YouTube</span>
+                            <h3 className="text-white text-2xl md:text-3xl font-black uppercase tracking-tighter">Content Feed</h3>
                         </div>
                     </div>
 
-                    <div className="lg:flex lg:gap-12 lg:items-start" ref={ytContainerRef as any}>
-                        <div className="flex-1 space-y-6">
-                            <div className="relative aspect-video w-full rounded-[2.5rem] overflow-hidden shadow-2xl bg-black border border-white/10">
+                    <div className="lg:flex lg:gap-12 lg:items-start">
+                        <div className="flex-1 space-y-4 md:space-y-6">
+                            <div className="relative aspect-video w-full rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl bg-black border border-white/10">
                                 <div id="youtube-portfolio-player-inner" className="w-full h-full"></div>
                             </div>
-                            <div className="bg-[#0f0f0f] p-8 border border-white/5 rounded-[2rem]">
-                                <h3 className="text-white font-bold text-xl mb-4">{currentVideoStats?.title || 'Syncing...'}</h3>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full overflow-hidden border border-red-600/30">
+                            <div className="bg-[#0f0f0f] p-6 md:p-8 border border-white/5 rounded-[1.5rem] md:rounded-[2rem]">
+                                <h3 className="text-white font-bold text-lg md:text-xl mb-4 truncate">{currentVideoStats?.title || 'Syncing...'}</h3>
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border border-red-600/30 flex-shrink-0">
                                             <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} className="w-full h-full object-cover" />
                                         </div>
-                                        <div>
-                                            <p className="text-white font-black text-sm uppercase">{stats.channelTitle}</p>
-                                            <p className="text-zinc-500 text-[10px] uppercase font-bold">{formatNumber(stats.subscribers)} People Subscribed</p>
+                                        <div className="min-w-0">
+                                            <p className="text-white font-black text-xs md:text-sm uppercase truncate">{stats.channelTitle}</p>
+                                            <p className="text-zinc-500 text-[8px] md:text-[10px] uppercase font-bold truncate">{formatNumber(stats.subscribers)} Subscribers</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-4 md:gap-6 flex-shrink-0">
                                         <div className="text-center">
-                                            <p className="text-white font-black text-lg">{formatNumber(animatedViews)}</p>
-                                            <p className="text-[8px] text-zinc-500 uppercase font-black">Views</p>
+                                            <p className="text-white font-black text-base md:text-lg">{formatNumber(animatedViews)}</p>
+                                            <p className="text-[7px] md:text-[8px] text-zinc-500 uppercase font-black">Views</p>
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-red-600 font-black text-lg">{formatNumber(animatedLikes)}</p>
-                                            <p className="text-[8px] text-zinc-500 uppercase font-black">Likes</p>
+                                            <p className="text-red-600 font-black text-base md:text-lg">{formatNumber(animatedLikes)}</p>
+                                            <p className="text-[7px] md:text-[8px] text-zinc-500 uppercase font-black">Likes</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="hidden lg:flex flex-col gap-4 w-[300px] flex-shrink-0 h-[650px] overflow-y-auto custom-scrollbar px-4">
+                        <div className="hidden lg:flex flex-col gap-4 w-[300px] flex-shrink-0 h-[600px] overflow-y-auto custom-scrollbar px-4">
                             {animeEdits.map((video: any) => (
                                 <button key={video.id} onClick={() => { setActiveYouTubeId(video.videoId); setIsYtPlaying(true); }} className={`relative aspect-video rounded-2xl overflow-hidden border transition-all ${activeYouTubeId === video.videoId ? 'border-red-600 ring-4 ring-red-600/20' : 'border-white/10 opacity-50 hover:opacity-100'}`}>
                                     <img src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"><PlayIcon className="w-8 h-8 text-white" /></div>
                                 </button>
                             ))}
                         </div>
                     </div>
                     
-                    <div className="mt-16 flex justify-center">
+                    <div className="mt-12 flex justify-center">
                         <button 
-                            onClick={() => document.getElementById('graphic-design')?.scrollIntoView({ behavior: 'smooth' })}
-                            className="group flex flex-col items-center gap-4 transition-all hover:scale-105"
+                            onClick={() => document.getElementById('vfx-animations')?.scrollIntoView({ behavior: 'smooth' })}
+                            className="group flex flex-col items-center gap-3 transition-all hover:scale-105"
                         >
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-white">View Graphic Gallery</span>
-                            <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-red-600 group-hover:bg-red-600/10 transition-all">
-                                <ChevronRightIcon className="w-5 h-5 rotate-90 text-zinc-500 group-hover:text-red-500" />
+                            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-white">Next: VFX Mastery</span>
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-red-600 transition-all">
+                                <ChevronRightIcon className="w-4 h-4 rotate-90 text-zinc-500 group-hover:text-red-500" />
                             </div>
                         </button>
                     </div>
                 </div>
 
+                {/* VFX Sector */}
+                <div id="vfx-animations" className="mb-20 md:mb-32" ref={vfxRef as any}>
+                     <div className="flex items-center gap-4 mb-8 md:mb-10 border-l-4 border-red-600 pl-6">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
+                            <SparklesIcon className="w-5 h-5 md:w-6 md:h-6" />
+                        </div>
+                        <div>
+                            <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">Visuals</span>
+                            <h3 className="text-white text-2xl md:text-3xl font-black uppercase tracking-tighter">VFX Mastery</h3>
+                        </div>
+                    </div>
+                    <motion.div variants={containerVariants} initial="hidden" animate={vfxInView ? "visible" : "hidden"} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                        {vfxEdits.map((video: any) => (
+                            <VfxVideoPlayer key={video.id} video={video} currentlyPlaying={playingVfxVideo} pipVideo={pipVideo} onPlayRequest={setPlayingVfxVideo} setPipVideo={setPipVideo} currentTime={currentTime} setCurrentTime={setCurrentTime} variants={itemVariants} />
+                        ))}
+                    </motion.div>
+                    <div className="mt-12 flex justify-center">
+                        <button onClick={() => document.getElementById('graphic-design')?.scrollIntoView({ behavior: 'smooth' })} className="group flex flex-col items-center gap-3 transition-all hover:scale-105">
+                            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-white">Next: Graphic Designs</span>
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-red-600 transition-all">
+                                <ChevronRightIcon className="w-4 h-4 rotate-90 text-zinc-500 group-hover:text-red-500" />
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Graphic Sector */}
                 <PortfolioSection 
                     id="graphic-design" 
                     title="Graphic Designs" 
-                    subtitle="Gallery" 
-                    icon={<PhotoManipulationIcon className="w-6 h-6" />} 
+                    subtitle="Creative" 
+                    icon={<PhotoManipulationIcon className="w-5 h-5 md:w-6 md:h-6" />} 
                     works={graphicWorks} 
-                    onItemClick={openModal} 
-                    nextSectionId="vfx-animations"
-                    nextSectionTitle="VFX Animations"
+                    onItemClick={(items, index) => openModal(items, index)}
+                    nextSectionId="community"
+                    nextSectionTitle="Community Chat"
                 />
-
-                <div id="vfx-animations" className="mb-32" ref={vfxRef as any}>
-                     <div className="flex items-center gap-4 mb-10 border-l-4 border-red-600 pl-6">
-                        <div className="w-12 h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
-                            <SparklesIcon className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <span className="text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">Animations</span>
-                            <h3 className="text-white text-3xl font-black uppercase tracking-tighter">VFX Mastery</h3>
-                        </div>
-                    </div>
-                    <motion.div 
-                        variants={containerVariants}
-                        initial="hidden"
-                        animate={vfxInView ? "visible" : "hidden"}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-                    >
-                        {vfxEdits.map((video: any) => (
-                            <VfxVideoPlayer 
-                                key={video.id} 
-                                video={video} 
-                                currentlyPlaying={playingVfxVideo} 
-                                pipVideo={pipVideo} 
-                                onPlayRequest={setPlayingVfxVideo} 
-                                setPipVideo={setPipVideo} 
-                                currentTime={currentTime} 
-                                setCurrentTime={setCurrentTime}
-                                variants={itemVariants}
-                            />
-                        ))}
-                    </motion.div>
-                    
-                    <div className="mt-20 flex justify-center">
-                        <button 
-                            onClick={() => document.getElementById('community')?.scrollIntoView({ behavior: 'smooth' })}
-                            className="group flex flex-col items-center gap-4 transition-all hover:scale-105"
-                        >
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-white">Join the Community</span>
-                            <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-red-600 group-hover:bg-red-600/10 transition-all">
-                                <ChevronRightIcon className="w-5 h-5 rotate-90 text-zinc-500 group-hover:text-red-500" />
-                            </div>
-                        </button>
-                    </div>
-                </div>
             </div>
-
-            <AnimatePresence>
-                {openModal.selectedWork && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-6" onClick={() => openModal(null)}>
-                        <motion.div initial={{ scale: 0.9, y: 40 }} animate={{ scale: 1, y: 0 }} className="relative w-full max-w-6xl aspect-video md:aspect-auto md:h-[85vh] rounded-[3rem] overflow-hidden shadow-[0_0_150px_rgba(220,38,38,0.3)] bg-black border border-white/10" onClick={e => e.stopPropagation()}>
-                            <button onClick={() => openModal(null)} className="absolute top-8 right-8 z-[600] p-4 bg-black/60 hover:bg-red-600 rounded-full text-white transition-all border border-white/10"><CloseIcon className="w-6 h-6" /></button>
-                            <div className="w-full h-full relative">
-                                {openModal.selectedWork.videoId ? <iframe src={`https://www.youtube.com/embed/${openModal.selectedWork.videoId}?autoplay=1`} className="w-full h-full" /> : <img src={openModal.selectedWork.imageUrl} className="w-full h-full object-contain" />}
-                                <div className="absolute bottom-0 left-0 right-0 p-12 bg-gradient-to-t from-black via-black/80 to-transparent">
-                                    <h3 className="text-white text-3xl font-black uppercase tracking-tighter">{openModal.selectedWork.title}</h3>
-                                    <p className="text-zinc-400 text-sm italic mt-2">{openModal.selectedWork.description}</p>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </section>
     );
 };

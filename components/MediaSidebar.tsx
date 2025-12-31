@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { CloseIcon, YouTubeIcon } from './Icons';
@@ -46,7 +47,8 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({
                 playerRef.current.destroy();
             }
 
-            playerRef.current = new window.YT.Player('youtube-sidebar-player', {
+            // FIX: Using type casting to access YT property on window object
+            playerRef.current = new (window as any).YT.Player('youtube-sidebar-player', {
                 videoId: activeYouTubeId,
                 playerVars: {
                     autoplay: isYtPlaying ? 1 : 0,
@@ -56,9 +58,11 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({
                 },
                 events: {
                     onStateChange: (event: any) => {
-                        if (event.data === window.YT.PlayerState.PLAYING) {
+                        // FIX: Using type casting to access YT property on window object
+                        if (event.data === (window as any).YT.PlayerState.PLAYING) {
                             setIsYtPlaying(true);
-                        } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
+                        // FIX: Using type casting to access YT property on window object
+                        } else if (event.data === (window as any).YT.PlayerState.PAUSED || event.data === (window as any).YT.PlayerState.ENDED) {
                             setIsYtPlaying(false);
                         }
                     }
@@ -78,9 +82,11 @@ export const MediaSidebar: React.FC<MediaSidebarProps> = ({
     useEffect(() => {
         if (playerRef.current && playerRef.current.getPlayerState) {
             const state = playerRef.current.getPlayerState();
-            if (isYtPlaying && state !== window.YT.PlayerState.PLAYING) {
+            // FIX: Using type casting to access YT property on window object
+            if (isYtPlaying && state !== (window as any).YT.PlayerState.PLAYING) {
                 playerRef.current.playVideo();
-            } else if (!isYtPlaying && state === window.YT.PlayerState.PLAYING) {
+            // FIX: Using type casting to access YT property on window object
+            } else if (!isYtPlaying && state === (window as any).YT.PlayerState.PLAYING) {
                 playerRef.current.pauseVideo();
             }
         }

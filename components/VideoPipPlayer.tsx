@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import type { VideoWork } from '../hooks/types';
 import { useDraggable } from '../hooks/useDraggable';
@@ -23,13 +24,15 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose, 
 
     // --- YouTube API Logic ---
     useEffect(() => {
-        if (!isYouTube || !window.YT) return;
+        // FIX: Using type casting to access YT property on window object
+        if (!isYouTube || !(window as any).YT) return;
 
         const timer = setTimeout(() => {
             const container = document.getElementById('pip-youtube-player');
             if (!container) return;
 
-            ytPlayerRef.current = new window.YT.Player('pip-youtube-player', {
+            // FIX: Using type casting to access YT property on window object
+            ytPlayerRef.current = new (window as any).YT.Player('pip-youtube-player', {
                 videoId: video.videoId,
                 playerVars: {
                     autoplay: 1,
@@ -44,8 +47,10 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose, 
                         event.target.playVideo();
                     },
                     onStateChange: (event: any) => {
-                        if (event.data === window.YT.PlayerState.PLAYING) setIsPlaying(true);
-                        else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) setIsPlaying(false);
+                        // FIX: Using type casting to access YT property on window object
+                        if (event.data === (window as any).YT.PlayerState.PLAYING) setIsPlaying(true);
+                        // FIX: Using type casting to access YT property on window object
+                        else if (event.data === (window as any).YT.PlayerState.PAUSED || event.data === (window as any).YT.PlayerState.ENDED) setIsPlaying(false);
                     }
                 }
             });
@@ -82,7 +87,8 @@ export const VideoPipPlayer: React.FC<VideoPipPlayerProps> = ({ video, onClose, 
         if (isYouTube) {
             if (ytPlayerRef.current) {
                 const state = ytPlayerRef.current.getPlayerState();
-                if (state === window.YT.PlayerState.PLAYING) ytPlayerRef.current.pauseVideo();
+                // FIX: Using type casting to access YT property on window object
+                if (state === (window as any).YT.PlayerState.PLAYING) ytPlayerRef.current.pauseVideo();
                 else ytPlayerRef.current.playVideo();
             }
         } else {
