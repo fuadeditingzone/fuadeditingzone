@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignInButton } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, ref, onValue, set, update, push, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { EmailIcon, WhatsAppIcon, SparklesIcon, CloseIcon, VfxIcon, ThumbnailIcon, BannerIcon, ChevronRightIcon } from './Icons';
 
@@ -18,6 +19,8 @@ if (!getApps().length) {
   initializeApp(firebaseConfig);
 }
 const db = getDatabase();
+
+const OWNER_HANDLE = 'fuadeditingzone';
 
 const SERVICE_TIERS = [
   { id: 'vfx', name: 'Premium VFX', price: '50', icon: VfxIcon },
@@ -59,25 +62,71 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
     setStatus('submitting');
     const isCustom = selectedTier === 'custom';
     const tier = SERVICE_TIERS.find(t => t.id === selectedTier);
+    const orderKey = `order_${Date.now()}`;
+    const serviceName = isCustom ? formData.customName : tier?.name;
     
     const orderData = {
-      service: isCustom ? formData.customName : tier?.name,
+      service: serviceName,
       message: formData.message,
       status: 'Pending',
       price: isCustom ? `$${formData.customPrice}` : `$${tier?.price}`,
       delivery: isCustom ? `${formData.customTime} Days` : 'Standard',
       timestamp: Date.now(),
       userName: user.fullName || user.username,
-      userAvatar: user.imageUrl
+      userAvatar: user.imageUrl,
+      userId: user.id
     };
 
     try {
-      await set(ref(db, `orders/${user.id}/order_${Date.now()}`), orderData);
+      // 1. Save order to client record
+      await set(ref(db, `orders/${user.id}/${orderKey}`), orderData);
+
+      // 2. Find Owner Clerk ID (assuming global user mapping exists)
+      const usersSnap = await get(ref(db, 'users'));
+      const allUsers = usersSnap.val() || {};
+      const ownerEntry = Object.values(allUsers).find((u: any) => u.username === OWNER_HANDLE) as any;
+      
+      if (ownerEntry) {
+          const ownerId = ownerEntry.id;
+
+          // 3. Notify owner in Activity Hub
+          await push(ref(db, `notifications/${ownerId}`), {
+              type: 'new_order',
+              fromId: user.id,
+              fromName: user.fullName || user.username,
+              fromAvatar: user.imageUrl,
+              timestamp: Date.now(),
+              read: false,
+              orderName: serviceName,
+              orderKey: orderKey
+          });
+
+          // 4. Send automated DM to owner's inbox
+          const chatPath = `messages/${[user.id, ownerId].sort().join('_')}`;
+          await push(ref(db, chatPath), {
+              senderId: user.id,
+              senderName: user.fullName || user.username,
+              senderAvatar: user.imageUrl,
+              text: `[ORDER INQUIRY] I have placed a new order for ${serviceName}. Description: ${formData.message}`,
+              timestamp: Date.now()
+          });
+
+          // Update inbox preview
+          await update(ref(db, `inbox/${ownerId}/${user.id}`), {
+              timestamp: Date.now(),
+              unreadCount: (allUsers[ownerId]?.inbox?.[user.id]?.unreadCount || 0) + 1,
+              lastMessage: `New Order: ${serviceName}`
+          });
+      }
+
       setStatus('success');
       setFormData({ message: '', customName: '', customPrice: '', customTime: '' });
       setSelectedTier(null);
       setTimeout(() => setStatus('idle'), 3000);
-    } catch (error) { setStatus('idle'); }
+    } catch (error) { 
+        console.error("Order Failure:", error);
+        setStatus('idle'); 
+    }
   };
 
   return (
@@ -140,7 +189,7 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
                             <motion.div key={idx} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem] shadow-lg group hover:border-red-600/20 transition-all duration-500">
                                 <div className="flex justify-between items-start mb-6 gap-4">
                                     <p className="text-[15px] font-black text-white uppercase tracking-wider truncate flex-1" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{order.service}</p>
-                                    <span className={`text-[8px] font-black uppercase px-3 py-1 rounded-lg border flex-shrink-0 ${order.status === 'Pending' ? 'text-yellow-500 border-yellow-500/20 bg-yellow-500/5' : 'text-green-500 border-green-500/20 bg-green-500/5'}`}>{order.status}</span>
+                                    <span className={`text-[8px] font-black uppercase px-3 py-1 rounded-lg border flex-shrink-0 ${order.status === 'Pending' ? 'text-yellow-500 border-yellow-500/20 bg-yellow-500/5' : order.status === 'Accepted' ? 'text-green-500 border-green-500/20 bg-green-500/5' : 'text-red-500 border-red-500/20 bg-red-500/5'}`}>{order.status}</span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
                                     <div className="bg-black/60 p-3 rounded-xl border border-white/5 text-[9px] font-black text-zinc-400 uppercase tracking-widest text-center">Budget: <span className="text-white">{order.price}</span></div>

@@ -201,8 +201,8 @@ const AgentProfileModal: React.FC<{
   const handleFriendAction = async () => {
       if (!currentUser) return;
       if (socialState.friendStatus === 'none') {
-          await set(ref(db, `social/${currentUser.id}/requests/sent/${user.id}`), true);
-          await set(ref(db, `social/${user.id}/requests/received/${currentUser.id}`), true);
+          await set(ref(db, `social/${currentUser.id}/requests/sent/${user.id}`), { timestamp: Date.now() });
+          await set(ref(db, `social/${user.id}/requests/received/${currentUser.id}`), { timestamp: Date.now() });
           await push(ref(db, `notifications/${user.id}`), {
               type: 'friend_request',
               fromId: currentUser.id,
@@ -216,6 +216,13 @@ const AgentProfileModal: React.FC<{
           await remove(ref(db, `social/${user.id}/requests/sent/${currentUser.id}`));
           await set(ref(db, `social/${currentUser.id}/friends/${user.id}`), true);
           await set(ref(db, `social/${user.id}/friends/${currentUser.id}`), true);
+          
+          // Auto follow on acceptance
+          await set(ref(db, `social/${currentUser.id}/following/${user.id}`), true);
+          await set(ref(db, `social/${user.id}/followers/${currentUser.id}`), true);
+          await set(ref(db, `social/${user.id}/following/${currentUser.id}`), true);
+          await set(ref(db, `social/${currentUser.id}/followers/${user.id}`), true);
+
           await push(ref(db, `notifications/${user.id}`), {
               type: 'request_accepted',
               fromId: currentUser.id,
@@ -224,9 +231,6 @@ const AgentProfileModal: React.FC<{
               timestamp: Date.now(),
               read: false
           });
-      } else if (socialState.friendStatus === 'requested') {
-          await remove(ref(db, `social/${currentUser.id}/requests/sent/${user.id}`));
-          await remove(ref(db, `social/${user.id}/requests/received/${currentUser.id}`));
       }
   };
 
@@ -338,6 +342,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
   const [searchTab, setSearchTab] = useState<'all' | 'blocked'>('all');
   const [socialListView, setSocialListView] = useState<{ type: string; ids: string[] } | null>(null);
   const [showConversationOnMobile, setShowConversationOnMobile] = useState(false);
+  const [friendStatus, setFriendStatus] = useState<string>('none');
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -366,6 +371,14 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
         setMutedIds(Object.keys(data.muting || {}));
     });
   }, [clerkUser]);
+
+  useEffect(() => {
+    if (!clerkUser || !selectedUser || isGlobal) return;
+    const friendRef = ref(db, `social/${clerkUser.id}/friends/${selectedUser.id}`);
+    return onValue(friendRef, (snap) => {
+        setFriendStatus(snap.exists() ? 'accepted' : 'none');
+    });
+  }, [clerkUser, selectedUser, isGlobal]);
 
   useEffect(() => {
     if (isSignedIn && clerkUser) {
@@ -405,6 +418,13 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
       return messages.filter(m => !blockedIds.includes(m.senderId));
   }, [messages, blockedIds]);
 
+  const canSendMessage = useMemo(() => {
+    if (isGlobal) return true;
+    if (friendStatus === 'accepted') return true;
+    const mySentMessages = messages.filter(m => m.senderId === clerkUser?.id).length;
+    return mySentMessages < 3;
+  }, [isGlobal, friendStatus, messages, clerkUser]);
+
   const toggleBlock = async (targetId: string) => {
     if (!clerkUser) return;
     const isCurrentlyBlocked = blockedIds.includes(targetId);
@@ -428,7 +448,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isSignedIn || !inputValue.trim() || !chatPath || !clerkUser) return;
+    if (!isSignedIn || !inputValue.trim() || !chatPath || !clerkUser || !canSendMessage) return;
     const newMessage = { senderId: clerkUser.id, senderName: clerkUser.fullName || clerkUser.username, senderAvatar: clerkUser.imageUrl, text: inputValue.trim(), timestamp: Date.now() };
     setInputValue('');
     await push(ref(db, chatPath), newMessage);
@@ -701,10 +721,15 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean }> = ({ isModalMode
 
             <div className="p-4 md:p-10 border-t border-white/5 flex-shrink-0 bg-black/40 z-10">
               {isSignedIn ? (
-                <form onSubmit={handleSendMessage} className={`flex gap-3 bg-white/5 border border-white/10 rounded-[1.5rem] md:rounded-[2rem] p-1.5 md:p-2 transition-all shadow-inner ${needsUnlock ? 'opacity-20 pointer-events-none' : ''}`}>
-                    <input value={inputValue} onChange={e => setInputValue(e.target.value)} disabled={needsUnlock} placeholder={isGlobal ? "Type a message..." : "Signal..."} className="flex-1 bg-transparent px-3 md:px-6 py-3 md:py-4 text-sm font-bold text-white outline-none min-w-0 placeholder:opacity-50" />
-                    <button type="submit" disabled={!inputValue.trim() || needsUnlock} className="bg-red-600 text-white w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-xl md:rounded-2xl active:scale-90 transition-all shadow-2xl flex-shrink-0 disabled:opacity-50"><SendIcon className="w-5 h-5" /></button>
-                </form>
+                <div className="flex flex-col gap-2">
+                    {!canSendMessage && (
+                        <p className="text-[8px] text-red-500 font-bold uppercase tracking-widest text-center animate-pulse">Handshake required to send more signals</p>
+                    )}
+                    <form onSubmit={handleSendMessage} className={`flex gap-3 bg-white/5 border border-white/10 rounded-[1.5rem] md:rounded-[2rem] p-1.5 md:p-2 transition-all shadow-inner ${needsUnlock || !canSendMessage ? 'opacity-20 pointer-events-none grayscale' : ''}`}>
+                        <input value={inputValue} onChange={e => setInputValue(e.target.value)} disabled={needsUnlock || !canSendMessage} placeholder={isGlobal ? "Type a message..." : "Signal..."} className="flex-1 bg-transparent px-3 md:px-6 py-3 md:py-4 text-sm font-bold text-white outline-none min-w-0 placeholder:opacity-50" />
+                        <button type="submit" disabled={!inputValue.trim() || needsUnlock || !canSendMessage} className="bg-red-600 text-white w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-xl md:rounded-2xl active:scale-90 transition-all shadow-2xl flex-shrink-0 disabled:opacity-50"><SendIcon className="w-5 h-5" /></button>
+                    </form>
+                </div>
               ) : <div className="text-center py-2 md:py-4"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-4 md:py-5 px-8 md:px-16 rounded-2xl uppercase text-[10px] tracking-[0.4em] shadow-2xl active:scale-95 transition-all">Sign In to Chat</button></SignInButton></div>}
             </div>
           </div>

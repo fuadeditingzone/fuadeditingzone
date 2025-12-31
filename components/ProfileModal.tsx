@@ -96,7 +96,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 md:p-10 overflow-hidden">
+                <div className="fixed inset-0 z-[1000000] flex items-center justify-center p-4 md:p-10 overflow-hidden">
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/90 backdrop-blur-2xl" />
                     <motion.div initial={{ opacity: 0, scale: 0.9, y: 40 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 40 }} className="relative w-full max-w-4xl h-fit max-h-[90vh] md:max-h-[85vh] bg-[#080808] rounded-[2.5rem] md:rounded-[3.5rem] shadow-[0_50px_150px_rgba(0,0,0,1)] border border-white/10 flex flex-col overflow-hidden">
                         
@@ -224,7 +224,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                         </div>
 
                         <div className="p-6 md:p-8 bg-black border-t border-white/10 flex-shrink-0">
-                            <button onClick={handleSave} disabled={isSaving} className="w-full py-4 md:py-6 bg-red-600 text-white font-black uppercase tracking-[0.3em] md:tracking-[0.5em] text-[9px] md:text-[11px] rounded-xl md:rounded-2xl shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3 md:gap-4 hover:bg-red-700 disabled:opacity-50">
+                            <button onClick={(e) => { e.stopPropagation(); handleSave(); }} disabled={isSaving} className="w-full py-4 md:py-6 bg-red-600 text-white font-black uppercase tracking-[0.3em] md:tracking-[0.5em] text-[9px] md:text-[11px] rounded-xl md:rounded-2xl shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3 md:gap-4 hover:bg-red-700 disabled:opacity-50">
                                 {isSaving ? <><SparklesIcon className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> Neural Syncing...</> : 'Establish Identity Signature'}
                             </button>
                         </div>
