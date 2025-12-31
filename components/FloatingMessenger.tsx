@@ -1,11 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@clerk/clerk-react';
+import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, onValue, update, onChildAdded, query, limitToLast, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { ChatBubbleIcon, CloseIcon, SparklesIcon } from './Icons';
 import { CommunityChat } from './CommunityChat';
 import { siteConfig } from '../config';
 
+const firebaseConfig = {
+  databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
+  apiKey: "AIzaSyCC3wbQp5713OqHlf1jLZabA0VClDstfKY",
+  projectId: "fuad-editing-zone",
+  messagingSenderId: "1032345523456",
+  appId: "1:1032345523456:web:123456789",
+};
+
+// Initialize Firebase safely
+if (!getApps().length) {
+  initializeApp(firebaseConfig);
+}
 const db = getDatabase();
 
 export const FloatingMessenger: React.FC = () => {
@@ -30,10 +43,8 @@ export const FloatingMessenger: React.FC = () => {
 
         const inboxRef = ref(db, `inbox/${user.id}`);
         const unsubscribe = onValue(inboxRef, (snapshot) => {
-            // FIX: Explicitly cast snapshot.val() to any to ensure Object.values works correctly and avoid 'unknown' inference
             const data = snapshot.val() as any;
             if (data) {
-                // FIX: Cast the result of reduce to number to resolve the 'unknown' assignment error for setTotalUnread
                 const total = Object.values(data).reduce((acc: number, curr: any) => acc + (curr.unreadCount || 0), 0) as number;
                 setTotalUnread(total);
             } else {
@@ -43,11 +54,8 @@ export const FloatingMessenger: React.FC = () => {
 
         // Listen for new private messages to trigger the Preview Bubble
         const messagesRef = ref(db, `messages`);
-        // We listen for any new message in the entire messages node, then filter for "to me"
-        // In a production app, you'd only listen to specific shared keys, but for this portfolio
-        // we'll filter the incoming stream to detect signals meant for the current user.
         const unsubscribeNew = onChildAdded(messagesRef, (snapshot) => {
-            if (isFirstLoad.current) return; // Skip historical data
+            if (isFirstLoad.current) return;
             
             const chatId = snapshot.key;
             if (chatId?.includes(user.id)) {
@@ -80,7 +88,6 @@ export const FloatingMessenger: React.FC = () => {
     return (
         <>
             <div className="fixed bottom-24 right-6 md:bottom-10 md:right-10 z-[20000] flex flex-col items-end gap-4 pointer-events-none">
-                {/* Preview Message Popup */}
                 <AnimatePresence>
                     {previewMessage && (
                         <motion.div
@@ -102,7 +109,6 @@ export const FloatingMessenger: React.FC = () => {
                     )}
                 </AnimatePresence>
 
-                {/* Main Floating Bubble */}
                 <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -121,7 +127,6 @@ export const FloatingMessenger: React.FC = () => {
                         <CloseIcon className="w-8 h-8 text-white" />
                     </div>
 
-                    {/* Unread Badge */}
                     <AnimatePresence>
                         {totalUnread > 0 && !isOpen && (
                             <motion.div
@@ -135,14 +140,12 @@ export const FloatingMessenger: React.FC = () => {
                         )}
                     </AnimatePresence>
                     
-                    {/* Pulsing Signal Effect for Unread */}
                     {totalUnread > 0 && !isOpen && (
                         <div className="absolute inset-0 rounded-full border-2 border-red-600 animate-ping opacity-20"></div>
                     )}
                 </motion.button>
             </div>
 
-            {/* Chat Modal Overlay */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -159,7 +162,6 @@ export const FloatingMessenger: React.FC = () => {
                             className="relative w-full max-w-6xl h-[85vh] bg-[#050505] border border-white/10 rounded-[3rem] overflow-hidden shadow-[0_50px_150px_rgba(0,0,0,1)]"
                             onClick={e => e.stopPropagation()}
                         >
-                            {/* Close Header for Mobile/Modal View */}
                             <div className="md:hidden flex justify-end p-6 border-b border-white/5">
                                 <button onClick={() => setIsOpen(false)} className="p-3 bg-white/5 rounded-full text-white">
                                     <CloseIcon className="w-6 h-6" />

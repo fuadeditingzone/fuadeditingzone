@@ -99,13 +99,11 @@ const AgentProfileModal: React.FC<{ user: ChatUser; currentUser: any; onClose: (
   const [canRate, setCanRate] = useState(false);
 
   useEffect(() => {
-    // Modal Open Logic: Block background interactions
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = originalStyle; };
   }, []);
 
-  // Fetch Order History & Ratings
   useEffect(() => {
     const ordersRef = ref(db, `orders/${user.id}`);
     onValue(ordersRef, (snap) => {
@@ -306,7 +304,6 @@ export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => 
     return () => unsubscribe();
   }, [isSignedIn, clerkUser, users]);
 
-  // Handle Unread Count Clearing when a user is selected
   useEffect(() => {
     if (selectedUser && !isGlobal && clerkUser) {
         update(ref(db, `inbox/${clerkUser.id}/${selectedUser.id}`), { unreadCount: 0 });
@@ -335,7 +332,8 @@ export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => 
   }, [chatPath]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // block: 'nearest' prevents the entire browser window from scrolling up/down when a message arrives
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, [messages]);
 
   const messageCountFromMe = useMemo(() => {
@@ -367,8 +365,6 @@ export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => 
     if (!isGlobal && selectedUser) {
         const timestamp = Date.now();
         update(ref(db, `inbox/${clerkUser.id}/${selectedUser.id}`), { timestamp });
-        
-        // Use a transaction to increment unread count safely for the recipient
         const recipientInboxRef = ref(db, `inbox/${selectedUser.id}/${clerkUser.id}`);
         runTransaction(recipientInboxRef, (currentData) => {
             if (currentData === null) {
@@ -399,9 +395,7 @@ export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => 
     e.preventDefault();
     if (!chatPath || !clerkUser || !selectedUser) return;
     const chatId = chatPath.replace('messages/', '');
-    
     await update(ref(db, `connections/${chatId}`), { status: 'accepted' });
-    
     if (window.emailjs && selectedUser) {
       window.emailjs.send("service_default", "template_neural_link", {
         to_name: selectedUser.name,
@@ -421,7 +415,7 @@ export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => 
   };
 
   return (
-    <section id="community" className={`${isModalMode ? 'py-0 h-full' : 'py-24 bg-black relative z-10 select-none overflow-hidden'}`}>
+    <section id="community" className={`${isModalMode ? 'py-0 h-full' : 'py-24 bg-black relative z-10 select-none'}`}>
       <AnimatePresence>
         {viewingProfile && (
             <AgentProfileModal 
@@ -507,7 +501,7 @@ export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => 
         )}
       </AnimatePresence>
 
-      <div className={`${isModalMode ? 'h-full max-w-full px-0' : 'container mx-auto px-6 max-w-6xl'}`}>
+      <div className={`${isModalMode ? 'h-full max-w-full px-0' : 'container mx-auto px-6 max-w-6xl h-[800px]'}`}>
         {!isModalMode && (
             <div className="mb-12 text-center">
                 <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Neural Grid</span>
@@ -515,10 +509,10 @@ export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => 
             </div>
         )}
 
-        <div className={`w-full bg-[#080808] border border-white/5 rounded-[3.5rem] overflow-hidden shadow-2xl flex flex-col md:flex-row relative ${isModalMode ? 'h-full border-none rounded-none' : 'h-[800px]'}`}>
+        <div className={`w-full bg-[#080808] border border-white/5 rounded-[3.5rem] overflow-hidden shadow-2xl flex flex-col md:flex-row relative h-full`}>
           
-          <div className="w-full md:w-80 border-r border-white/5 flex flex-col bg-[#050505]/50">
-            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-black/30">
+          <div className="w-full md:w-80 border-r border-white/5 flex flex-col bg-[#050505]/50 flex-shrink-0">
+            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-black/30 flex-shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse"></div>
                     <span className="text-[10px] font-black text-white uppercase tracking-widest">Inbox Signals</span>
@@ -528,7 +522,7 @@ export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => 
                 </button>
             </div>
             
-            <button onClick={(e) => { e.preventDefault(); setIsGlobal(true); setSelectedUser(null); }} className={`flex items-center gap-4 p-7 border-b border-white/5 transition-all ${isGlobal ? 'bg-red-600/10' : 'hover:bg-white/5'}`}>
+            <button onClick={(e) => { e.preventDefault(); setIsGlobal(true); setSelectedUser(null); }} className={`flex items-center gap-4 p-7 border-b border-white/5 transition-all flex-shrink-0 ${isGlobal ? 'bg-red-600/10' : 'hover:bg-white/5'}`}>
               <div className={`w-11 h-11 rounded-2xl flex items-center justify-center border ${isGlobal ? 'bg-red-600 border-red-500 text-white shadow-xl shadow-red-600/20' : 'bg-white/5 border-white/10 text-gray-500'}`}>
                 <GlobeAltIcon className="w-5 h-5" />
               </div>
@@ -561,7 +555,7 @@ export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => 
                     <p className="text-[9px] text-gray-600 font-bold uppercase truncate">@{u.username}</p>
                   </div>
                   {u.unreadCount && u.unreadCount > 0 && (
-                      <div className="w-5 h-5 rounded-full bg-blue-600 text-white text-[9px] font-black flex items-center justify-center shadow-[0_0_10px_rgba(37,99,235,0.6)]">
+                      <div className="w-5 h-5 rounded-full bg-blue-600 text-white text-[9px] font-black flex items-center justify-center shadow-[0_0_10px_rgba(37,99,235,0.6)] flex-shrink-0">
                           {u.unreadCount}
                       </div>
                   )}
@@ -570,34 +564,34 @@ export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => 
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col bg-black">
-            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-black/40 backdrop-blur-xl">
-               <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-red-600/15 flex items-center justify-center border border-red-600/30 overflow-hidden shadow-inner">
+          <div className="flex-1 flex flex-col bg-black min-w-0 h-full">
+            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-black/40 backdrop-blur-xl flex-shrink-0">
+               <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-14 h-14 rounded-2xl bg-red-600/15 flex items-center justify-center border border-red-600/30 overflow-hidden shadow-inner flex-shrink-0">
                     {isGlobal ? <GlobeAltIcon className="w-6 h-6 text-red-500" /> : <img src={selectedUser?.avatar} className="w-full h-full object-cover cursor-pointer" onClick={(e) => { e.preventDefault(); if (selectedUser) setViewingProfile(selectedUser); }} />}
                   </div>
-                  <div>
-                    <h4 className="text-[16px] font-black text-white uppercase tracking-widest">{isGlobal ? 'Global Transmission' : selectedUser?.name}</h4>
-                    <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em]">{isGlobal ? 'Sector: Public Grid' : `@${selectedUser?.username}`}</p>
+                  <div className="min-w-0">
+                    <h4 className="text-[16px] font-black text-white uppercase tracking-widest truncate">{isGlobal ? 'Global Transmission' : selectedUser?.name}</h4>
+                    <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] truncate">{isGlobal ? 'Sector: Public Grid' : `@${selectedUser?.username}`}</p>
                   </div>
                </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-4 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-6 custom-scrollbar scroll-smooth">
               {messages.map(msg => (
-                <div key={msg.id} className={`flex gap-5 ${msg.senderId === clerkUser?.id ? 'flex-row-reverse' : 'flex-row'}`}>
-                   <img src={msg.senderAvatar} className="w-10 h-10 rounded-[0.8rem] border border-white/5 object-cover cursor-pointer shadow-lg active:scale-90" alt="" onClick={(e) => { e.preventDefault(); const u = users.find(usr => usr.id === msg.senderId); if(u) setViewingProfile(u); }} />
-                   <div className={`max-w-[75%] ${msg.senderId === clerkUser?.id ? 'items-end' : 'items-start'} flex flex-col`}>
-                      <span className="text-[9px] font-black text-gray-600 uppercase mb-2">{msg.senderName}</span>
-                      <div className={`p-4 rounded-[1.5rem] text-[13px] font-medium border break-words whitespace-pre-wrap ${msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-gray-300 rounded-tl-none shadow-lg'}`}>{msg.text}</div>
+                <div key={msg.id} className={`flex gap-5 ${msg.senderId === clerkUser?.id ? 'flex-row-reverse' : 'flex-row'} items-end`}>
+                   <img src={msg.senderAvatar} className="w-10 h-10 rounded-[0.8rem] border border-white/5 object-cover cursor-pointer shadow-lg active:scale-90 flex-shrink-0" alt="" onClick={(e) => { e.preventDefault(); const u = users.find(usr => usr.id === msg.senderId); if(u) setViewingProfile(u); }} />
+                   <div className={`max-w-[85%] ${msg.senderId === clerkUser?.id ? 'items-end' : 'items-start'} flex flex-col min-w-0`}>
+                      <span className="text-[9px] font-black text-gray-600 uppercase mb-2 truncate max-w-full">{msg.senderName}</span>
+                      <div className={`p-4 rounded-[1.5rem] text-[13px] font-medium border whitespace-pre-wrap ${msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-gray-300 rounded-tl-none shadow-lg'}`} style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{msg.text}</div>
                    </div>
                 </div>
               ))}
-              <div ref={messagesEndRef} />
+              <div ref={messagesEndRef} className="h-4 w-full" />
             </div>
 
             {!isGlobal && connection?.status === 'pending' && connection.initiatorId !== clerkUser?.id && (
-                <div className="p-8 bg-red-600/10 border-t border-red-600/20 flex flex-col items-center gap-4 animate-pulse">
+                <div className="p-8 bg-red-600/10 border-t border-red-600/20 flex flex-col items-center gap-4 animate-pulse flex-shrink-0">
                     <p className="text-[11px] font-black text-white uppercase tracking-widest">Connection Protocol Detected</p>
                     <div className="flex gap-4 w-full max-w-sm">
                         <button onClick={handleAcceptConnection} className="flex-1 py-4 bg-red-600 text-white rounded-[1.2rem] font-black uppercase text-[10px] tracking-[0.2em] shadow-2xl active:scale-95 transition-all">Accept</button>
@@ -606,7 +600,7 @@ export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => 
                 </div>
             )}
 
-            <div className="p-8 md:p-10 bg-black border-t border-white/5">
+            <div className="p-8 md:p-10 bg-black border-t border-white/5 flex-shrink-0">
               {isSignedIn ? (
                 <div className="space-y-4">
                     {isLocked && !connection && (
@@ -624,7 +618,7 @@ export const CommunityChat: React.FC<CommunityChatProps> = ({ isModalMode }) => 
                     )}
                     <form onSubmit={handleSendMessage} className={`flex gap-4 bg-white/5 border border-white/10 rounded-[1.8rem] p-2 transition-all duration-500 ${isLocked ? 'opacity-20 pointer-events-none scale-95' : 'opacity-100'}`}>
                         <input value={inputValue} onChange={e => setInputValue(e.target.value)} disabled={isLocked} placeholder={isGlobal ? "Broadcast Signal..." : `Private Signal to ${selectedUser?.name}...`} className="flex-1 bg-transparent px-6 py-4 text-sm font-bold text-white outline-none" />
-                        <button type="submit" disabled={!inputValue.trim() || isLocked} className="bg-red-600 text-white w-14 h-14 flex items-center justify-center rounded-2xl active:scale-90 shadow-2xl transition-all"><SendIcon className="w-5 h-5" /></button>
+                        <button type="submit" disabled={!inputValue.trim() || isLocked} className="bg-red-600 text-white w-14 h-14 flex items-center justify-center rounded-2xl active:scale-90 shadow-2xl transition-all flex-shrink-0"><SendIcon className="w-5 h-5" /></button>
                     </form>
                 </div>
               ) : (
