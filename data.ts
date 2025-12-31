@@ -1,4 +1,3 @@
-
 import type { GraphicWork, VideoWork, Service } from './hooks/types';
 
 export const services: Service[] = [
@@ -26,7 +25,7 @@ export const services: Service[] = [
 ];
 
 export const graphicWorks: GraphicWork[] = [
-    // Photo Manipulation / Social Media Posts
+    // Photo Manipulation
     { 
         id: 1, 
         imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/8whz5z17ra4evztzr8tei/7cbe5e230085811.Y3JvcCwxOTk5LDE1NjQsMCwyMTc.jpg?rlkey=te4mefjp0q9xj39dzjh77swin&raw=1', 
@@ -49,20 +48,6 @@ export const graphicWorks: GraphicWork[] = [
         description: 'Street-style character manipulation with gritty textures and cinematic color grading.'
     },
     { 
-        id: 4, 
-        imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/bjyqnbbr0sqvd42n64yt1/518658030_122142975902645113_5365242024363925507_n.jpg?rlkey=l7pz1oflwh5gi53oljv6fygvq&raw=1', 
-        category: 'Photo Manipulation',
-        title: 'Action Sequence Composite',
-        description: 'Dynamic motion-blur focused manipulation for high-impact social media content.'
-    },
-    { 
-        id: 5, 
-        imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/g2q7bt4e8vhlsp23we57u/694dea229321481.Y3JvcCwxMjAwLDkzOCwwLDEzMA.jpg?rlkey=fbaguh47ao4atffhlz0ya6f5w&raw=1', 
-        category: 'Photo Manipulation',
-        title: 'Dark Fantasy Portrait',
-        description: 'Complex portrait manipulation using advanced masking and custom light sources.'
-    },
-    { 
         id: 7, 
         imageUrl: 'https://www.dropbox.com/scl/fi/ot4xvfzucr57b817xsbpx/Justice-For-Osman-Hadi.jpg?rlkey=14bocvhbrbcpg7pgiim7ziv35&st=72jhupwi&raw=1', 
         category: 'Photo Manipulation',
@@ -70,11 +55,11 @@ export const graphicWorks: GraphicWork[] = [
         description: 'A powerful tribute manipulation dedicated to the memory of Osman Hadi.'
     },
 
-    // YouTube Thumbnails - EXACT Video Titles for SEO
+    // YouTube Thumbnails
     { 
         id: 12, 
         imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/0mc1y78tdg0qq2yrsm8lz/6434f9234092365.Y3JvcCwxMzgwLDEwODAsMjcwLDA.jpg?rlkey=qfhr7z9vwuquacnbcb2q5pv3u&raw=1', 
-        category: 'YouTube Thumbnails',
+        category: 'Thumbnail Designs',
         title: 'Anime VFX Masterclass | Edit Breakdown',
         description: 'Professional YouTube thumbnail design for: Anime VFX Masterclass'
     },
@@ -89,22 +74,15 @@ export const graphicWorks: GraphicWork[] = [
     },
     { id: 14, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/81jlduf6n6ih32b6yfpmg/2025-09-18.jpg?rlkey=f9qgajdy0wycg2araptlpqi2r&raw=1', category: 'Banner Designs', title: 'YouTube Channel Art | FEZ Branding', description: 'Professional brand banner for high-tier content creators.' },
     { id: 15, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/m5o840ywi39vm56n2chlp/2025-09-16-8.jpg?rlkey=kjk0gt52gowqx1n52ts0t6p5m&raw=1', category: 'Banner Designs', title: 'Minimalist Branding Banner', description: 'Sleek and professional branding for social media profiles.' },
-    { id: 16, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/va1p1itvxjw4y5zw2mts3/2025-09-19.jpg?rlkey=ltkx333q2wiaehqp2mrtgq4e0&raw=1', category: 'Banner Designs', title: 'Gaming Community Header', description: 'Vibrant and engaging banner for gaming teams and communities.' },
-    { id: 18, imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/gmjmfxpf9s8pohwhhl9bl/2025-09-16-9.jpg?rlkey=crkorp8t3wq2uhh84tiwv0r1z&raw=1', category: 'Banner Designs', title: 'Creative Artist Header', description: 'Artistic and clean banner showcasing design excellence.' },
 ];
 
 export const animeEdits: VideoWork[] = [
     { id: 10, videoId: 'oAEDU-nycsE', thumbnailUrl: 'https://i.ytimg.com/vi/oAEDU-nycsE/hqdefault.jpg', mostViewed: true, title: 'Lokiverse - Legend Edit', description: 'The ultimate cinematic Lokiverse edit featuring high-octane VFX and professional grading.' },
     { id: 1, videoId: 'GiHZJkUvv6o', thumbnailUrl: 'https://i.ytimg.com/vi/GiHZJkUvv6o/hqdefault.jpg', mostViewed: true, title: 'Mortal - Legend Edit', description: 'High-energy anime edit featuring complex transitions and 2D VFX overlays.' },
-    { id: 2, videoId: 'U4ge4NqBFAM', thumbnailUrl: 'https://i.ytimg.com/vi/U4ge4NqBFAM/hqdefault.jpg', mostViewed: true, title: 'Smooth Transition AMV', description: 'A seamless anime music video focusing on rhythm and flow.' },
-    { id: 3, videoId: 'F-0ATxAccEI', thumbnailUrl: 'https://i.ytimg.com/vi/F-0ATxAccEI/hqdefault.jpg', mostViewed: true, title: 'Cinematic Anime Montage', description: 'Epic montage with advanced color grading and cinematic visual effects.' },
-    { id: 4, videoId: '4YWUaCQkUL0', thumbnailUrl: 'https://i.ytimg.com/vi/4YWUaCQkUL0/hqdefault.jpg', title: 'Vibe Edit - Anime Music', description: 'Stylized lo-fi aesthetic anime edit with custom text animation.' },
 ];
 
 export const vfxEdits: VideoWork[] = [
     { id: 101, url: 'https://dl.dropboxusercontent.com/scl/fi/04puij825k7seih7pwisl/ssstik.io_-fuadeditingzone_1761101162365-1.mp4?rlkey=bczd8sb8sze95e8qurmuzc4fc&raw=1', title: 'After Effects VFX Shot', description: 'Complex 3D tracking and object integration VFX showcase.' },
     { id: 102, url: 'https://dl.dropboxusercontent.com/scl/fi/3jkir989bp56zlg2k9uie/ssstik.io_-fuadeditingzone_1761100951741-1.mp4?rlkey=cognu1404zbja0ss0gch3qo6z&raw=1', title: 'Cinematic Compositing', description: 'Atmospheric visual effects shot with multi-layer compositing.' },
     { id: 103, url: 'https://dl.dropboxusercontent.com/scl/fi/13kcdh2keugsqmvzb4d4c/ssstik.io_-fuadeditingzone_1761101016859-1.mp4?rlkey=322uz9xfq95xqgjb9mmt3uf9w&raw=1', title: 'Motion Graphics Reel', description: 'Dynamic motion design elements for commercial and creative projects.' },
-    { id: 104, url: 'https://dl.dropboxusercontent.com/scl/fi/wypkzvekmup83x8orz31r/ssstik.io_-fuadeditingzone_1761101128509-1.mp4?rlkey=xlhgik6jc0y3ph2lrrr01ue80&raw=1', title: 'Color Grading Showcase', description: 'Professional color correction and cinematic grading reel.' },
-    { id: 105, url: 'https://dl.dropboxusercontent.com/scl/fi/zk5q1eehoyhawicr4gb6a/ssstik.io_-fuadeditingzone_1761139677511.mp4?rlkey=vkh5egltt3rn5ff7mv45ddxwr&raw=1', title: 'VFX Action Sequence', description: 'High-octane action sequence featuring custom particle effects and explosions.' },
 ];

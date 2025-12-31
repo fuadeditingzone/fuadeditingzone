@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignIn } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, onValue, limitToLast, query, get, update, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
+import { getDatabase, ref, onValue, limitToLast, query, get, update, push, set } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 import type { GraphicWork, VideoWork, ModalItem } from './hooks/types';
 import { siteConfig } from './config';
@@ -15,7 +14,6 @@ import { Contact } from './components/Contact';
 import { AboutAndFooter } from './components/AboutAndFooter';
 import { CommunityChat } from './components/CommunityChat';
 import { ModalViewer } from './components/ModalViewer';
-import { ContextMenu } from './components/ContextMenu';
 import { VFXBackground } from './components/VFXBackground';
 import { ChatBubbleIcon, CloseIcon } from './components/Icons';
 import { ParallaxProvider } from './contexts/ParallaxContext';
@@ -40,13 +38,15 @@ const db = getDatabase(app);
 
 export default function App() {
   const { isSignedIn, user } = useUser();
+  const [route, setRoute] = useState<'home' | 'marketplace'>(
+    window.location.pathname === '/marketplace' ? 'marketplace' : 'home'
+  );
   const [isYouTubeApiReady, setIsYouTubeApiReady] = useState(false);
   const [modalState, setModalState] = useState<{ items: ModalItem[]; currentIndex: number } | null>(null);
   const [isCommunityChatOpen, setIsCommunityChatOpen] = useState(false);
   const [targetUserId, setTargetUserId] = useState<string | null>(null);
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
-  const [profileInitialTab, setProfileInitialTab] = useState<'identity' | 'credentials' | 'networks' | 'posts'>('identity');
-  const [profileAutoOpenUpload, setProfileAutoOpenUpload] = useState(false);
+  
   const [isServicesPopupOpen, setIsServicesPopupOpen] = useState(false);
   const [isYouTubeRedirectOpen, setIsYouTubeRedirectOpen] = useState(false);
   const [activeYouTubeId, setActiveYouTubeId] = useState<string>(siteConfig.content.portfolio.animeEdits[0].videoId || 'oAEDU-nycsE');
@@ -55,73 +55,87 @@ export default function App() {
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
-  const isAnyOverlayActive = !!(modalState || isServicesPopupOpen || isYouTubeRedirectOpen || isCommunityChatOpen || viewingProfileId);
-
+  // Daily Spotlight Logic (Runs once every 24h by the first visitor)
   useEffect(() => {
-    if (isAnyOverlayActive) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = 'unset';
-  }, [isAnyOverlayActive]);
-
-  // Routing Handler for /@username and /marketplace
-  useEffect(() => {
-    const handleRouting = async () => {
-      const path = window.location.pathname;
-      if (path.startsWith('/@')) {
-        const handle = path.replace('/@', '');
-        if (handle) {
-          const usersSnap = await get(ref(db, 'users'));
-          const userData = usersSnap.val();
-          if (userData) {
-            const foundUser = Object.values(userData).find((u: any) => u.username === handle) as any;
-            if (foundUser) setViewingProfileId(foundUser.id);
+    const checkDailySpotlight = async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const spotlightRef = ref(db, `system/daily_spotlight/${today}`);
+      const snap = await get(spotlightRef);
+      
+      if (!snap.exists()) {
+        const postsSnap = await get(ref(db, 'explore_posts'));
+        const postsData = postsSnap.val();
+        if (postsData) {
+          const yesterday = Date.now() - 86400000;
+          const topPosts = Object.entries(postsData)
+            .map(([id, val]: [string, any]) => ({ id, ...val }))
+            .filter(p => p.timestamp > yesterday)
+            .sort((a, b) => Object.keys(b.likes || {}).length - Object.keys(a.likes || {}).length)
+            .slice(0, 3);
+          
+          if (topPosts.length > 0) {
+            await set(spotlightRef, { processed: true, top: topPosts.map(p => p.id) });
+            // Push notification to global feed or a system node
+            topPosts.forEach(post => {
+              push(ref(db, 'notifications/global'), {
+                type: 'daily_spotlight',
+                text: `Daily Spotlight: @${post.userName}'s post is trending!`,
+                postId: post.id,
+                timestamp: Date.now()
+              });
+            });
           }
         }
-      } else if (path === '/marketplace') {
-          handleScrollTo('explore');
       }
     };
-    handleRouting();
-    window.addEventListener('popstate', handleRouting);
-    return () => window.removeEventListener('popstate', handleRouting);
+    checkDailySpotlight();
   }, []);
 
-  const handleOpenProfile = (userId: string, tab: any = 'identity', openUpload = false) => {
-    // If we get a username instead of an ID (mentions), we must resolve it
-    if (!userId.includes('user_')) {
+  useEffect(() => {
+    const handlePopState = () => {
+      setRoute(window.location.pathname === '/marketplace' ? 'marketplace' : 'home');
+      if (window.location.pathname.startsWith('/@')) {
+        const handle = window.location.pathname.replace('/@', '');
         get(ref(db, 'users')).then(snap => {
-            const users = snap.val();
-            const found = Object.values(users || {}).find((u: any) => u.username === userId) as any;
-            if (found) {
-                setViewingProfileId(found.id);
-                window.history.pushState(null, '', `/@${found.username}`);
-            }
+          const users = snap.val();
+          const found = Object.values(users || {}).find((u: any) => u.username === handle) as any;
+          if (found) setViewingProfileId(found.id);
         });
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateTo = (path: 'home' | 'marketplace') => {
+    setRoute(path);
+    window.history.pushState(null, '', path === 'home' ? '/' : '/marketplace');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenProfile = (userId: string) => {
+    if (!userId.includes('user_')) { // Handle username mentions
+      get(ref(db, 'users')).then(snap => {
+        const users = snap.val();
+        const found = Object.values(users || {}).find((u: any) => u.username === userId) as any;
+        if (found) setViewingProfileId(found.id);
+      });
     } else {
-        setViewingProfileId(userId);
-        setProfileInitialTab(tab);
-        setProfileAutoOpenUpload(openUpload);
-        get(ref(db, `users/${userId}/username`)).then((snap) => {
-          const uname = snap.val();
-          if (uname) window.history.pushState(null, '', `/@${uname}`);
-        });
+      setViewingProfileId(userId);
     }
   };
 
-  const handleCloseProfile = () => {
-    setViewingProfileId(null);
-    setProfileAutoOpenUpload(false);
-    window.history.pushState(null, '', '/');
-  };
-
-  const handleOpenModal = (items: ModalItem[], index: number) => {
-    setModalState({ items, currentIndex: index });
-    const item = items[index];
-    window.history.pushState(null, '', `/portfolio/${item.id}`);
-  };
-
-  const handleCloseModal = () => {
-    setModalState(null);
-    if (!viewingProfileId) window.history.pushState(null, '', '/');
+  const handleScrollTo = (target: string) => {
+    if (route !== 'home') {
+      navigateTo('home');
+      setTimeout(() => {
+        const el = document.getElementById(target);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const el = document.getElementById(target);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   useEffect(() => {
@@ -134,39 +148,44 @@ export default function App() {
     } else { setIsYouTubeApiReady(true); }
   }, []);
 
-  const handleScrollTo = (target: string) => {
-    const el = document.getElementById(target);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-    if (target === 'explore') window.history.pushState(null, '', '/marketplace');
-  };
-
   return (
     <ParallaxProvider>
-      <div className="text-white min-h-screen bg-black">
+      <div className="text-white min-h-screen bg-black overflow-x-hidden">
           <VFXBackground /><MediaGridBackground />
-          <div className={`transition-all fixed top-0 left-0 right-0 z-50`}>
-            <DesktopHeader onScrollTo={handleScrollTo} onOpenChatWithUser={(id) => { setTargetUserId(id); setIsCommunityChatOpen(true); }} onOpenProfile={handleOpenProfile} />
-            <MobileHeader onScrollTo={handleScrollTo} onOpenChatWithUser={(id) => { setTargetUserId(id); setIsCommunityChatOpen(true); }} onOpenProfile={handleOpenProfile} />
+          <div className="fixed top-0 left-0 right-0 z-[100]">
+            <DesktopHeader 
+              onScrollTo={handleScrollTo} 
+              onNavigateMarketplace={() => navigateTo('marketplace')}
+              onOpenChatWithUser={(id) => { setTargetUserId(id); setIsCommunityChatOpen(true); }} 
+              onOpenProfile={handleOpenProfile} 
+            />
+            <MobileHeader 
+              onScrollTo={handleScrollTo} 
+              onNavigateMarketplace={() => navigateTo('marketplace')}
+              onOpenChatWithUser={(id) => { setTargetUserId(id); setIsCommunityChatOpen(true); }} 
+              onOpenProfile={handleOpenProfile} 
+            />
           </div>
           
-          <main className="main-content relative z-10 pb-20 md:pb-0">
-              <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
-              
-              <section id="explore" className="py-20 bg-black/50 backdrop-blur-sm relative border-y border-white/5">
-                  <div className="container mx-auto">
-                    <div className="text-center mb-16">
-                        <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-4 block">Visual Marketplace</span>
-                        <h2 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">The Market</h2>
-                        <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4">Discover, Connect & Mention</p>
-                    </div>
-                    <ExploreFeed onOpenProfile={handleOpenProfile} />
-                  </div>
-              </section>
-
-              <Portfolio openModal={handleOpenModal} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
-              <CommunityChat onShowProfile={handleOpenProfile} />
-              <Contact onStartOrder={() => {}} />
-              <AboutAndFooter />
+          <main className="relative z-10 pt-20">
+            {route === 'home' ? (
+              <>
+                <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
+                <Portfolio openModal={(items, index) => setModalState({ items, currentIndex: index })} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
+                <CommunityChat onShowProfile={handleOpenProfile} />
+                <Contact onStartOrder={() => {}} />
+                <AboutAndFooter />
+              </>
+            ) : (
+              <div className="container mx-auto px-4 py-10">
+                <div className="text-center mb-16">
+                    <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-4 block">Visual Marketplace</span>
+                    <h2 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">The Zone</h2>
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4">Sequentially Powered by Community</p>
+                </div>
+                <ExploreFeed onOpenProfile={handleOpenProfile} />
+              </div>
+            )}
           </main>
 
           <AnimatePresence>
@@ -182,19 +201,15 @@ export default function App() {
 
           <ProfileModal 
             isOpen={!!viewingProfileId} 
-            onClose={handleCloseProfile} 
+            onClose={() => setViewingProfileId(null)} 
             viewingUserId={viewingProfileId} 
-            initialTab={profileInitialTab} 
-            forceOpenUpload={profileAutoOpenUpload}
           />
-          {modalState && <ModalViewer state={modalState} onClose={handleCloseModal} onNext={(idx) => handleOpenModal(modalState.items, idx)} onPrev={(idx) => handleOpenModal(modalState.items, idx)} />}
+          {modalState && <ModalViewer state={modalState} onClose={() => setModalState(null)} onNext={(idx) => setModalState({...modalState, currentIndex: idx})} onPrev={(idx) => setModalState({...modalState, currentIndex: idx})} />}
           {isServicesPopupOpen && <ServicesListPopup onClose={() => setIsServicesPopupOpen(false)} />}
           {isYouTubeRedirectOpen && <YouTubeRedirectPopup onClose={() => setIsYouTubeRedirectOpen(false)} onConfirm={() => { setIsYouTubeRedirectOpen(false); handleScrollTo('portfolio'); }} />}
           {pipVideo && <VideoPipPlayer video={pipVideo} onClose={() => setPipVideo(null)} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />}
           <PwaInstallPrompt />
-          <div className={`transition-all fixed bottom-0 left-0 right-0 z-40`}>
-            <MobileFooterNav onScrollTo={handleScrollTo} />
-          </div>
+          <MobileFooterNav onScrollTo={handleScrollTo} onNavigateMarketplace={() => navigateTo('marketplace')} />
       </div>
     </ParallaxProvider>
   );

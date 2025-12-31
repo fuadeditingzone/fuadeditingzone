@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import type { GraphicWork, VideoWork, ModalItem } from '../hooks/types';
 import { LazyImage } from './LazyImage';
@@ -82,7 +83,8 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
 
     const isImage = (item: ModalItem): item is GraphicWork => 'imageUrl' in item;
     const isVideo = (item: ModalItem): item is VideoWork => ('url' in item || 'videoId' in item);
-    const isYTThumbnail = isImage(currentItem) && currentItem.category === 'YouTube Thumbnails';
+    // Fix: Using correct ContentSection type 'Thumbnail Designs' instead of 'YouTube Thumbnails'
+    const isYTThumbnail = isImage(currentItem) && currentItem.category === 'Thumbnail Designs';
     const isManipulation = isImage(currentItem) && currentItem.category === 'Photo Manipulation';
 
     const handleShare = () => {
