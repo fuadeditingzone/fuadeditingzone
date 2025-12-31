@@ -50,13 +50,13 @@ const updateSEO = (title: string, desc: string, image?: string, url?: string) =>
   document.querySelector('meta[property="og:type"]')?.setAttribute('content', url?.includes('/work/') || url?.includes('/post/') ? 'article' : 'website');
   
   // Twitter
-  document.querySelector('meta[property="twitter:title"]')?.setAttribute('content', finalTitle);
-  document.querySelector('meta[property="twitter:description"]')?.setAttribute('content', desc);
+  document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', finalTitle);
+  document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', desc);
   
   if (image) {
     document.querySelector('meta[property="og:image"]')?.setAttribute('content', image);
-    document.querySelector('meta[property="twitter:image"]')?.setAttribute('content', image);
-    document.querySelector('meta[property="twitter:card"]')?.setAttribute('content', 'summary_large_image');
+    document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', image);
+    document.querySelector('meta[name="twitter:card"]')?.setAttribute('content', 'summary_large_image');
   }
   
   if (url) {
@@ -199,7 +199,7 @@ export default function App() {
 
   return (
     <ParallaxProvider>
-      <div className="text-white min-h-screen bg-black overflow-x-hidden flex flex-col h-screen max-h-screen">
+      <div className="text-white bg-black overflow-x-hidden flex flex-col h-[100dvh] max-h-[100dvh]">
           <VFXBackground /><MediaGridBackground />
           <div className="fixed top-0 left-0 right-0 z-[100]">
             <DesktopHeader 
@@ -236,7 +236,7 @@ export default function App() {
             )}
             
             {route === 'marketplace' && (
-              <div className="container mx-auto px-4 py-6 md:py-10 flex flex-col min-h-0">
+              <div className="container mx-auto px-4 py-6 md:py-10 flex flex-col min-h-0 overflow-y-auto custom-scrollbar">
                 <div className="text-center mb-8 md:mb-12 flex-shrink-0">
                     <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-4 block">Visual Ecosystem</span>
                     <h1 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">Marketplace</h1>
@@ -247,10 +247,10 @@ export default function App() {
             )}
 
             {route === 'community' && (
-              <div className="flex-1 flex flex-col min-h-0 h-full max-h-full pb-32 md:pb-6">
-                <div className="text-center mb-4 md:mb-8 flex-shrink-0 px-4 mt-2">
+              <div className="flex-1 flex flex-col min-h-0 h-full max-h-full pb-28 md:pb-6">
+                <div className="text-center mb-4 md:mb-6 flex-shrink-0 px-4 mt-2">
                     <span className="text-[9px] font-black uppercase tracking-[0.6em] text-red-600 mb-1 block">Network Infrastructure</span>
-                    <h1 className="text-white text-3xl md:text-6xl font-black uppercase tracking-tighter leading-none">Community Hub</h1>
+                    <h1 className="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none">Community Hub</h1>
                 </div>
                 <CommunityChat onShowProfile={handleOpenProfile} initialTargetUserId={targetUserId} />
               </div>
