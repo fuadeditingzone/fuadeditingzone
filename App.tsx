@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignIn } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, onValue, limitToLast, query, get, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, ref, onValue, limitToLast, query, get, update, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
 
 import type { GraphicWork, VideoWork, ModalItem } from './hooks/types';
@@ -103,12 +103,49 @@ export default function App() {
     }
   }, [isAnyOverlayActive]);
 
-  // Unified Routing Logic for Profiles and Portfolio Items
+  // Clerk <-> Firebase Identity Sync Logic
+  useEffect(() => {
+    if (isSignedIn && user) {
+      const syncIdentity = async () => {
+        const userRef = ref(db, `users/${user.id}`);
+        const snap = await get(userRef);
+        const data = snap.val();
+        
+        const updates: any = {
+          name: user.fullName || user.username,
+          avatar: user.imageUrl,
+          id: user.id
+        };
+
+        if (data) {
+          if (data.username !== user.username) {
+            updates.username = user.username;
+            // Store change notification permanently
+            await push(ref(db, `notifications/${user.id}`), {
+              type: 'identity_update',
+              fromId: 'system',
+              fromName: 'FEZ Protocol',
+              fromAvatar: siteConfig.branding.logoUrl,
+              text: `Username evolved from @${data.username} to @${user.username}`,
+              timestamp: Date.now(),
+              read: false
+            });
+          }
+          await update(userRef, updates);
+        } else {
+          updates.username = user.username;
+          await update(userRef, updates);
+        }
+      };
+      syncIdentity();
+    }
+  }, [isSignedIn, user]);
+
+  // Dynamic Routing Logic
   useEffect(() => {
     const handleRouting = async () => {
       const path = window.location.pathname;
       
-      // 1. Profile Routing (/@username)
       if (path.startsWith('/@')) {
         const handle = path.replace('/@', '');
         if (handle) {
@@ -120,7 +157,6 @@ export default function App() {
           }
         }
       } 
-      // 2. Portfolio Item Routing (/portfolio/id)
       else if (path.startsWith('/portfolio/')) {
         const itemId = path.replace('/portfolio/', '');
         if (itemId) {
@@ -166,7 +202,7 @@ export default function App() {
     if (!viewingProfileId) window.history.pushState(null, '', '/');
   };
 
-  // Push Notification Setup
+  // Push Notification Token Setup
   useEffect(() => {
     if (isSignedIn && user) {
       const messaging = getMessaging(app);
@@ -176,9 +212,6 @@ export default function App() {
             update(ref(db, `users/${user.id}`), { fcmToken: currentToken });
           }
         });
-      onMessage(messaging, (payload) => {
-        console.log('Signal Intercepted: ', payload);
-      });
     }
   }, [isSignedIn, user]);
 
@@ -215,7 +248,7 @@ export default function App() {
           <main className="main-content relative z-10 pb-20 md:pb-0">
               <Home onOpenServices={() => setIsServicesPopupOpen(true)} onOrderNow={() => handleScrollTo('contact')} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
               <Portfolio openModal={handleOpenModal} isYouTubeApiReady={isYouTubeApiReady} playingVfxVideo={playingVfxVideo} setPlayingVfxVideo={setPlayingVfxVideo} pipVideo={pipVideo} setPipVideo={setPipVideo} activeYouTubeId={activeYouTubeId} setActiveYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} currentTime={videoCurrentTime} setCurrentTime={setVideoCurrentTime} />
-              <CommunityChat />
+              <CommunityChat onShowProfile={handleOpenProfile} />
               <Contact onStartOrder={() => {}} />
               <AboutAndFooter />
           </main>

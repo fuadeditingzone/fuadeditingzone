@@ -139,20 +139,25 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
     const [timeLeft, setTimeLeft] = useState("");
     useEffect(() => {
         const targetDays = parseInt(days);
+        // Ensure accurate time calculation from the moment of acceptance
         const targetTime = acceptedAt + (targetDays * 24 * 60 * 60 * 1000);
-        const timer = setInterval(() => {
+        
+        const updateTimer = () => {
             const now = Date.now();
             const diff = targetTime - now;
             if (diff <= 0) {
                 setTimeLeft("DEADLINE REACHED");
-                clearInterval(timer);
             } else {
                 const d = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
                 const m = Math.floor((diff / 1000 / 60) % 60);
-                setTimeLeft(`${d}d ${h}h ${m}m Remaining`);
+                const s = Math.floor((diff / 1000) % 60);
+                setTimeLeft(`${d}d ${h}h ${m}m ${s}s Remaining`);
             }
-        }, 1000);
+        };
+
+        updateTimer();
+        const timer = setInterval(updateTimer, 1000);
         return () => clearInterval(timer);
     }, [acceptedAt, days]);
     return <div className="text-red-500 font-black text-[10px] uppercase flex items-center gap-1.5"><ClockIcon className="w-3.5 h-3.5" /> {timeLeft}</div>;

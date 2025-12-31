@@ -63,8 +63,6 @@ const AgentProfileModal: React.FC<{
   useEffect(() => {
     if (!user) return;
     document.title = `${user.name} (@${user.username}) | ${user.profile?.profession || 'Creative Agent'} | Fuad Editing Zone`;
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', `${user.profile?.bio || 'Verified creative agent on Fuad Editing Zone.'} Profession: ${user.profile?.profession || 'Digital Artist'}`);
     
     // Prevent background scroll
     document.body.style.overflow = 'hidden';
@@ -90,8 +88,7 @@ const AgentProfileModal: React.FC<{
                 if (s1.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'requested' }));
                 else {
                     onValue(reqRecRef, (s2) => {
-                        if (s2.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'pending' }));
-                        else setSocialState(prev => ({ ...prev, friendStatus: 'none' }));
+                        if (s2.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'none' }));
                     });
                 }
             });
@@ -130,14 +127,14 @@ const AgentProfileModal: React.FC<{
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={onClose}>
       <div className="w-full max-w-[450px] bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col items-center shadow-[0_50px_100px_rgba(0,0,0,1)] max-h-[90dvh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
         <div className="relative mb-6 flex-shrink-0 cursor-pointer" onClick={() => onShowFullProfile?.(user.id)}>
-            <img src={user.avatar} className={`w-32 h-32 rounded-[3rem] border-4 p-1 ${isOwner ? 'border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.5)]' : isAdmin ? 'border-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'border-white/10'}`} alt="" />
+            <img src={user.avatar} className={`w-32 h-32 rounded-[3rem] border-4 p-1 ${isOwner ? 'border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.5)]' : isAdmin ? 'border-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'border-white/10'} object-cover`} alt="" />
             {isOwner && <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] font-black px-2 py-1 rounded-lg">OWNER</span>}
         </div>
         <div className="text-center w-full mb-8 flex-shrink-0">
             <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-1 cursor-pointer" onClick={() => onShowFullProfile?.(user.id)}>{user.name}</h2>
             <div className="flex items-center justify-center gap-2">
                 <p className={`font-black uppercase text-[10px] tracking-[0.3em] ${isOwner ? 'text-red-500' : isAdmin ? 'text-blue-500' : 'text-zinc-500'}`}>@{user.username}</p>
-                <button onClick={() => navigator.clipboard.writeText(user.username)} className="p-1.5 bg-white/5 rounded-lg hover:bg-white/10 transition-all"><i className="fa-regular fa-copy text-[10px] text-zinc-500"></i></button>
+                <button onClick={() => navigator.clipboard.writeText(user.username)} className="p-1.5 bg-white/5 rounded-lg hover:bg-white/10 transition-all" title="Copy Identifier"><i className="fa-regular fa-copy text-[10px] text-zinc-500"></i></button>
             </div>
         </div>
         
@@ -155,7 +152,7 @@ const AgentProfileModal: React.FC<{
             </div>
         </div>
         <div className="flex flex-col gap-2 w-full">
-            <button onClick={() => { onMessage(); onClose(); }} className="w-full py-5 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl shadow-2xl transition-all">Send Signal</button>
+            <button onClick={() => { onMessage(); onClose(); }} className="w-full py-5 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[0.5em] text-[11px] rounded-2xl shadow-2xl transition-all">Message</button>
             <button onClick={() => { onShowFullProfile?.(user.id); onClose(); }} className="w-full py-4 bg-white/5 text-zinc-500 hover:text-white font-black uppercase tracking-[0.2em] text-[9px] rounded-xl transition-all">View Identity File</button>
         </div>
       </div>
@@ -170,7 +167,6 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
   const [viewingProfile, setViewingProfile] = useState<ChatUser | null>(null);
   const [isGlobal, setIsGlobal] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isProfileSettingsOpen, setIsProfileSettingsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showConversationOnMobile, setShowConversationOnMobile] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -222,7 +218,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
         const friendSnap = await get(ref(db, `social/${clerkUser.id}/friends/${selectedUser?.id}`));
         if (!friendSnap.exists()) {
             const mySentMessages = messages.filter(m => m.senderId === clerkUser.id).length;
-            if (mySentMessages >= 3) return;
+            if (mySentMessages >= 5) return;
         }
     }
 
@@ -239,12 +235,12 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[80000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4">
                 <div className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col max-h-[80dvh]">
                     <div className="flex justify-between items-center mb-8 flex-shrink-0">
-                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Find Agent</h3>
+                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Find Operator</h3>
                         <button onClick={() => setIsSearchOpen(false)} className="p-2 bg-white/5 rounded-full"><CloseIcon className="w-6 h-6" /></button>
                     </div>
                     <div className="relative mb-8 flex-shrink-0">
                         <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
-                        <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Username Search..." className="w-full bg-black border border-white/10 rounded-2xl py-5 pl-14 text-white outline-none focus:border-red-600 transition-all" />
+                        <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Identifier Search..." className="w-full bg-black border border-white/10 rounded-2xl py-5 pl-14 text-white outline-none focus:border-red-600 transition-all shadow-inner" />
                     </div>
                     <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar min-h-0">
                         {users.filter(u => u.username?.toLowerCase().includes(searchQuery.toLowerCase()) && u.id !== clerkUser?.id).map(u => (
@@ -264,21 +260,21 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
           
           <div className={`w-full md:w-80 border-r border-white/5 flex flex-col bg-[#050505]/50 flex-shrink-0 min-h-0 ${showConversationOnMobile ? 'hidden md:flex' : 'flex'}`}>
             <div className="p-6 md:p-8 border-b border-white/5 bg-black/30 flex justify-between items-center flex-shrink-0">
-               <span className="text-[10px] font-black text-white uppercase tracking-widest">Chat Rooms</span>
+               <span className="text-[10px] font-black text-white uppercase tracking-widest">Network Nodes</span>
             </div>
             
             <div className="p-4 space-y-2 border-b border-white/5 flex-shrink-0">
                 <button onClick={() => { setIsGlobal(true); setSelectedUser(null); }} className={`w-full flex items-center gap-4 p-4 rounded-[2rem] transition-all border ${isGlobal ? 'bg-red-600/10 border-red-600/20' : 'border-transparent hover:bg-white/5'}`}>
                     <div className={`w-11 h-11 rounded-2xl flex items-center justify-center border flex-shrink-0 ${isGlobal ? 'bg-red-600 text-white' : 'bg-white/5 text-zinc-500'}`}><GlobeAltIcon className="w-5 h-5" /></div>
-                    <div className="text-left"><p className={`text-[11px] font-black uppercase tracking-widest ${isGlobal ? 'text-white' : 'text-zinc-500'}`}>Public Chat</p></div>
+                    <div className="text-left"><p className={`text-[11px] font-black uppercase tracking-widest ${isGlobal ? 'text-white' : 'text-zinc-500'}`}>Public Hub</p></div>
                 </button>
                 <button onClick={() => setIsSearchOpen(true)} className="w-full flex items-center gap-4 p-4 rounded-[2rem] hover:bg-white/5 transition-all">
                     <div className="w-11 h-11 rounded-2xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0"><SearchIcon className="w-5 h-5" /></div>
-                    <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Find User</p></div>
+                    <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Scan Operators</p></div>
                 </button>
-                <button onClick={() => onShowProfile?.(clerkUser?.id!)} className="w-full flex items-center gap-4 p-4 rounded-[2rem] hover:bg-white/5 transition-all">
+                <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id)} className="w-full flex items-center gap-4 p-4 rounded-[2rem] hover:bg-white/5 transition-all">
                     <div className="w-11 h-11 rounded-2xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0"><i className="fa-solid fa-gear text-lg"></i></div>
-                    <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Settings</p></div>
+                    <div className="text-left"><p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Neural Settings</p></div>
                 </button>
             </div>
 
@@ -302,11 +298,11 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             <div className="p-6 md:p-8 border-b border-white/5 flex items-center gap-4 bg-black/40 backdrop-blur-xl flex-shrink-0">
                <button onClick={() => setShowConversationOnMobile(false)} className="md:hidden p-2 text-white"><ChevronLeftIcon className="w-6 h-6" /></button>
                <div className="w-12 h-12 rounded-2xl bg-red-600/15 flex items-center justify-center border border-red-600/30 overflow-hidden flex-shrink-0">
-                  {isGlobal ? <GlobeAltIcon className="w-6 h-6 text-red-600" /> : <img src={selectedUser?.avatar} className="w-full h-full object-cover cursor-pointer" onClick={() => selectedUser && setViewingProfile(selectedUser)} />}
+                  {isGlobal ? <GlobeAltIcon className="w-6 h-6 text-red-600" /> : <img src={selectedUser?.avatar} className="w-full h-full object-cover cursor-pointer" onClick={() => selectedUser && onShowProfile?.(selectedUser.id)} />}
                </div>
                <div className="flex-1 truncate">
-                  <h4 className="text-[14px] font-black text-white uppercase tracking-widest truncate">{isGlobal ? 'Group Chat' : selectedUser?.name}</h4>
-                  <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">{isGlobal ? 'Online Now' : `@${selectedUser?.username}`}</p>
+                  <h4 className="text-[14px] font-black text-white uppercase tracking-widest truncate cursor-pointer" onClick={() => !isGlobal && selectedUser && onShowProfile?.(selectedUser.id)}>{isGlobal ? 'Global Transmission' : selectedUser?.name}</h4>
+                  <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">{isGlobal ? 'Sync Live' : `@${selectedUser?.username}`}</p>
                </div>
             </div>
 
@@ -315,9 +311,9 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                 const isOrder = msg.text.startsWith('[ORDER INQUIRY]');
                 return (
                   <div key={msg.id} className={`flex gap-4 ${msg.senderId === clerkUser?.id ? 'flex-row-reverse' : 'flex-row'} items-end`}>
-                    <img src={msg.senderAvatar} className="w-10 h-10 rounded-xl border border-white/5 object-cover cursor-pointer flex-shrink-0" alt="" onClick={() => { const u = users.find(usr => usr.id === msg.senderId); if(u) setViewingProfile(u); }} />
+                    <img src={msg.senderAvatar} className="w-10 h-10 rounded-xl border border-white/5 object-cover cursor-pointer flex-shrink-0 shadow-lg" alt="" onClick={() => onShowProfile?.(msg.senderId)} />
                     <div className={`max-w-[80%] ${msg.senderId === clerkUser?.id ? 'items-end' : 'items-start'} flex flex-col min-w-0`}>
-                        <span className="text-[9px] font-black text-zinc-600 uppercase mb-2 px-1 truncate max-w-full">{msg.senderName}</span>
+                        <span className="text-[9px] font-black text-zinc-600 uppercase mb-2 px-1 truncate max-w-full cursor-pointer hover:text-red-500 transition-colors" onClick={() => onShowProfile?.(msg.senderId)}>{msg.senderName}</span>
                         <div className={`p-4 rounded-[1.5rem] text-[13px] border whitespace-pre-wrap ${isOrder ? 'bg-red-600/20 border-red-600/50 text-white font-bold ring-2 ring-red-600/20 shadow-[0_0_20px_rgba(220,38,38,0.2)]' : (msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-zinc-300 rounded-tl-none')}`} style={{ overflowWrap: 'anywhere' }}>{msg.text}</div>
                     </div>
                   </div>
@@ -329,10 +325,10 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             <div className="p-4 md:p-10 border-t border-white/5 bg-black/40 flex-shrink-0">
               {isSignedIn ? (
                 <form onSubmit={handleSendMessage} className="flex gap-3 bg-white/5 border border-white/10 rounded-[2rem] p-2">
-                    <input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder={isGlobal ? "Group Signal..." : "Private Signal..."} className="flex-1 bg-transparent px-4 md:px-6 py-3 md:py-4 text-sm font-bold text-white outline-none min-w-0" />
+                    <input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder={isGlobal ? "Broadcast Signal..." : "Private Encryption..."} className="flex-1 bg-transparent px-4 md:px-6 py-3 md:py-4 text-sm font-bold text-white outline-none min-w-0" />
                     <button type="submit" disabled={!inputValue.trim()} className="bg-red-600 text-white w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-2xl active:scale-90 transition-all shadow-2xl disabled:opacity-50 flex-shrink-0"><SendIcon className="w-5 h-5" /></button>
                 </form>
-              ) : <div className="text-center py-4"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-5 px-10 md:px-16 rounded-2xl uppercase text-[10px] tracking-[0.4em] shadow-2xl transition-all">Sign In to Chat</button></SignInButton></div>}
+              ) : <div className="text-center py-4"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-5 px-10 md:px-16 rounded-2xl uppercase text-[10px] tracking-[0.4em] shadow-2xl transition-all hover:bg-red-700 active:scale-95">Link Credentials to Network</button></SignInButton></div>}
             </div>
           </div>
         </div>
