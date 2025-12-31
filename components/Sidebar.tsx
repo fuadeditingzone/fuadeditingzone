@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   SignedIn, 
@@ -34,16 +35,12 @@ const RequestHub: React.FC = () => {
 
     useEffect(() => {
         if (!user) return;
-        if (isOpen) document.body.style.overflow = 'hidden';
-        else document.body.style.overflow = 'unset';
-
         const reqRef = ref(db, `social/${user.id}/requests`);
         return onValue(reqRef, (snap) => {
             const data = snap.val() || {};
             const receivedIds = Object.keys(data.received || {});
             const sentIds = Object.keys(data.sent || {});
             
-            // Resolve basic info for these IDs
             onValue(ref(db, 'users'), (userSnap) => {
                 const allUsers = userSnap.val() || {};
                 setRequests({
@@ -52,7 +49,7 @@ const RequestHub: React.FC = () => {
                 });
             });
         });
-    }, [user, isOpen]);
+    }, [user]);
 
     const handleAction = async (targetId: string, action: 'accept' | 'reject' | 'cancel') => {
         if (!user) return;
@@ -61,7 +58,6 @@ const RequestHub: React.FC = () => {
             await remove(ref(db, `social/${targetId}/requests/sent/${user.id}`));
             await set(ref(db, `social/${user.id}/friends/${targetId}`), true);
             await set(ref(db, `social/${targetId}/friends/${user.id}`), true);
-            // Notify
             await push(ref(db, `notifications/${targetId}`), {
                 type: 'request_accepted',
                 fromId: user.id,
@@ -81,50 +77,60 @@ const RequestHub: React.FC = () => {
 
     return (
         <div className="relative">
-            <button onClick={() => setIsOpen(!isOpen)} className="relative p-2 text-gray-400 hover:text-blue-500 transition-colors">
-                <i className="fa-solid fa-user-plus text-lg"></i>
-                {requests.received.length > 0 && <span className="absolute top-0 right-0 w-2 h-2 bg-blue-600 rounded-full"></span>}
+            <button onClick={() => setIsOpen(!isOpen)} className="relative p-2.5 rounded-xl bg-white/5 hover:bg-red-600/10 border border-white/5 transition-all text-gray-400 hover:text-red-500">
+                <i className="fa-solid fa-user-plus text-[16px]"></i>
+                {requests.received.length > 0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full animate-bounce border-2 border-black"></span>}
             </button>
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="fixed md:absolute right-0 top-[70px] md:top-full mt-4 w-screen md:w-[350px] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[200]">
-                        <div className="p-5 border-b border-white/5 bg-black/40 flex justify-between items-center">
-                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Signal Requests</span>
-                            <button onClick={() => setIsOpen(false)}><CloseIcon className="w-5 h-5 text-gray-500" /></button>
+                    <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-[90px] md:top-full mt-4 w-auto md:w-[380px] bg-[#0a0a0a] border border-white/10 rounded-[2rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden z-[200]">
+                        <div className="p-6 border-b border-white/5 bg-black/40 flex justify-between items-center">
+                            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Neural Handshakes</span>
+                            <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors"><CloseIcon className="w-5 h-5 text-gray-500" /></button>
                         </div>
-                        <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-4 space-y-6">
+                        <div className="max-h-[60vh] md:max-h-[450px] overflow-y-auto custom-scrollbar p-6 space-y-8 bg-[#080808]/50">
                             <div>
-                                <h4 className="text-[8px] font-black text-gray-600 uppercase tracking-widest mb-4">Received Signals ({requests.received.length})</h4>
+                                <h4 className="text-[9px] font-black text-red-600 uppercase tracking-[0.3em] mb-5 flex items-center gap-2">
+                                    <span className="w-8 h-px bg-red-600/30"></span> Incoming ({requests.received.length})
+                                </h4>
                                 {requests.received.length === 0 ? (
-                                    <p className="text-[10px] text-gray-500 italic py-4 text-center uppercase font-bold">No incoming signals</p>
+                                    <div className="py-10 text-center opacity-20">
+                                        <i className="fa-solid fa-satellite-dish text-3xl mb-3"></i>
+                                        <p className="text-[10px] uppercase font-black tracking-widest leading-relaxed">Awaiting external signals...</p>
+                                    </div>
                                 ) : (
                                     requests.received.map(r => (
-                                        <div key={r.id} className="flex items-center gap-4 mb-4 bg-white/5 p-3 rounded-2xl border border-white/5">
-                                            <img src={r.avatar} className="w-10 h-10 rounded-xl object-cover" />
+                                        <div key={r.id} className="flex items-center gap-4 mb-4 bg-white/5 p-4 rounded-3xl border border-white/5 shadow-inner">
+                                            <img src={r.avatar} className="w-12 h-12 rounded-2xl object-cover ring-2 ring-white/5 shadow-lg" />
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-[11px] font-black text-white uppercase truncate">{r.name}</p>
-                                                <p className="text-[9px] text-gray-500">@{r.username}</p>
+                                                <p className="text-[12px] font-black text-white uppercase truncate">{r.name}</p>
+                                                <p className="text-[10px] text-gray-500 font-bold">@{r.username}</p>
                                             </div>
                                             <div className="flex gap-2">
-                                                <button onClick={() => handleAction(r.id, 'accept')} className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 transition-colors"><CheckCircleIcon className="w-4 h-4" /></button>
-                                                <button onClick={() => handleAction(r.id, 'reject')} className="bg-white/10 text-gray-400 p-2 rounded-lg hover:bg-white/20 transition-colors"><CloseIcon className="w-4 h-4" /></button>
+                                                <button onClick={() => handleAction(r.id, 'accept')} className="bg-red-600 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-red-700 transition-all shadow-lg active:scale-90"><CheckCircleIcon className="w-5 h-5" /></button>
+                                                <button onClick={() => handleAction(r.id, 'reject')} className="bg-white/10 text-gray-400 w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-all active:scale-90"><CloseIcon className="w-5 h-5" /></button>
                                             </div>
                                         </div>
                                     ))
                                 )}
                             </div>
-                            <div className="border-t border-white/5 pt-4">
-                                <h4 className="text-[8px] font-black text-gray-600 uppercase tracking-widest mb-4">Transmitted Signals ({requests.sent.length})</h4>
-                                {requests.sent.map(s => (
-                                    <div key={s.id} className="flex items-center gap-4 mb-4 opacity-70">
-                                        <img src={s.avatar} className="w-8 h-8 rounded-lg object-cover" />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[10px] font-black text-white uppercase truncate">{s.name}</p>
+                            {requests.sent.length > 0 && (
+                                <div className="border-t border-white/5 pt-6">
+                                    <h4 className="text-[9px] font-black text-gray-600 uppercase tracking-[0.3em] mb-5 flex items-center gap-2">
+                                        <span className="w-8 h-px bg-gray-700/50"></span> Transmitted ({requests.sent.length})
+                                    </h4>
+                                    {requests.sent.map(s => (
+                                        <div key={s.id} className="flex items-center gap-4 mb-4 opacity-70 hover:opacity-100 transition-opacity">
+                                            <img src={s.avatar} className="w-10 h-10 rounded-xl object-cover grayscale-[0.5]" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[11px] font-black text-white uppercase truncate">{s.name}</p>
+                                                <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Signal established...</p>
+                                            </div>
+                                            <button onClick={() => handleAction(s.id, 'cancel')} className="text-[9px] font-black text-red-500 uppercase hover:underline tracking-widest">Revoke</button>
                                         </div>
-                                        <button onClick={() => handleAction(s.id, 'cancel')} className="text-[8px] font-black text-red-500 uppercase hover:underline">Revoke</button>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 )}
@@ -140,9 +146,6 @@ const NotificationHub: React.FC = () => {
 
     useEffect(() => {
         if (!user) return;
-        if (isOpen) document.body.style.overflow = 'hidden';
-        else document.body.style.overflow = 'unset';
-
         const notifyRef = ref(db, `notifications/${user.id}`);
         return onValue(notifyRef, (snap) => {
             const data = snap.val() || {};
@@ -151,7 +154,7 @@ const NotificationHub: React.FC = () => {
                 .sort((a, b) => b.timestamp - a.timestamp);
             setNotifications(list);
         });
-    }, [user, isOpen]);
+    }, [user]);
 
     const markAsRead = async (id: string) => {
         if (!user) return;
@@ -167,37 +170,40 @@ const NotificationHub: React.FC = () => {
 
     return (
         <div className="relative">
-            <button onClick={() => setIsOpen(!isOpen)} className="relative p-2 text-gray-400 hover:text-red-500 transition-colors">
-                <i className="fa-solid fa-bell text-lg"></i>
-                {unreadCount > 0 && <span className="absolute top-0 right-0 w-2 h-2 bg-red-600 rounded-full animate-pulse"></span>}
+            <button onClick={() => setIsOpen(!isOpen)} className="relative p-2.5 rounded-xl bg-white/5 hover:bg-red-600/10 border border-white/5 transition-all text-gray-400 hover:text-red-500">
+                <i className="fa-solid fa-bell text-[16px]"></i>
+                {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full animate-pulse border-2 border-black"></span>}
             </button>
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="fixed md:absolute right-0 top-[70px] md:top-full mt-4 w-screen md:w-[350px] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[200]">
-                        <div className="p-5 border-b border-white/5 bg-black/40 flex justify-between items-center">
-                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Feed Synchronization</span>
-                            <button onClick={clearAll} className="text-[8px] font-black text-gray-500 uppercase hover:text-red-500">Clear</button>
+                    <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-[90px] md:top-full mt-4 w-auto md:w-[380px] bg-[#0a0a0a] border border-white/10 rounded-[2rem] shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden z-[200]">
+                        <div className="p-6 border-b border-white/5 bg-black/40 flex justify-between items-center">
+                            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Live Activity Hub</span>
+                            <button onClick={clearAll} className="text-[9px] font-black text-gray-500 uppercase hover:text-red-500 tracking-widest transition-colors">Clear Feed</button>
                         </div>
-                        <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-2">
+                        <div className="max-h-[60vh] md:max-h-[450px] overflow-y-auto custom-scrollbar p-3 bg-[#080808]/50">
                             {notifications.length === 0 ? (
-                                <div className="p-12 text-center opacity-20 flex flex-col items-center gap-4">
-                                    <SparklesIcon className="w-10 h-10" />
-                                    <p className="text-[9px] font-black uppercase tracking-widest">No activity synchronized</p>
+                                <div className="p-16 text-center opacity-10 flex flex-col items-center gap-5">
+                                    <SparklesIcon className="w-12 h-12" />
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em]">No activity synchronized</p>
                                 </div>
                             ) : (
                                 notifications.map((n) => (
-                                    <div key={n.id} onClick={() => markAsRead(n.id)} className={`p-4 border-b border-white/5 transition-all cursor-pointer flex items-start gap-4 ${!n.read ? 'bg-red-600/5' : 'hover:bg-white/5 opacity-60'}`}>
-                                        <img src={n.fromAvatar} className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
+                                    <div key={n.id} onClick={() => markAsRead(n.id)} className={`p-5 mb-2 rounded-3xl transition-all cursor-pointer flex items-start gap-4 border border-transparent ${!n.read ? 'bg-red-600/5 border-red-600/10' : 'hover:bg-white/5 opacity-60'}`}>
+                                        <img src={n.fromAvatar} className="w-11 h-11 rounded-2xl object-cover flex-shrink-0 shadow-lg ring-2 ring-white/5" />
                                         <div className="min-w-0">
-                                            <p className="text-[11px] text-gray-200 leading-tight">
-                                                <span className="font-black text-white uppercase">{n.fromName}</span>
-                                                {n.type === 'follow' && ' synchronized with your grid.'}
-                                                {n.type === 'friend_request' && ' initiated a social handshake.'}
-                                                {n.type === 'request_accepted' && ' accepted your social handshake.'}
+                                            <p className="text-[12px] text-gray-200 leading-tight">
+                                                <span className="font-black text-white uppercase mr-1">{n.fromName}</span>
+                                                {n.type === 'follow' && ' established a permanent neural sync.'}
+                                                {n.type === 'friend_request' && ' initiated a neural handshake.'}
+                                                {n.type === 'request_accepted' && ' accepted your neural handshake.'}
                                             </p>
-                                            <p className="text-[8px] text-gray-600 font-bold uppercase mt-1">{new Date(n.timestamp).toLocaleTimeString()}</p>
+                                            <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-2 flex items-center gap-2">
+                                                <i className="fa-solid fa-clock opacity-50"></i>
+                                                {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
                                         </div>
-                                        {!n.read && <div className="w-2 h-2 bg-red-600 rounded-full mt-2 flex-shrink-0"></div>}
+                                        {!n.read && <div className="w-2 h-2 bg-red-600 rounded-full mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(220,38,38,1)]"></div>}
                                     </div>
                                 ))
                             )}
@@ -238,19 +244,21 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo }) => {
           </nav>
           <div className="flex items-center gap-6">
               <SignedIn>
-                <div className="flex items-center gap-4 border-r border-white/10 pr-6">
+                <div className="flex items-center gap-3 border-r border-white/10 pr-6">
                     <RequestHub />
                     <NotificationHub />
                 </div>
               </SignedIn>
               <SignedOut>
                 <SignInButton mode="modal"><button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.4em] transition-all">Verify Identity</button></SignInButton>
-                <button onClick={() => onScrollTo('contact')} className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2.5 uppercase tracking-[0.3em] transition-all shadow-lg">Order Now</button>
+                <button onClick={() => onScrollTo('contact')} className="btn-angular bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-6 py-2.5 uppercase tracking-[0.3em] transition-all shadow-lg">Start Project</button>
               </SignedOut>
               <SignedIn>
-                <div className="flex items-center gap-3">
-                    <button onClick={() => setIsProfileOpen(true)} className="w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center hover:bg-red-600/20 transition-all border border-white/10"><i className="fa-solid fa-gear text-sm text-gray-400"></i></button>
-                    <UserButton appearance={{ elements: { userButtonAvatarBox: "w-11 h-11 border-[3px] border-red-600 shadow-lg" } }} />
+                <div className="flex items-center gap-4">
+                    <button onClick={() => setIsProfileOpen(true)} className="relative p-2.5 rounded-xl bg-white/5 hover:bg-red-600/10 border border-white/5 transition-all text-gray-400 hover:text-white group" title="Agent Settings">
+                        <i className="fa-solid fa-gear text-[18px] group-hover:rotate-90 transition-transform duration-500"></i>
+                    </button>
+                    <UserButton appearance={{ elements: { userButtonAvatarBox: "w-11 h-11 border-[3px] border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.4)]" } }} />
                 </div>
               </SignedIn>
           </div>
@@ -266,9 +274,9 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
         <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-20 px-6 select-none bg-black/60 backdrop-blur-xl border-b border-white/5">
             <div onClick={() => { setIsSpinning(true); onScrollTo('home'); setTimeout(() => setIsSpinning(false), 2000); }} className="flex items-center gap-3">
                 <img src={siteConfig.branding.logoUrl} alt="Logo" className={`h-9 w-9 rounded-full ${isSpinning ? 'logo-3d-spin' : ''}`} />
-                <span className="font-black text-white tracking-widest text-[10px] uppercase">FEZ ZONE</span>
+                <span className="font-black text-white tracking-widest text-[10px] uppercase leading-none">FEZ GRID</span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
                 <SignedIn>
                     <div className="flex items-center gap-3">
                         <RequestHub />
@@ -276,7 +284,7 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo }) => {
                         <UserButton appearance={{ elements: { userButtonAvatarBox: "w-10 h-10 border-2 border-red-600" } }} />
                     </div>
                 </SignedIn>
-                <SignedOut><SignInButton mode="modal"><button className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-600/10 px-4 py-2 rounded-lg border border-red-600/30">Verify</button></SignInButton></SignedOut>
+                <SignedOut><SignInButton mode="modal"><button className="text-[9px] font-black text-red-500 uppercase tracking-widest bg-red-600/10 px-4 py-2 rounded-lg border border-red-600/30">Verify</button></SignInButton></SignedOut>
             </div>
         </header>
     );
@@ -293,10 +301,10 @@ export const MobileFooterNav: React.FC<{ onScrollTo: (section: 'home' | 'portfol
     return (
         <nav className="md:hidden fixed bottom-6 left-6 right-6 z-40 bg-black/80 backdrop-blur-3xl rounded-[2rem] h-18 flex justify-around items-center shadow-2xl border border-white/10 p-2">
             <FooterNavLink icon={<HomeIcon className="w-5 h-5" />} label="Sync" onClick={() => onScrollTo('home')} />
-            <FooterNavLink icon={<BriefcaseIcon className="w-5 h-5" />} label="Graphics" onClick={() => onScrollTo('portfolio')} />
+            <FooterNavLink icon={<BriefcaseIcon className="w-5 h-5" />} label="Mastery" onClick={() => onScrollTo('portfolio')} />
             <FooterNavLink icon={<VfxIcon className="w-5 h-5" />} label="VFX" onClick={() => onScrollTo('video-editing')} />
-            <FooterNavLink icon={<ChatBubbleIcon className="w-5 h-5" />} label="Trade" onClick={() => onScrollTo('contact')} />
-            <FooterNavLink icon={<UserCircleIcon className="w-5 h-5" />} label="Identity" onClick={() => onScrollTo('about')} />
+            <FooterNavLink icon={<ChatBubbleIcon className="w-5 h-5" />} label="Market" onClick={() => onScrollTo('contact')} />
+            <FooterNavLink icon={<UserCircleIcon className="w-5 h-5" />} label="Agent" onClick={() => onScrollTo('about')} />
         </nav>
     );
 };

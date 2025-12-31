@@ -1,6 +1,9 @@
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, SignIn } from '@clerk/clerk-react';
+import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getDatabase, ref, onValue, limitToLast, query } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 import type { GraphicWork, VideoWork, VfxSubTab, ModalItem } from './hooks/types';
 import { siteConfig } from './config';
@@ -15,7 +18,7 @@ import { ModalViewer, GalleryGridModal } from './components/ModalViewer';
 import { ContextMenu } from './components/ContextMenu';
 import { VFXBackground } from './components/VFXBackground';
 import { MediaSidebar } from './components/MediaSidebar';
-import { YouTubeIcon, SparklesIcon } from './components/Icons';
+import { YouTubeIcon, SparklesIcon, CheckCircleIcon } from './components/Icons';
 import { ParallaxProvider } from './contexts/ParallaxContext';
 import { MediaGridBackground } from './components/MediaGridBackground';
 import { ServicesListPopup } from './components/ServicesListPopup';
@@ -25,8 +28,58 @@ import { YouTubeRedirectPopup } from './components/YouTubeRedirectPopup';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { FloatingMessenger } from './components/FloatingMessenger';
 
+const firebaseConfig = {
+  databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
+  apiKey: "AIzaSyCC3wbQp5713OqHlf1jLZabA0VClDstfKY",
+  projectId: "fuad-editing-zone",
+  messagingSenderId: "1032345523456",
+  appId: "1:1032345523456:web:123456789",
+};
+if (!getApps().length) initializeApp(firebaseConfig);
+const db = getDatabase();
+
+const NotificationToaster: React.FC<{ userId: string }> = ({ userId }) => {
+    const [toast, setToast] = useState<any>(null);
+    const lastNotifyRef = useRef<number>(Date.now());
+
+    useEffect(() => {
+        const notifyRef = query(ref(db, `notifications/${userId}`), limitToLast(1));
+        return onValue(notifyRef, (snap) => {
+            const data = snap.val();
+            if (data) {
+                const [id, n]: [string, any] = Object.entries(data)[0];
+                if (n.timestamp > lastNotifyRef.current) {
+                    setToast({ id, ...n });
+                    setTimeout(() => setToast(null), 5000);
+                }
+            }
+        });
+    }, [userId]);
+
+    return (
+        <AnimatePresence>
+            {toast && (
+                <motion.div initial={{ opacity: 0, x: 100, scale: 0.8 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} className="fixed top-24 right-4 md:right-8 z-[100000] w-full max-w-[320px]">
+                    <div className="bg-black/80 backdrop-blur-2xl border border-red-600/30 rounded-2xl p-4 shadow-[0_20px_50px_rgba(220,38,38,0.3)] flex gap-4 items-center">
+                        <img src={toast.fromAvatar} className="w-12 h-12 rounded-xl object-cover ring-2 ring-red-600/20 shadow-lg" alt="" />
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-black text-white uppercase tracking-tight truncate leading-tight">{toast.fromName}</p>
+                            <p className="text-[10px] text-gray-400 font-medium leading-tight mt-1">
+                                {toast.type === 'follow' && 'established a neural sync.'}
+                                {toast.type === 'friend_request' && 'initiated a handshake.'}
+                                {toast.type === 'request_accepted' && 'accepted your handshake.'}
+                            </p>
+                        </div>
+                        <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse flex-shrink-0"></div>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+};
+
 export default function App() {
-  const { isSignedIn, isLoaded: isClerkLoaded } = useUser();
+  const { isSignedIn, user, isLoaded: isClerkLoaded } = useUser();
   
   const [isYouTubeApiReady, setIsYouTubeApiReady] = useState(false);
   const [modalState, setModalState] = useState<{ items: ModalItem[]; currentIndex: number } | null>(null);
@@ -49,7 +102,6 @@ export default function App() {
 
   const isAnyOverlayActive = !!(modalState || isGalleryGridOpen || singleImageViewerState || isServicesPopupOpen || selectionTarget || isYouTubeRedirectOpen || isMediaSidebarOpen || contextMenu || isLockActive);
 
-  // --- POPUP INTERRUPTION PREVENTION: Global Scroll Lock ---
   useEffect(() => {
     if (isAnyOverlayActive) {
       document.body.style.overflow = 'hidden';
@@ -60,7 +112,6 @@ export default function App() {
     }
   }, [isAnyOverlayActive]);
 
-  // Load YouTube IFrame API
   useEffect(() => {
     if (!window.YT) {
       const tag = document.createElement('script');
@@ -73,7 +124,6 @@ export default function App() {
     }
   }, []);
 
-  // --- 5-Minute Access Lock logic ---
   useEffect(() => {
     if (isSignedIn) {
         setIsLockActive(false);
@@ -133,6 +183,9 @@ export default function App() {
           <div className={`transition-all fixed top-0 left-0 right-0 z-50 ${(isNavVisible) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
             <DesktopHeader onScrollTo={handleScrollTo} /><MobileHeader onScrollTo={handleScrollTo} />
           </div>
+          
+          {isSignedIn && user && <NotificationToaster userId={user.id} />}
+
           <MediaSidebar isOpen={isMediaSidebarOpen} onClose={() => setIsMediaSidebarOpen(false)} activeYouTubeId={activeYouTubeId} onSelectYouTubeId={setActiveYouTubeId} isYtPlaying={isYtPlaying} setIsYtPlaying={setIsYtPlaying} onYouTubeClick={() => setIsYouTubeRedirectOpen(true)} />
           
           <AnimatePresence>
