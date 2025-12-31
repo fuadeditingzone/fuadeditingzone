@@ -151,7 +151,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
             {isSignedIn && (
                 <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-6 md:p-10 shadow-2xl space-y-6 max-w-3xl mx-auto">
                     <div className="flex gap-4">
-                        <img src={user.imageUrl} className="w-12 h-12 rounded-full border border-red-600/30 flex-shrink-0" alt="" />
+                        <img src={user.imageUrl} className="w-12 h-12 rounded-full border border-red-600/30 flex-shrink-0" alt="Active Profile" />
                         <div className="flex-1 space-y-4">
                             <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Subject line..." className="w-full bg-black border border-white/5 rounded-xl p-4 text-white text-xs outline-none focus:border-red-600/50" />
                             {isOwner && (
@@ -189,10 +189,10 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                     const commentsList = Object.entries(post.comments || {}).map(([id, val]) => ({ id, ...val }));
 
                     return (
-                        <motion.div key={post.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#080808] border border-white/5 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-xl flex flex-col h-fit">
+                        <article key={post.id} className="bg-[#080808] border border-white/5 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-xl flex flex-col h-fit">
                             <div className="p-4 flex items-center justify-between bg-black/40">
                                 <div className="flex items-center gap-3 cursor-pointer group min-w-0" onClick={() => onOpenProfile?.(post.userId)}>
-                                    <img src={post.userAvatar} className="w-8 h-8 rounded-full border border-white/10 object-cover flex-shrink-0" alt="" />
+                                    <img src={post.userAvatar} className="w-8 h-8 rounded-full border border-white/10 object-cover flex-shrink-0" alt={`@{post.userName} avatar`} />
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-1">
                                             <p className="text-[10px] font-black text-white uppercase truncate group-hover:text-red-500 transition-colors">@{post.userName}</p>
@@ -211,7 +211,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                     className="aspect-square bg-black flex items-center justify-center relative group overflow-hidden border-b border-white/5 cursor-pointer"
                                     onClick={() => onOpenModal?.(posts, idx)}
                                 >
-                                    {post.mediaType === 'video' ? <video src={post.mediaUrl} className="w-full h-full object-contain" /> : <img src={post.mediaUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />}
+                                    {post.mediaType === 'video' ? <video src={post.mediaUrl} className="w-full h-full object-contain" title={post.title || "Marketplace Video"} /> : <img src={post.mediaUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={post.title || post.caption || "Marketplace Artwork"} />}
                                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                         <EyeIcon className="w-8 h-8 text-white/80" />
                                     </div>
@@ -219,7 +219,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                             )}
 
                             <div className="p-5 space-y-4">
-                                {post.title && <h3 className="text-xs font-black text-white uppercase tracking-tight truncate">{post.title}</h3>}
+                                {post.title && <h2 className="text-xs font-black text-white uppercase tracking-tight truncate">{post.title}</h2>}
                                 <p className="text-zinc-400 text-[10px] leading-relaxed line-clamp-2">{post.caption}</p>
                                 
                                 <div className="flex items-center gap-6 pt-4 border-t border-white/5">
@@ -239,7 +239,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                             <div className="space-y-3 max-h-[120px] overflow-y-auto custom-scrollbar pr-2">
                                                 {commentsList.map(c => (
                                                     <div key={c.id} className="flex gap-2 items-start">
-                                                        <img src={c.userAvatar} className="w-6 h-6 rounded-full flex-shrink-0 object-cover" />
+                                                        <img src={c.userAvatar} className="w-6 h-6 rounded-full flex-shrink-0 object-cover" alt="Commenter" />
                                                         <div className="bg-white/5 p-2.5 rounded-xl flex-1 min-w-0">
                                                             <p className="text-[8px] font-black text-white uppercase mb-0.5 truncate">@{c.userName}</p>
                                                             <p className="text-[10px] text-zinc-400 leading-tight">{c.text}</p>
@@ -257,7 +257,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                     )}
                                 </AnimatePresence>
                             </div>
-                        </motion.div>
+                        </article>
                     );
                 })}
             </div>

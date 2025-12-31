@@ -36,6 +36,18 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getDatabase(app);
 
+// SEO Utility
+const updateSEO = (title: string, desc: string, image?: string) => {
+  document.title = title;
+  document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
+  document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+  document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
+  if (image) {
+    document.querySelector('meta[property="og:image"]')?.setAttribute('content', image);
+    document.querySelector('meta[property="twitter:image"]')?.setAttribute('content', image);
+  }
+};
+
 export default function App() {
   const { isSignedIn, user } = useUser();
   const [route, setRoute] = useState<'home' | 'marketplace' | 'community'>(
@@ -55,39 +67,37 @@ export default function App() {
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
-  // Daily Spotlight Logic
+  // Dynamic SEO based on Route
   useEffect(() => {
-    const checkDailySpotlight = async () => {
-      const today = new Date().toISOString().split('T')[0];
-      const spotlightRef = ref(db, `system/daily_spotlight/${today}`);
-      const snap = await get(spotlightRef);
-      
-      if (!snap.exists()) {
-        const postsSnap = await get(ref(db, 'explore_posts'));
-        const postsData = postsSnap.val();
-        if (postsData) {
-          const yesterday = Date.now() - 86400000;
-          const topPosts = Object.entries(postsData)
-            .map(([id, val]: [string, any]) => ({ id, ...val }))
-            .filter(p => p.timestamp > yesterday)
-            .sort((a, b) => Object.keys(b.likes || {}).length - Object.keys(a.likes || {}).length)
-            .slice(0, 3);
-          
-          if (topPosts.length > 0) {
-            await set(spotlightRef, { processed: true, top: topPosts.map(p => p.id) });
-            topPosts.forEach(post => {
-              push(ref(db, 'notifications/global'), {
-                type: 'daily_spotlight',
-                text: `Daily Spotlight: @${post.userName}'s post is trending!`,
-                postId: post.id,
-                timestamp: Date.now()
-              });
-            });
-          }
-        }
+    if (route === 'home') {
+      updateSEO(siteConfig.seo.title, siteConfig.seo.description);
+    } else if (route === 'marketplace') {
+      updateSEO("Marketplace | Fuad Editing Zone", "Discover premium VFX shots and high-end graphic design templates from Fuad Ahmed.");
+    } else if (route === 'community') {
+      updateSEO("Community Hub | Fuad Editing Zone", "Connect with other designers and VFX editors in the FEZ ecosystem.");
+    }
+  }, [route]);
+
+  // JSON-LD Structured Data
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Fuad Ahmed",
+      "alternateName": "Selected Legend",
+      "url": "https://fuadeditingzone.pages.dev",
+      "image": siteConfig.branding.profilePicUrl,
+      "sameAs": siteConfig.branding.socials.map(s => s.url),
+      "jobTitle": "VFX Editor & Graphic Designer",
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Fuad Editing Zone"
       }
-    };
-    checkDailySpotlight();
+    });
+    document.head.appendChild(script);
+    return () => { document.head.removeChild(script); };
   }, []);
 
   useEffect(() => {
@@ -190,7 +200,7 @@ export default function App() {
               <div className="container mx-auto px-4 py-6 md:py-10 flex flex-col min-h-0">
                 <div className="text-center mb-8 md:mb-12 flex-shrink-0">
                     <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-4 block">Visual Ecosystem</span>
-                    <h2 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">Marketplace</h2>
+                    <h1 className="text-white text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">Marketplace</h1>
                     <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4">Discover & Collaborate Sequentially</p>
                 </div>
                 <ExploreFeed onOpenProfile={handleOpenProfile} onOpenModal={(items, index) => setModalState({ items, currentIndex: index })} />
@@ -201,7 +211,7 @@ export default function App() {
               <div className="flex-1 flex flex-col min-h-0 container mx-auto px-4 py-6 md:py-10">
                 <div className="text-center mb-6 md:mb-8 flex-shrink-0">
                     <span className="text-[10px] font-black uppercase tracking-[0.8em] text-red-600 mb-2 md:mb-4 block">Network Infrastructure</span>
-                    <h2 className="text-white text-4xl md:text-8xl font-black uppercase tracking-tighter leading-none">Community Hub</h2>
+                    <h1 className="text-white text-4xl md:text-8xl font-black uppercase tracking-tighter leading-none">Community Hub</h1>
                     <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-2 md:mt-4">Real-time collaboration node</p>
                 </div>
                 <CommunityChat onShowProfile={handleOpenProfile} initialTargetUserId={targetUserId} />

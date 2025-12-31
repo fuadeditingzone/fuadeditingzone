@@ -59,7 +59,7 @@ const PortfolioSection: React.FC<{
                     </div>
                     <div>
                         <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">{subtitle}</span>
-                        <h3 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter leading-none">{title}</h3>
+                        <h2 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter leading-none">{title}</h2>
                     </div>
                 </div>
                 {isOwner && (
@@ -85,7 +85,7 @@ const PortfolioSection: React.FC<{
                             <img 
                                 src={work.imageUrl || work.thumbnailUrl || (work.mediaUrl && work.mediaType === 'image' ? work.mediaUrl : `https://i.ytimg.com/vi/${work.videoId}/mqdefault.jpg`)} 
                                 className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
-                                alt=""
+                                alt={`${work.title || 'Portfolio Work'} | Fuad Editing Zone - ${title}`}
                             />
                             {work.mediaType === 'video' && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -105,7 +105,7 @@ const PortfolioSection: React.FC<{
                         )}
 
                         <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4 md:p-6">
-                            <h4 className="text-white font-black uppercase tracking-widest text-[8px] md:text-xs leading-tight truncate">{work.title || 'Portfolio Work'}</h4>
+                            <h3 className="text-white font-black uppercase tracking-widest text-[8px] md:text-xs leading-tight truncate">{work.title || 'Portfolio Work'}</h3>
                         </div>
                     </motion.div>
                 ))}
@@ -162,7 +162,7 @@ const VfxVideoPlayer: React.FC<{
     return (
         <motion.div ref={containerRef as any} variants={variants} className="group relative aspect-square bg-black rounded-[1.2rem] md:rounded-[2.5rem] overflow-hidden border border-white/10 hover:border-red-600/50 transition-all duration-500">
             <figure className="w-full h-full m-0 p-0 cursor-pointer" onClick={() => onPlayRequest(isPlaying ? null : video)}>
-                <video ref={videoRef} src={videoUrl} loop muted={isMuted} playsInline className="w-full h-full object-contain" onCanPlay={() => setIsLoading(false)} />
+                <video ref={videoRef} src={videoUrl} loop muted={isMuted} playsInline className="w-full h-full object-contain" onCanPlay={() => setIsLoading(false)} title={`${video.title || 'VFX Work'} | Fuad Editing Zone Mastery`} />
                 <div className={`absolute inset-0 bg-black/20 transition-opacity flex items-center justify-center ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
                      {!isPlaying && !isLoading && <PlayIcon className="w-10 h-10 text-white/80 drop-shadow-lg" />}
                 </div>
@@ -350,7 +350,7 @@ export const Portfolio: React.FC<any> = ({
                         </div>
                         <div>
                             <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">YouTube Edits</span>
-                            <h3 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter">Content Feed</h3>
+                            <h2 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter">Content Feed</h2>
                         </div>
                     </div>
 
@@ -364,7 +364,7 @@ export const Portfolio: React.FC<any> = ({
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="flex items-center gap-3 md:gap-4 min-w-0">
                                         <div className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden border border-red-600/30 flex-shrink-0">
-                                            <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} className="w-full h-full object-cover" />
+                                            <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} className="w-full h-full object-cover" alt="Selected Legend YouTube Profile" />
                                         </div>
                                         <div className="min-w-0">
                                             <p className="text-white font-black text-sm md:text-lg uppercase truncate">{stats.channelTitle}</p>
@@ -387,7 +387,7 @@ export const Portfolio: React.FC<any> = ({
                         <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 w-full lg:w-[320px] flex-shrink-0">
                             {animeEdits.slice(0, 4).map((video: any) => (
                                 <button key={video.id} onClick={() => { setActiveYouTubeId(video.videoId); setIsYtPlaying(true); }} className={`relative aspect-video rounded-xl md:rounded-2xl overflow-hidden border transition-all ${activeYouTubeId === video.videoId ? 'border-red-600 ring-4 ring-red-600/20 scale-[1.02]' : 'border-white/10 opacity-60 hover:opacity-100'}`}>
-                                    <img src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} className="w-full h-full object-cover" />
+                                    <img src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} className="w-full h-full object-cover" alt="Video Thumbnail" />
                                 </button>
                             ))}
                         </div>
@@ -401,7 +401,7 @@ export const Portfolio: React.FC<any> = ({
                         </div>
                         <div>
                             <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">Visual Effects</span>
-                            <h3 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter">VFX Mastery</h3>
+                            <h2 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter">VFX Mastery</h2>
                         </div>
                     </div>
                     <motion.div variants={containerVariants} initial="hidden" animate={vfxInView ? "visible" : "hidden"} className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-7xl mx-auto px-2 md:px-0">
