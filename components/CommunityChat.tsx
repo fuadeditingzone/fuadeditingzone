@@ -161,8 +161,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
   const [viewingProfile, setViewingProfile] = useState<ChatUser | null>(null);
   const [isGlobal, setIsGlobal] = useState(true);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [sidebarSearchQuery, setSidebarSearchQuery] = useState('');
   const [showConversationOnMobile, setShowConversationOnMobile] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -233,32 +232,19 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
     await push(ref(db, chatPath), newMessage);
   };
 
+  const filteredUsers = useMemo(() => {
+    return users
+      .filter(u => u.id !== clerkUser?.id)
+      .filter(u => 
+        u.name?.toLowerCase().includes(sidebarSearchQuery.toLowerCase()) || 
+        u.username?.toLowerCase().includes(sidebarSearchQuery.toLowerCase())
+      );
+  }, [users, sidebarSearchQuery, clerkUser]);
+
   return (
     <section id="community" className={`flex-1 flex flex-col min-h-0 bg-black relative z-10 overflow-hidden ${isModalMode ? 'h-full' : 'pb-2 md:pb-6'}`}>
       <AnimatePresence>
         {viewingProfile && <AgentProfileModal user={viewingProfile} currentUser={clerkUser} onClose={() => setViewingProfile(null)} onMessage={() => { setIsGlobal(false); setSelectedUser(viewingProfile); setShowConversationOnMobile(true); }} onShowFullProfile={(id) => onShowProfile?.(id)} />}
-        {isSearchOpen && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[80000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4">
-                <div className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 flex flex-col max-h-[80dvh]">
-                    <div className="flex justify-between items-center mb-8 flex-shrink-0">
-                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Scan Network</h3>
-                        <button onClick={() => setIsSearchOpen(false)} className="p-2 bg-white/5 rounded-full"><CloseIcon className="w-6 h-6 text-zinc-500" /></button>
-                    </div>
-                    <div className="relative mb-8 flex-shrink-0">
-                        <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
-                        <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Signal Search..." className="w-full bg-black border border-white/10 rounded-2xl py-5 pl-14 text-white outline-none focus:border-red-600 transition-all shadow-inner" />
-                    </div>
-                    <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar min-h-0">
-                        {users.filter(u => u.username?.toLowerCase().includes(searchQuery.toLowerCase()) && u.id !== clerkUser?.id).map(u => (
-                            <button key={u.id} onClick={() => { setViewingProfile(u); setIsSearchOpen(false); }} className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-red-600/30 transition-all text-left">
-                                <img src={u.avatar} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
-                                <div><p className="text-[12px] font-black uppercase text-white tracking-widest">{u.name}</p><p className="text-[9px] font-bold text-zinc-600">@{u.username}</p></div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </motion.div>
-        )}
       </AnimatePresence>
 
       <div className={`flex-1 flex flex-col min-h-0 ${isModalMode ? 'h-full px-0' : 'container mx-auto px-2 md:px-4 max-w-6xl'}`}>
@@ -269,34 +255,50 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                <span className="text-[9px] font-black text-white uppercase tracking-widest">Core Interface</span>
             </div>
             
-            <div className="p-3 space-y-1.5 border-b border-white/5 flex-shrink-0">
-                <button onClick={() => { setIsGlobal(true); setSelectedUser(null); setShowConversationOnMobile(true); }} className={`w-full flex items-center gap-3 p-3 rounded-[1.2rem] transition-all border ${isGlobal ? 'bg-red-600/10 border-red-600/20' : 'border-transparent hover:bg-white/5'}`}>
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center border flex-shrink-0 ${isGlobal ? 'bg-red-600 text-white' : 'bg-white/5 text-zinc-500'}`}><GlobeAltIcon className="w-4 h-4" /></div>
-                    <div className="text-left"><p className={`text-[10px] font-black uppercase tracking-widest ${isGlobal ? 'text-white' : 'text-zinc-500'}`}>Public Hub</p></div>
-                </button>
-                <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id)} className="w-full flex items-center gap-3 p-3 rounded-[1.2rem] hover:bg-white/5 transition-all group">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0 group-hover:bg-red-600 group-hover:text-white transition-all"><UserCircleIcon className="w-4 h-4" /></div>
-                    <div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Profile</p></div>
-                </button>
-                <button onClick={() => setIsSearchOpen(true)} className="w-full flex items-center gap-3 p-3 rounded-[1.2rem] hover:bg-white/5 transition-all">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center border bg-white/5 text-zinc-500 flex-shrink-0"><SearchIcon className="w-4 h-4" /></div>
-                    <div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Scan</p></div>
-                </button>
+            {/* Sidebar Controls & Persistent Search */}
+            <div className="p-3 space-y-3 border-b border-white/5 flex-shrink-0">
+                <div className="flex gap-1.5">
+                    <button onClick={() => { setIsGlobal(true); setSelectedUser(null); setShowConversationOnMobile(true); }} className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-[1.2rem] transition-all border ${isGlobal ? 'bg-red-600/10 border-red-600/20 text-red-500' : 'border-transparent hover:bg-white/5 text-zinc-500'}`}>
+                        <GlobeAltIcon className="w-4 h-4" />
+                        <span className="text-[9px] font-black uppercase tracking-widest">Global</span>
+                    </button>
+                    <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id)} className="flex-1 flex items-center justify-center gap-2 p-3 rounded-[1.2rem] hover:bg-white/5 transition-all text-zinc-500 group">
+                        <UserCircleIcon className="w-4 h-4 group-hover:text-red-500 transition-colors" />
+                        <span className="text-[9px] font-black uppercase tracking-widest group-hover:text-white transition-colors">Profile</span>
+                    </button>
+                </div>
+                
+                {/* Search Bar with Poppins Font */}
+                <div className="relative">
+                    <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 w-3.5 h-3.5" />
+                    <input 
+                      value={sidebarSearchQuery} 
+                      onChange={e => setSidebarSearchQuery(e.target.value)} 
+                      placeholder="Scan Network..." 
+                      className="poppins-font w-full bg-black/60 border border-white/5 rounded-[1.2rem] py-2.5 pl-10 pr-4 text-white text-[10px] outline-none focus:border-red-600/50 transition-all shadow-inner placeholder-zinc-700" 
+                    />
+                </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar min-h-0">
-              {users.filter(u => u.id !== clerkUser?.id).map(u => (
-                <button key={u.id} onClick={() => { setIsGlobal(false); setSelectedUser(u); setShowConversationOnMobile(true); }} className={`w-full flex items-center gap-3 p-3 rounded-[1.2rem] transition-all border ${selectedUser?.id === u.id && !isGlobal ? 'bg-red-600/10 border-red-600/20' : 'border-transparent hover:bg-white/5'}`}>
-                  <img src={u.avatar} className={`w-9 h-9 rounded-xl border object-cover flex-shrink-0 ${u.username === OWNER_HANDLE ? 'border-red-600 shadow-[0_0_8px_rgba(255,0,0,0.4)]' : u.username === ADMIN_HANDLE ? 'border-blue-600 shadow-[0_0_8px_rgba(59,130,246,0.4)]' : 'border-white/10'}`} alt="" />
-                  <div className="text-left flex-1 truncate">
-                    <div className="flex items-center">
-                        <p className="text-[10px] font-black uppercase text-white truncate">{u.name}</p>
-                        {getBadge(u.username)}
+              {filteredUsers.length === 0 ? (
+                <div className="py-12 text-center opacity-10">
+                   <p className="text-[8px] font-black uppercase tracking-widest">Zero Signals Found</p>
+                </div>
+              ) : (
+                filteredUsers.map(u => (
+                  <button key={u.id} onClick={() => { setIsGlobal(false); setSelectedUser(u); setShowConversationOnMobile(true); }} className={`w-full flex items-center gap-3 p-3 rounded-[1.2rem] transition-all border ${selectedUser?.id === u.id && !isGlobal ? 'bg-red-600/10 border-red-600/20' : 'border-transparent hover:bg-white/5'}`}>
+                    <img src={u.avatar} className={`w-9 h-9 rounded-xl border object-cover flex-shrink-0 ${u.username === OWNER_HANDLE ? 'border-red-600 shadow-[0_0_8px_rgba(255,0,0,0.4)]' : u.username === ADMIN_HANDLE ? 'border-blue-600 shadow-[0_0_8px_rgba(59,130,246,0.4)]' : 'border-white/10'}`} alt="" />
+                    <div className="text-left flex-1 truncate">
+                      <div className="flex items-center">
+                          <p className="text-[10px] font-black uppercase text-white truncate">{u.name}</p>
+                          {getBadge(u.username)}
+                      </div>
+                      <p className={`text-[8px] font-bold text-zinc-600`}>@{u.username}</p>
                     </div>
-                    <p className={`text-[8px] font-bold text-zinc-600`}>@{u.username}</p>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))
+              )}
             </div>
           </div>
 
@@ -304,7 +306,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             <div className="p-4 md:p-6 border-b border-white/5 flex items-center gap-3 bg-black/40 backdrop-blur-xl flex-shrink-0">
                <button onClick={() => setShowConversationOnMobile(false)} className="md:hidden p-1.5 text-white bg-white/5 rounded-full"><ChevronLeftIcon className="w-5 h-5" /></button>
                <div className={`w-10 h-10 rounded-xl bg-red-600/15 flex items-center justify-center border overflow-hidden flex-shrink-0 ${!isGlobal && selectedUser?.username === OWNER_HANDLE ? 'border-red-600' : !isGlobal && selectedUser?.username === ADMIN_HANDLE ? 'border-blue-600' : 'border-white/10'}`}>
-                  {isGlobal ? <GlobeAltIcon className="w-5 h-5 text-red-600" /> : <img src={selectedUser?.avatar} className="w-full h-full object-cover cursor-pointer" onClick={() => onShowProfile?.(selectedUser!.id)} />}
+                  {isGlobal ? <GlobeAltIcon className="w-5 h-5 text-red-600" /> : <img src={selectedUser?.avatar} className="w-full h-full object-cover cursor-pointer" onClick={() => onShowProfile?.(selectedUser!.id)} alt="" />}
                </div>
                <div className="flex-1 truncate">
                   <h4 className="text-[12px] font-black text-white uppercase tracking-widest truncate flex items-center">
@@ -333,7 +335,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                             {msg.senderName}
                             {getBadge(msg.senderName)}
                         </span>
-                        <div className={`p-3 md:p-4 rounded-[1.2rem] text-[12px] md:text-[13px] border whitespace-pre-wrap ${isOrder ? 'bg-red-600/20 border-red-600/50 text-white font-bold' : (msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-zinc-300 rounded-tl-none')}`} style={{ overflowWrap: 'anywhere' }}>{msg.text}</div>
+                        <div className={`clamp-3 p-3 md:p-4 rounded-[1.2rem] text-[12px] md:text-[13px] border whitespace-pre-wrap ${isOrder ? 'bg-red-600/20 border-red-600/50 text-white font-bold' : (msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-zinc-300 rounded-tl-none')}`} style={{ overflowWrap: 'anywhere' }}>{msg.text}</div>
                     </div>
                   </div>
                 );

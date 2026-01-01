@@ -53,7 +53,7 @@ const PostCaption: React.FC<{ text: string }> = ({ text }) => {
     useEffect(() => {
         if (textRef.current) {
             const el = textRef.current;
-            // Check if content height exceeds the clamped height (roughly 2 lines)
+            // Check if content height exceeds the clamped height (roughly 3 lines)
             setIsTruncated(el.scrollHeight > el.clientHeight);
         }
     }, [text]);
@@ -62,7 +62,7 @@ const PostCaption: React.FC<{ text: string }> = ({ text }) => {
         <div className="min-h-[1.5em] font-sans">
             <p 
                 ref={textRef}
-                className={`text-zinc-400 text-[11px] md:text-[13px] leading-relaxed break-words no-clip ${!isExpanded ? 'line-clamp-2' : ''}`}
+                className={`text-zinc-400 text-[11px] md:text-[13px] leading-relaxed break-words no-clip ${!isExpanded ? 'line-clamp-3' : ''}`}
             >
                 {text}
             </p>
@@ -295,7 +295,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                                                     <p className="text-[10px] font-bold text-white uppercase mb-0.5 truncate">@{c.userName}</p>
                                                                     {getBadge(c.userName)}
                                                                 </div>
-                                                                <p className="text-[12px] text-zinc-400 leading-tight no-clip">{c.text}</p>
+                                                                <p className="text-[12px] text-zinc-400 leading-tight clamp-3 no-clip">{c.text}</p>
                                                             </div>
                                                         </div>
                                                     ))}
