@@ -38,7 +38,9 @@ const db = getDatabase(app);
 
 const updateSEO = (title: string, desc: string, image?: string) => {
   if ((window as any).updatePortalMetadata) {
-    (window as any).updatePortalMetadata(title, desc, image);
+    // Ensure absolute URL for social previews
+    const absoluteImg = image ? (image.startsWith('http') ? image : window.location.origin + image) : undefined;
+    (window as any).updatePortalMetadata(title, desc, absoluteImg);
   }
 };
 
@@ -62,6 +64,22 @@ export default function App() {
   const [pipVideo, setPipVideo] = useState<VideoWork | null>(null);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
+  const resolveProfileFromUrl = async (path: string) => {
+    if (path.startsWith('/@')) {
+      const handle = path.substring(2);
+      const usersSnap = await get(ref(db, 'users'));
+      const usersData = usersSnap.val();
+      if (usersData) {
+          const userEntry = Object.entries(usersData).find(([id, data]: [string, any]) => data.username === handle || id === handle);
+          if (userEntry) {
+            setViewingProfileId(userEntry[0]);
+            return true;
+          }
+      }
+    }
+    return false;
+  };
+
   useEffect(() => {
     const handleInitialLink = async () => {
       const path = window.location.pathname;
@@ -76,13 +94,10 @@ export default function App() {
         if (postSnap.exists()) setModalState({ items: [{ id, ...postSnap.val() }], currentIndex: 0 });
       } else if (path.startsWith('/profile/')) {
         setViewingProfileId(path.split('/')[2]);
-      } else if (path.startsWith('/@')) {
-        const handle = path.substring(2);
-        const usersSnap = await get(ref(db, 'users'));
-        const usersData = usersSnap.val();
-        if (usersData) {
-            const userEntry = Object.entries(usersData).find(([id, data]: [string, any]) => data.username === handle || id === handle);
-            if (userEntry) setViewingProfileId(userEntry[0]);
+      } else {
+        const resolved = await resolveProfileFromUrl(path);
+        if (!resolved) {
+          setRoute(path === '/marketplace' ? 'marketplace' : path === '/community' ? 'community' : 'home');
         }
       }
     };
@@ -115,7 +130,6 @@ export default function App() {
   const handleCloseModal = () => {
     let base = route === 'home' ? '/' : `/${route}`;
     if (viewingProfileId) {
-        // If we were viewing a profile, stay on that URL format
         get(ref(db, `users/${viewingProfileId}`)).then(snap => {
             const userData = snap.val();
             const handle = userData?.username || viewingProfileId;
@@ -128,10 +142,15 @@ export default function App() {
   };
 
   useEffect(() => {
-    const handlePopState = () => {
+    const handlePopState = async () => {
       const path = window.location.pathname;
       if (!path.includes('/work/') && !path.includes('/post/')) setModalState(null);
-      if (!path.includes('/profile/') && !path.startsWith('/@')) setViewingProfileId(null);
+      
+      const resolved = await resolveProfileFromUrl(path);
+      if (!resolved && !path.includes('/profile/')) {
+        setViewingProfileId(null);
+      }
+      
       setRoute(path === '/marketplace' ? 'marketplace' : path === '/community' ? 'community' : 'home');
     };
     window.addEventListener('popstate', handlePopState);
@@ -226,7 +245,14 @@ export default function App() {
             )}
           </main>
 
-          <ProfileModal isOpen={!!viewingProfileId} onClose={handleCloseProfile} viewingUserId={viewingProfileId} onOpenModal={handleSetModal} onMessageUser={handleOpenChatWithUser} />
+          <ProfileModal 
+            isOpen={!!viewingProfileId} 
+            onClose={handleCloseProfile} 
+            viewingUserId={viewingProfileId} 
+            onOpenModal={handleSetModal} 
+            onMessageUser={handleOpenChatWithUser}
+            onShowProfile={handleOpenProfile}
+          />
           {modalState && <ModalViewer state={{ ...modalState, items: normalizedModalItems }} onClose={handleCloseModal} onNext={(idx) => handleSetModal(modalState.items, idx)} onPrev={(idx) => handleSetModal(modalState.items, idx)} />}
           {isServicesPopupOpen && <ServicesListPopup onClose={() => setIsServicesPopupOpen(false)} />}
           {isYouTubeRedirectOpen && <YouTubeRedirectPopup onClose={() => setIsYouTubeRedirectOpen(false)} onConfirm={() => { setIsYouTubeRedirectOpen(false); handleScrollTo('portfolio'); }} />}

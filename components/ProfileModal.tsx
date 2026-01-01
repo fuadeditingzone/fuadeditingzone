@@ -37,9 +37,10 @@ interface ProfileModalProps {
   viewingUserId?: string | null;
   onOpenModal?: (items: any[], index: number) => void;
   onMessageUser?: (userId: string) => void;
+  onShowProfile?: (userId: string, username?: string) => void;
 }
 
-export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, viewingUserId, onOpenModal, onMessageUser }) => {
+export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, viewingUserId, onOpenModal, onMessageUser, onShowProfile }) => {
     const { user: clerkUser, isLoaded } = useUser();
     const [targetUser, setTargetUser] = useState<any>(null);
     const [userPosts, setUserPosts] = useState<any[]>([]);
@@ -189,13 +190,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
     };
 
     const handleSwitchToOtherProfile = (id: string, username: string) => {
-        window.history.pushState(null, '', `/@${username}`);
-        // This relies on the parent's viewingUserId prop being updated or the state within this modal re-triggering.
-        // Assuming we update the URL, the App component's popstate or direct call should handle it.
-        // For standard behavior, we'll force the profile update by triggering the ID change.
-        if (window.location.pathname.startsWith('/@')) {
-            window.location.href = `/@${username}`;
-        }
+        onShowProfile?.(id, username);
+        setUserListMode(null);
     };
 
     const getVerifiedBadge = (u: string) => (u === OWNER_HANDLE ? <i className="fa-solid fa-circle-check verified-badge-owner ml-1 text-xs"></i> : u === ADMIN_HANDLE ? <i className="fa-solid fa-circle-check verified-badge-admin ml-1 text-xs"></i> : null);

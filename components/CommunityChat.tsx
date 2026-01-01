@@ -43,6 +43,7 @@ interface Message {
   id?: string;
   senderId: string;
   senderName: string;
+  senderUsername?: string;
   senderAvatar: string;
   text: string;
   timestamp: number;
@@ -227,7 +228,14 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
         }
     }
 
-    const newMessage = { senderId: clerkUser.id, senderName: clerkUser.fullName || clerkUser.username, senderAvatar: clerkUser.imageUrl, text: inputValue.trim(), timestamp: Date.now() };
+    const newMessage = { 
+      senderId: clerkUser.id, 
+      senderName: clerkUser.fullName || clerkUser.username, 
+      senderUsername: clerkUser.username,
+      senderAvatar: clerkUser.imageUrl, 
+      text: inputValue.trim(), 
+      timestamp: Date.now() 
+    };
     setInputValue('');
     await push(ref(db, chatPath), newMessage);
   };
@@ -325,11 +333,10 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-5 custom-scrollbar bg-black/20 min-h-0">
               {messages.map(msg => {
                 const isOrder = msg.text.startsWith('[ORDER INQUIRY]');
-                // Extracting username for looking up link if possible, though ID is safer for callback
-                const msgUsername = msg.senderName.split(' ')[0].replace('@', '');
+                const msgUsername = msg.senderUsername || msg.senderId;
                 return (
                   <div key={msg.id} className={`flex gap-3 ${msg.senderId === clerkUser?.id ? 'flex-row-reverse' : 'flex-row'} items-end`}>
-                    <img src={msg.senderAvatar} className={`w-8 h-8 rounded-lg border object-cover cursor-pointer flex-shrink-0 shadow-lg ${msg.senderName.includes(OWNER_HANDLE) ? 'border-red-600' : msg.senderName.includes(ADMIN_HANDLE) ? 'border-blue-600' : 'border-white/5'}`} alt="" onClick={() => onShowProfile?.(msg.senderId, msgUsername)} />
+                    <img src={msg.senderAvatar} className={`w-8 h-8 rounded-lg border object-cover cursor-pointer flex-shrink-0 shadow-lg ${msgUsername === OWNER_HANDLE ? 'border-red-600' : msgUsername === ADMIN_HANDLE ? 'border-blue-600' : 'border-white/5'}`} alt="" onClick={() => onShowProfile?.(msg.senderId, msgUsername)} />
                     <div className={`max-w-[85%] ${msg.senderId === clerkUser?.id ? 'items-end' : 'items-start'} flex flex-col min-w-0`}>
                         <span className="text-[8px] font-black text-zinc-600 uppercase mb-1.5 px-1 truncate max-w-full flex items-center cursor-pointer" onClick={() => onShowProfile?.(msg.senderId, msgUsername)}>
                             {msg.senderName}

@@ -73,8 +73,21 @@
         letter-spacing: -0.01em; 
       }
 
-      .verified-badge-owner { color: #ff0000; text-shadow: none; }
-      .verified-badge-admin { color: #3b82f6; text-shadow: none; }
+      .verified-badge-owner, .verified-badge-admin {
+        width: 20px !important;
+        height: 20px !important;
+        min-width: 20px !important;
+        flex-shrink: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        text-shadow: none;
+      }
+      
+      .verified-badge-owner { color: #ff0000; }
+      .verified-badge-admin { color: #3b82f6; }
+
       .custom-scrollbar::-webkit-scrollbar { width: 4px !important; display: block !important; }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 0, 0.5) !important; border-radius: 10px !important; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent !important; }
