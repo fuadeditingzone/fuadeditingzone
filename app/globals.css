@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background-base: #000000;
+  --accent-base: #ff0000;
+}
+
+body {
+  background-color: var(--background-base);
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  display: none !important;
+}
+
+.verified-badge-owner, .verified-badge-admin {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 9999px !important;
+}
+
+.verified-badge-owner { color: #ff0000; }
+.verified-badge-admin { color: #3b82f6; }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px !important;
+  display: block !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 0, 0, 0.5) !important;
+  border-radius: 10px !important;
+}
+
+.clamp-2 {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.clamp-3 {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.no-clip {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
