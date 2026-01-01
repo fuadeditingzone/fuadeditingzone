@@ -134,7 +134,7 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
     <section ref={intersectionRef} id="contact" className="py-20 md:py-28 bg-black relative z-10 overflow-hidden no-clip">
       <div className="container mx-auto px-6 md:px-8 max-w-7xl">
         <div className="mb-16 text-center">
-          <h2 className="text-white text-3xl md:text-6xl font-bold uppercase tracking-tight font-display">Order Now</h2>
+          <h2 className="text-white text-3xl md:text-6xl font-bold uppercase tracking-tight font-display">Order Database</h2>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-stretch">
@@ -211,8 +211,8 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
             </div>
           </form>
 
-          <div className="bg-[#121212] border border-white/5 rounded-[2.5rem] p-10 shadow-inner flex flex-col min-h-[500px] h-full overflow-hidden">
-                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-widest mb-10 pb-6 border-b border-white/5 flex-shrink-0 font-display">Recent Orders</h3>
+          <div className="bg-[#121212] border border-white/5 rounded-[2.5rem] p-6 md:p-10 shadow-inner flex flex-col min-h-[500px] h-full overflow-hidden">
+                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-widest mb-10 pb-6 border-b border-white/5 flex-shrink-0 font-display text-center">Recent Signals</h3>
                 <div className="space-y-6 overflow-y-auto custom-scrollbar flex-1 pr-3">
                     {userOrders.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-center opacity-20">

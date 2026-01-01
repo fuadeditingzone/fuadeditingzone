@@ -268,7 +268,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                     </button>
                 </div>
                 
-                {/* Community Real-time Search - FUAD: Fully wired to Poppins font and search logic */}
+                {/* Community Real-time Search */}
                 <div className="relative">
                     <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 w-3.5 h-3.5" />
                     <input 
@@ -335,7 +335,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                             {msg.senderName}
                             {getBadge(msg.senderName)}
                         </span>
-                        {/* FUAD: Added clamp-2 to message descriptions for neatness */}
+                        {/* Strictly clamp descriptions to 2 lines as requested */}
                         <div className={`clamp-2 p-3 md:p-4 rounded-[1.2rem] text-[12px] md:text-[13px] border whitespace-pre-wrap ${isOrder ? 'bg-red-600/20 border-red-600/50 text-white font-bold' : (msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-zinc-300 rounded-tl-none')}`} style={{ overflowWrap: 'anywhere' }}>{msg.text}</div>
                     </div>
                   </div>

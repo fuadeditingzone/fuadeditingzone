@@ -53,7 +53,7 @@ const PostCaption: React.FC<{ text: string }> = ({ text }) => {
     useEffect(() => {
         if (textRef.current) {
             const el = textRef.current;
-            // Check if content height exceeds the clamped height (exactly 3 lines)
+            // Check if content height exceeds the clamped height (strictly 2 lines)
             setIsTruncated(el.scrollHeight > el.clientHeight);
         }
     }, [text]);
@@ -62,7 +62,7 @@ const PostCaption: React.FC<{ text: string }> = ({ text }) => {
         <div className="min-h-[1.5em] font-sans">
             <p 
                 ref={textRef}
-                className={`text-zinc-400 text-[11px] md:text-[13px] leading-relaxed break-words no-clip ${!isExpanded ? 'line-clamp-3' : ''}`}
+                className={`text-zinc-400 text-[11px] md:text-[13px] leading-relaxed break-words no-clip ${!isExpanded ? 'clamp-2' : ''}`}
             >
                 {text}
             </p>
