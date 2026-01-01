@@ -5,7 +5,7 @@ import { useUser } from '@clerk/clerk-react';
 import type { GraphicWork, VideoWork, ContentSection } from '../hooks/types';
 import { siteConfig } from '../config';
 import { 
-    PlayIcon, VolumeOnIcon, VolumeOffIcon, SparklesIcon, PhotoManipulationIcon, YouTubeIcon, ChevronRightIcon, VfxIcon, BannerIcon, ThumbnailIcon, CloseIcon, ShareIcon
+    PlayIcon, VolumeOnIcon, VolumeOffIcon, PhotoManipulationIcon, YouTubeIcon, VfxIcon, BannerIcon, ThumbnailIcon, CloseIcon, ShareIcon
 } from './Icons';
 import { useYouTubeChannelStats } from '../hooks/useYouTubeChannelStats';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
@@ -99,7 +99,7 @@ const PortfolioSection: React.FC<{
                             <img 
                                 src={work.imageUrl || work.thumbnailUrl || (work.mediaUrl && work.mediaType === 'image' ? work.mediaUrl : `https://i.ytimg.com/vi/${work.videoId}/mqdefault.jpg`)} 
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                alt={`${work.title || 'Portfolio Work'} | Fuad Editing Zone - ${title}`}
+                                alt={`${work.title || 'Portfolio Work'} | Fuad Ahmed - ${title}`}
                             />
                             {work.mediaType === 'video' && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -186,7 +186,7 @@ const VfxVideoPlayer: React.FC<{
             </AnimatePresence>
             
             <figure className="w-full h-full m-0 p-0 cursor-pointer" onClick={() => onPlayRequest(isPlaying ? null : video)}>
-                <video ref={videoRef} src={videoUrl} loop muted={isMuted} playsInline className="w-full h-full object-cover" onCanPlay={() => setIsLoading(false)} title={`${video.title || 'VFX Work'} | Fuad Editing Zone Mastery`} />
+                <video ref={videoRef} src={videoUrl} loop muted={isMuted} playsInline className="w-full h-full object-cover" onCanPlay={() => setIsLoading(false)} title={`${video.title || 'VFX Work'} | FEZ Zone Mastery`} />
                 <div className={`absolute inset-0 bg-black/20 transition-opacity flex items-center justify-center ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
                      {!isPlaying && !isLoading && <PlayIcon className="w-10 h-10 text-white/80 drop-shadow-lg" />}
                 </div>
@@ -346,7 +346,7 @@ export const Portfolio: React.FC<any> = ({
                 <PortfolioSection 
                     id="photo-manipulation" 
                     title="Photo Manipulation" 
-                    subtitle="Advanced Composition" 
+                    subtitle="Strict 1:1 Composition" 
                     icon={<PhotoManipulationIcon className="w-5 h-5 md:w-6 md:h-6" />} 
                     works={photoManipWorks} 
                     onItemClick={(items, index) => openModal(items, index)}
@@ -358,7 +358,7 @@ export const Portfolio: React.FC<any> = ({
                 <PortfolioSection 
                     id="thumbnail-designs" 
                     title="Thumbnails" 
-                    subtitle="High CTR Design" 
+                    subtitle="Full High CTR Design" 
                     icon={<ThumbnailIcon className="w-5 h-5 md:w-6 md:h-6" />} 
                     works={thumbnailWorks} 
                     onItemClick={(items, index) => openModal(items, index)}
@@ -370,7 +370,7 @@ export const Portfolio: React.FC<any> = ({
                 <PortfolioSection 
                     id="banner-designs" 
                     title="Banners" 
-                    subtitle="Profile Identity" 
+                    subtitle="Edge-to-Edge Identity" 
                     icon={<BannerIcon className="w-5 h-5 md:w-6 md:h-6" />} 
                     works={bannerWorks} 
                     onItemClick={(items, index) => openModal(items, index)}
@@ -437,7 +437,7 @@ export const Portfolio: React.FC<any> = ({
                         </div>
                         <div>
                             <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">Visual Effects</span>
-                            <h2 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter">VFX Mastery</h2>
+                            <h2 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter">Full VFX Mastery</h2>
                         </div>
                     </div>
                     <motion.div variants={containerVariants} initial="hidden" animate={vfxInView ? "visible" : "hidden"} className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-7xl mx-auto px-2 md:px-0">
