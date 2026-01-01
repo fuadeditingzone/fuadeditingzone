@@ -53,7 +53,7 @@ const PostCaption: React.FC<{ text: string }> = ({ text }) => {
     useEffect(() => {
         if (textRef.current) {
             const el = textRef.current;
-            // Check if content height exceeds 2 lines
+            // Check if content height exceeds card limits
             setIsTruncated(el.scrollHeight > el.clientHeight);
         }
     }, [text]);
