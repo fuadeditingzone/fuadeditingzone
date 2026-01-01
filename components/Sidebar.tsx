@@ -169,8 +169,8 @@ const NotificationHub: React.FC<{ isOpen: boolean; setIsOpen: (v: boolean) => vo
 };
 
 const getBadge = (username: string) => {
-    if (username === OWNER_HANDLE) return <i className="fa-solid fa-circle-check text-[14px] verified-badge-owner"></i>;
-    if (username === ADMIN_HANDLE) return <i className="fa-solid fa-circle-check text-[14px] verified-badge-admin"></i>;
+    if (username === OWNER_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-owner flex-shrink-0 w-4 h-4 flex items-center justify-center" style={{ width: '16px', height: '16px', fontSize: '14px' }}></i>;
+    if (username === ADMIN_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-admin flex-shrink-0 w-4 h-4 flex items-center justify-center" style={{ width: '16px', height: '16px', fontSize: '14px' }}></i>;
     return null;
 };
 
@@ -179,15 +179,15 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarket
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
   
   return (
-    <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-[100] h-20 px-10 bg-black/40 backdrop-blur-md border-b border-white/5">
+    <header className="hidden md:flex items-center justify-between fixed top-0 left-0 right-0 z-[100] h-20 px-10 bg-black/40 backdrop-blur-md border-b border-white/5 font-sans">
         <div onClick={() => onScrollTo('home')} className="cursor-pointer flex items-center gap-4">
             <img src={siteConfig.branding.logoUrl} alt="Logo" className="h-10 w-10 rounded-full shadow-lg" />
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
                 <span className="font-black text-white text-base uppercase tracking-[0.2em] font-display">{siteConfig.branding.name}</span>
                 {getBadge(OWNER_HANDLE)}
             </div>
         </div>
-        <nav className="flex items-center gap-8">
+        <nav className="flex items-center gap-8 font-sans">
             <button onClick={() => onScrollTo('home')} className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeRoute === 'home' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>Home</button>
             <button onClick={() => onScrollTo('portfolio')} className={`text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-all`}>Work</button>
             <button onClick={onNavigateMarketplace} className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeRoute === 'marketplace' ? 'text-red-500' : 'text-gray-400 hover:text-white'}`}>Marketplace</button>
@@ -201,7 +201,7 @@ export const DesktopHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarket
               <UserButton appearance={{ elements: { userButtonAvatarBox: "w-10 h-10 border-2 border-red-600" } }} />
             </SignedIn>
             <SignedOut>
-              <SignInButton mode="modal"><button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.4em]">Log In</button></SignInButton>
+              <SignInButton mode="modal"><button className="text-[10px] font-black text-gray-400 hover:text-white uppercase tracking-[0.4em] font-sans">Log In</button></SignInButton>
             </SignedOut>
         </div>
     </header>
@@ -212,10 +212,10 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketp
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [isRequestsOpen, setIsRequestsOpen] = useState(false);
     return (
-        <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-[100] h-20 px-6 bg-black/60 backdrop-blur-xl border-b border-white/5">
+        <header className="md:hidden flex items-center justify-between fixed top-0 left-0 right-0 z-[100] h-20 px-6 bg-black/60 backdrop-blur-xl border-b border-white/5 font-sans">
             <div onClick={() => onScrollTo('home')} className="flex items-center gap-3">
                 <img src={siteConfig.branding.logoUrl} alt="Logo" className="h-9 w-9 rounded-full shadow-lg" />
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                     <span className="font-bold text-white tracking-widest text-[9px] uppercase font-display">FUAD EDITING ZONE</span>
                     {getBadge(OWNER_HANDLE)}
                 </div>
@@ -226,14 +226,14 @@ export const MobileHeader: React.FC<NavProps> = ({ onScrollTo, onNavigateMarketp
                     <NotificationHub isOpen={isNotificationsOpen} setIsOpen={(v) => { setIsNotificationsOpen(v); setIsRequestsOpen(false); }} onShowUser={onOpenProfile!} onGoToInbox={onOpenChatWithUser!} />
                     <UserButton />
                 </SignedIn>
-                <SignedOut><SignInButton mode="modal"><button className="text-[9px] font-black text-red-500 uppercase tracking-widest bg-red-600/10 px-4 py-2 rounded-lg border border-red-600/30">Verify</button></SignInButton></SignedOut>
+                <SignedOut><SignInButton mode="modal"><button className="text-[9px] font-black text-red-500 uppercase tracking-widest bg-red-600/10 px-4 py-2 rounded-lg border border-red-600/30 font-sans">Verify</button></SignInButton></SignedOut>
             </div>
         </header>
     );
 };
 
 export const MobileFooterNav: React.FC<{ onScrollTo: (target: any) => void; onNavigateMarketplace: () => void; onNavigateCommunity: () => void; activeRoute?: string }> = ({ onScrollTo, onNavigateMarketplace, onNavigateCommunity, activeRoute }) => (
-    <nav className="md:hidden fixed bottom-6 left-6 right-6 z-[100] bg-black/80 backdrop-blur-3xl rounded-[2.5rem] h-20 flex justify-around items-center shadow-2xl border border-white/10 px-4">
+    <nav className="md:hidden fixed bottom-6 left-6 right-6 z-[100] bg-black/80 backdrop-blur-3xl rounded-[2.5rem] h-20 flex justify-around items-center shadow-2xl border border-white/10 px-4 font-sans">
         <button onClick={() => onScrollTo('home')} className={`flex flex-col items-center gap-1 transition-all ${activeRoute === 'home' ? 'text-red-500 scale-110' : 'text-zinc-500'}`}>
             <HomeIcon className="w-6 h-6" />
             <span className="text-[9px] font-black uppercase tracking-widest">Home</span>

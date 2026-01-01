@@ -139,7 +139,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
     };
 
     const handleSaveProfile = async () => { if (isMyOwnProfile) { await update(ref(db, `users/${clerkUser?.id}`), editData); setIsEditing(false); } };
-    const getVerifiedBadge = (u: string) => (u === OWNER_HANDLE ? <i className="fa-solid fa-circle-check verified-badge-owner ml-1 text-sm"></i> : u === ADMIN_HANDLE ? <i className="fa-solid fa-circle-check verified-badge-admin ml-1 text-sm"></i> : null);
+    
+    const getVerifiedBadge = (u: string) => {
+        if (u === OWNER_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-owner flex-shrink-0 ml-1.5 w-4 h-4 flex items-center justify-center text-[16px]" style={{ width: '20px', height: '20px', fontSize: '18px' }}></i>;
+        if (u === ADMIN_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-admin flex-shrink-0 ml-1.5 w-4 h-4 flex items-center justify-center text-[16px]" style={{ width: '20px', height: '20px', fontSize: '18px' }}></i>;
+        return null;
+    };
 
     if (!isOpen || !isLoaded || !clerkUser) return null;
 
@@ -147,13 +152,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
         <AnimatePresence>
             <motion.div 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
-                className="fixed inset-0 z-[1000000] bg-black overflow-y-auto no-scrollbar"
+                className="fixed inset-0 z-[1000000] bg-black overflow-y-auto no-scrollbar font-sans"
             >
                 <div className="min-h-screen bg-black flex flex-col items-center">
-                    {/* Immersive Header Background */}
-                    <div className="w-full h-[250px] md:h-[400px] relative bg-[#050505] overflow-hidden border-b border-white/5">
+                    {/* Immersive Full Page Header */}
+                    <div className="w-full h-[250px] md:h-[450px] relative bg-[#050505] overflow-hidden border-b border-white/5">
                         <div className="absolute inset-0 opacity-20 grayscale pointer-events-none">
-                            <img src={targetUser?.avatar || clerkUser.imageUrl} className="w-full h-full object-cover blur-2xl" alt="" />
+                            <img src={targetUser?.avatar || clerkUser.imageUrl} className="w-full h-full object-cover blur-3xl" alt="" />
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
                         
@@ -164,101 +169,101 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                         </div>
                     </div>
 
-                    {/* Profile Stats Floating Container */}
-                    <div className="w-full max-w-5xl px-4 -mt-32 md:-mt-48 relative z-10 pb-20">
-                        <div className="bg-[#0c0c0c] border border-white/10 rounded-[2.5rem] p-6 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.8)] backdrop-blur-xl">
-                            <div className="flex flex-col md:flex-row items-center md:items-end gap-8 mb-12">
-                                <div className={`w-32 h-32 md:w-44 md:h-44 rounded-[2.5rem] border-4 p-1 flex-shrink-0 -mt-16 md:-mt-32 shadow-2xl relative group ${targetUser?.username === OWNER_HANDLE ? 'border-red-600' : targetUser?.username === ADMIN_HANDLE ? 'border-blue-600' : 'border-white/10'}`}>
-                                    <img src={targetUser?.avatar || clerkUser.imageUrl} className="w-full h-full object-cover rounded-[2.2rem]" alt="" />
+                    {/* Profile Dashboard */}
+                    <div className="w-full max-w-6xl px-4 -mt-32 md:-mt-56 relative z-10 pb-20">
+                        <div className="bg-[#0c0c0c]/80 border border-white/10 rounded-[3rem] p-6 md:p-14 shadow-[0_40px_100px_rgba(0,0,0,0.9)] backdrop-blur-3xl">
+                            <div className="flex flex-col md:flex-row items-center md:items-end gap-8 mb-16">
+                                <div className={`w-32 h-32 md:w-52 md:h-52 rounded-[2.8rem] border-4 p-1.5 flex-shrink-0 -mt-16 md:-mt-36 shadow-2xl relative group ${targetUser?.username === OWNER_HANDLE ? 'border-red-600' : targetUser?.username === ADMIN_HANDLE ? 'border-blue-600' : 'border-white/10'}`}>
+                                    <img src={targetUser?.avatar || clerkUser.imageUrl} className="w-full h-full object-cover rounded-[2.5rem]" alt="" />
                                     {isMyOwnProfile && (
-                                        <div className="absolute inset-0 bg-black/60 rounded-[2.2rem] opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
-                                            <span className="text-[10px] font-black uppercase text-white">Change Avatar</span>
+                                        <div className="absolute inset-0 bg-black/60 rounded-[2.5rem] opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
+                                            <span className="text-[10px] font-black uppercase text-white font-sans">Sync ID</span>
                                         </div>
                                     )}
                                 </div>
                                 
-                                <div className="flex-1 text-center md:text-left space-y-4">
-                                    <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                        <div className="flex items-center justify-center md:justify-start gap-3">
-                                            <h1 className="text-2xl md:text-4xl font-black text-white tracking-tight uppercase">
+                                <div className="flex-1 text-center md:text-left space-y-6">
+                                    <div className="flex flex-col md:flex-row md:items-center gap-6">
+                                        <div className="flex items-center justify-center md:justify-start gap-4 min-w-0">
+                                            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase truncate font-sans flex items-center">
                                                 {targetUser?.username || clerkUser.username}
                                                 {getVerifiedBadge(targetUser?.username || clerkUser.username)}
                                             </h1>
-                                            <button onClick={handleCopyProfile} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-zinc-500 hover:text-red-500 transition-colors" title="Copy Profile Link">
+                                            <button onClick={handleCopyProfile} className="p-2.5 bg-white/5 hover:bg-red-600/20 rounded-xl text-zinc-500 hover:text-red-500 transition-all flex-shrink-0 border border-white/5" title="Copy Protocol URL">
                                                 <CopyIcon className="w-5 h-5" />
                                             </button>
                                         </div>
-                                        <div className="flex justify-center md:justify-start gap-2">
+                                        <div className="flex justify-center md:justify-start gap-3">
                                             {isViewingOther ? (
-                                                <div className="flex items-center gap-2">
-                                                    <button onClick={() => handleAction('follow')} className={`px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-xl ${socialState.isFollowing ? 'bg-white/5 border border-white/10 text-white' : 'bg-red-600 text-white hover:bg-red-700'}`}>
-                                                        {socialState.isFollowing ? 'Following' : 'Follow'}
+                                                <div className="flex items-center gap-3">
+                                                    <button onClick={() => handleAction('follow')} className={`px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-xl font-sans ${socialState.isFollowing ? 'bg-white/5 border border-white/10 text-white' : 'bg-red-600 text-white hover:bg-red-700'}`}>
+                                                        {socialState.isFollowing ? 'Tracking' : 'Follow'}
                                                     </button>
-                                                    <button onClick={() => handleAction('friend')} className={`px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all ${socialState.friendStatus === 'accepted' ? 'bg-green-600/10 border border-green-600/20 text-green-500' : 'bg-white/5 border border-white/10 text-white'}`}>
-                                                        {socialState.friendStatus === 'accepted' ? 'Friends' : socialState.friendStatus === 'pending' ? 'Accept Request' : socialState.friendStatus === 'requested' ? 'Pending Signal' : 'Request Sync'}
+                                                    <button onClick={() => handleAction('friend')} className={`px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all font-sans ${socialState.friendStatus === 'accepted' ? 'bg-green-600/10 border border-green-600/20 text-green-500' : 'bg-white/5 border border-white/10 text-white'}`}>
+                                                        {socialState.friendStatus === 'accepted' ? 'Synced' : socialState.friendStatus === 'pending' ? 'Auth Request' : socialState.friendStatus === 'requested' ? 'Pending Signal' : 'Request Sync'}
                                                     </button>
-                                                    <button onClick={() => onMessageUser?.(viewingUserId!)} className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 text-white">
+                                                    <button onClick={() => onMessageUser?.(viewingUserId!)} className="p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 text-white transition-all">
                                                         <ChatBubbleIcon className="w-5 h-5" />
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <button onClick={() => isEditing ? handleSaveProfile() : setIsEditing(true)} className={`px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all ${isEditing ? 'bg-green-600 text-white' : 'bg-red-600 text-white shadow-xl hover:bg-red-700'}`}>
-                                                    {isEditing ? 'Sync Changes' : 'Update Profile'}
+                                                <button onClick={() => isEditing ? handleSaveProfile() : setIsEditing(true)} className={`px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all font-sans ${isEditing ? 'bg-green-600 text-white shadow-[0_0_30px_rgba(22,163,74,0.3)]' : 'bg-red-600 text-white shadow-xl hover:bg-red-700'}`}>
+                                                    {isEditing ? 'Sync Profile' : 'Update Identity'}
                                                 </button>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-center md:justify-start gap-10">
-                                        <div className="text-center md:text-left"><p className="text-xl md:text-2xl font-black text-white leading-none">{userPosts.length}</p><p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mt-1">Posts</p></div>
-                                        <div className="text-center md:text-left"><p className="text-xl md:text-2xl font-black text-white leading-none">{socialState.followers.length}</p><p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mt-1">Followers</p></div>
-                                        <div className="text-center md:text-left"><p className="text-xl md:text-2xl font-black text-white leading-none">{socialState.following.length}</p><p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mt-1">Following</p></div>
+                                    <div className="flex justify-center md:justify-start gap-12 font-sans">
+                                        <div className="text-center md:text-left"><p className="text-2xl md:text-3xl font-black text-white leading-none">{userPosts.length}</p><p className="text-[10px] text-zinc-600 uppercase font-black tracking-widest mt-2">Archive</p></div>
+                                        <div className="text-center md:text-left"><p className="text-2xl md:text-3xl font-black text-white leading-none">{socialState.followers.length}</p><p className="text-[10px] text-zinc-600 uppercase font-black tracking-widest mt-2">Signals</p></div>
+                                        <div className="text-center md:text-left"><p className="text-2xl md:text-3xl font-black text-white leading-none">{socialState.following.length}</p><p className="text-[10px] text-zinc-600 uppercase font-black tracking-widest mt-2">Connections</p></div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 border-t border-white/5 pt-12">
-                                <div className="space-y-8">
-                                    <div className="space-y-4">
-                                        <h4 className="text-[10px] font-black text-red-600 uppercase tracking-[0.4em]">Biography</h4>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 border-t border-white/5 pt-16">
+                                <div className="space-y-10">
+                                    <div className="space-y-5">
+                                        <h4 className="text-[11px] font-black text-red-600 uppercase tracking-[0.4em] font-sans">Codename Bio</h4>
                                         {isEditing ? (
-                                            <textarea value={editData.profile?.bio} onChange={e => setEditData({...editData, profile: {...editData.profile, bio: e.target.value}})} className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-white outline-none focus:border-red-600 resize-none h-32 font-sans" />
+                                            <textarea value={editData.profile?.bio} onChange={e => setEditData({...editData, profile: {...editData.profile, bio: e.target.value}})} className="w-full bg-black/60 border border-white/10 rounded-2xl p-5 text-sm text-white outline-none focus:border-red-600 resize-none h-40 font-sans" />
                                         ) : (
-                                            <p className="text-sm text-zinc-400 font-medium leading-relaxed italic no-clip">
-                                                "{targetUser?.profile?.bio || 'Active participant in the FEZ Zone creative frequency.'}"
+                                            <p className="text-base text-zinc-400 font-medium leading-relaxed italic no-clip font-sans">
+                                                "{targetUser?.profile?.bio || 'Active creative node in the FEZ Zone grid.'}"
                                             </p>
                                         )}
                                     </div>
                                     
-                                    <div className="space-y-4">
-                                        <h4 className="text-[10px] font-black text-red-600 uppercase tracking-[0.4em]">Information</h4>
-                                        <div className="grid grid-cols-1 gap-3">
-                                            <div className="bg-white/5 p-4 rounded-xl border border-white/10 flex items-center justify-between">
-                                                <span className="text-[10px] font-black text-zinc-500 uppercase">Expertise</span>
-                                                {isEditing ? <input value={editData.profile?.profession} onChange={e => setEditData({...editData, profile: {...editData.profile, profession: e.target.value}})} className="bg-transparent text-right text-xs font-bold text-white outline-none border-b border-red-600/30" /> : <span className="text-xs font-bold text-white">{targetUser?.profile?.profession || 'Visual Artist'}</span>}
+                                    <div className="space-y-5">
+                                        <h4 className="text-[11px] font-black text-red-600 uppercase tracking-[0.4em] font-sans">Protocol Details</h4>
+                                        <div className="grid grid-cols-1 gap-4 font-sans">
+                                            <div className="bg-white/5 p-5 rounded-2xl border border-white/5 flex items-center justify-between transition-all hover:bg-white/10">
+                                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Specialization</span>
+                                                {isEditing ? <input value={editData.profile?.profession} onChange={e => setEditData({...editData, profile: {...editData.profile, profession: e.target.value}})} className="bg-transparent text-right text-xs font-bold text-white outline-none border-b border-red-600/30 font-sans" /> : <span className="text-sm font-bold text-white uppercase tracking-tight">{targetUser?.profile?.profession || 'Visual Node'}</span>}
                                             </div>
-                                            <div className="bg-white/5 p-4 rounded-xl border border-white/10 flex items-center justify-between">
-                                                <span className="text-[10px] font-black text-zinc-500 uppercase">Origin</span>
-                                                {isEditing ? <input value={editData.profile?.origin} onChange={e => setEditData({...editData, profile: {...editData.profile, origin: e.target.value}})} className="bg-transparent text-right text-xs font-bold text-white outline-none border-b border-red-600/30" /> : <span className="text-xs font-bold text-white">{targetUser?.profile?.origin || 'Global'}</span>}
+                                            <div className="bg-white/5 p-5 rounded-2xl border border-white/5 flex items-center justify-between transition-all hover:bg-white/10">
+                                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Origin Point</span>
+                                                {isEditing ? <input value={editData.profile?.origin} onChange={e => setEditData({...editData, profile: {...editData.profile, origin: e.target.value}})} className="bg-transparent text-right text-xs font-bold text-white outline-none border-b border-red-600/30 font-sans" /> : <span className="text-sm font-bold text-white uppercase tracking-tight">{targetUser?.profile?.origin || 'Global'}</span>}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        <h4 className="text-[10px] font-black text-red-600 uppercase tracking-[0.4em]">Connect</h4>
-                                        <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-5">
+                                        <h4 className="text-[11px] font-black text-red-600 uppercase tracking-[0.4em] font-sans">External Relays</h4>
+                                        <div className="grid grid-cols-2 gap-4 font-sans">
                                             {(isEditing ? editData.profile?.networks : targetUser?.profile?.networks)?.map((net: any, i: number) => {
                                                 const cfg = NETWORK_CONFIGS[net.name] || { icon: GlobeAltIcon, baseUrl: '' };
                                                 if(!isEditing && !net.handle) return null;
                                                 return isEditing ? (
-                                                    <div key={i} className="bg-black/30 border border-white/10 rounded-xl p-3">
-                                                        <p className="text-[8px] text-zinc-600 font-black mb-1">{net.name}</p>
-                                                        <input value={net.handle} onChange={e => { const n = [...editData.profile.networks]; n[i].handle = e.target.value; setEditData({...editData, profile: {...editData.profile, networks: n}}); }} className="bg-transparent text-[10px] text-white w-full outline-none font-sans" placeholder="Handle" />
+                                                    <div key={i} className="bg-black/30 border border-white/10 rounded-2xl p-4">
+                                                        <p className="text-[9px] text-zinc-600 font-black mb-2 uppercase tracking-widest">{net.name}</p>
+                                                        <input value={net.handle} onChange={e => { const n = [...editData.profile.networks]; n[i].handle = e.target.value; setEditData({...editData, profile: {...editData.profile, networks: n}}); }} className="bg-transparent text-xs text-white w-full outline-none font-sans" placeholder="ID" />
                                                     </div>
                                                 ) : (
-                                                    <a key={i} href={`${cfg.baseUrl}${net.handle}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-red-600/10 transition-all group">
+                                                    <a key={i} href={`${cfg.baseUrl}${net.handle}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-red-600/10 transition-all group">
                                                         <cfg.icon className="w-5 h-5 text-zinc-500 group-hover:text-red-500 transition-colors" />
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest truncate">{net.name}</span>
+                                                        <span className="text-[10px] font-black text-zinc-500 group-hover:text-zinc-200 uppercase tracking-widest truncate font-sans">{net.name}</span>
                                                     </a>
                                                 );
                                             })}
@@ -266,32 +271,32 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                                     </div>
                                 </div>
 
-                                <div className="lg:col-span-2 space-y-6">
-                                    <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                                        <h3 className="text-sm font-black text-white uppercase tracking-[0.5em]">Creative Archive</h3>
-                                        <GalleryIcon className="w-5 h-5 text-zinc-700" />
+                                <div className="lg:col-span-2 space-y-8">
+                                    <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                                        <h3 className="text-lg font-black text-white uppercase tracking-[0.4em] font-sans">Master Archive</h3>
+                                        <GalleryIcon className="w-6 h-6 text-zinc-800" />
                                     </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                                         {userPosts.map((post, i) => (
                                             <motion.div 
                                                 key={i} 
-                                                whileHover={{ y: -5 }}
+                                                whileHover={{ y: -8, scale: 1.02 }}
                                                 onClick={() => onOpenModal?.(userPosts, i)} 
-                                                className="aspect-square bg-white/5 rounded-2xl overflow-hidden group relative cursor-pointer border border-white/10 shadow-lg"
+                                                className="aspect-square bg-white/5 rounded-[2rem] overflow-hidden group relative cursor-pointer border border-white/5 shadow-2xl"
                                             >
                                                 {post.mediaType === 'video' ? <video src={post.mediaUrl} className="w-full h-full object-cover" /> : <img src={post.mediaUrl} className="w-full h-full object-cover" alt="" />}
-                                                <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center p-4">
-                                                    <div className="flex gap-6 text-[10px] font-black text-white uppercase tracking-widest">
-                                                        <span className="flex items-center gap-2"><i className="fa-solid fa-heart text-red-600"></i> {Object.keys(post.likes || {}).length}</span>
-                                                        <span className="flex items-center gap-2"><i className="fa-solid fa-comment text-zinc-400"></i> {Object.keys(post.comments || {}).length}</span>
+                                                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center p-6">
+                                                    <div className="flex gap-8 text-xs font-black text-white uppercase tracking-widest font-sans">
+                                                        <span className="flex items-center gap-2.5"><i className="fa-solid fa-heart text-red-600"></i> {Object.keys(post.likes || {}).length}</span>
+                                                        <span className="flex items-center gap-2.5"><i className="fa-solid fa-comment text-zinc-400"></i> {Object.keys(post.comments || {}).length}</span>
                                                     </div>
                                                 </div>
                                             </motion.div>
                                         ))}
                                         {userPosts.length === 0 && (
-                                            <div className="col-span-full py-32 text-center bg-white/5 rounded-[2.5rem] border border-white/10">
-                                                <SparklesIcon className="w-12 h-12 text-zinc-800 mx-auto mb-6" />
-                                                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600">Archive Protocol Offline</p>
+                                            <div className="col-span-full py-40 text-center bg-white/5 rounded-[3rem] border border-white/5 border-dashed">
+                                                <SparklesIcon className="w-16 h-16 text-zinc-800 mx-auto mb-8 opacity-30" />
+                                                <p className="text-xs font-black uppercase tracking-[0.6em] text-zinc-700">Relay Buffer Empty</p>
                                             </div>
                                         )}
                                     </div>
@@ -305,9 +310,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                     {copyToast && (
                         <motion.div 
                             initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}
-                            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[1000001] bg-white text-black px-10 py-4 rounded-full font-black uppercase text-[10px] tracking-widest shadow-2xl"
+                            className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[1000001] bg-white text-black px-12 py-5 rounded-full font-black uppercase text-[11px] tracking-widest shadow-[0_20px_50px_rgba(0,0,0,0.5)] font-sans"
                         >
-                            Profile URL Copied
+                            Frequency URL Captured
                         </motion.div>
                     )}
                 </AnimatePresence>
