@@ -267,7 +267,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                     </button>
                 </div>
                 
-                {/* Real-time search functionality as requested */}
+                {/* Search Bar - Poppins enabled via global selector in index.html */}
                 <div className="relative">
                     <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 w-3.5 h-3.5" />
                     <input 
