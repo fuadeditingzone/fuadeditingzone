@@ -20,7 +20,7 @@
     <link rel="icon" type="image/png" href="https://dl.dropboxusercontent.com/scl/fi/vvk2qlo8i0mer2n4sip1h/faeez-logo.png?rlkey=xiahu40vwixf0uf96wwnvqlw2&raw=1" />
 
     <!-- Typography: Poppins is now the PRIMARY professional font for the entire UI -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script type="text/javascript">
       window.updatePortalMetadata = function(title, desc, image) {
@@ -59,19 +59,18 @@
       html, body { 
         margin: 0; 
         background-color: var(--background-base); 
-        font-family: 'Poppins', sans-serif; 
+        font-family: 'Poppins', sans-serif !important; 
         color: #ffffff; 
         overflow-x: hidden; 
         scrollbar-width: none; 
       }
       ::-webkit-scrollbar { display: none !important; }
       
-      h1, h2, h3, h4, .title-font, .poppins-font { 
-        font-family: 'Poppins', sans-serif;
+      h1, h2, h3, h4, h5, h6, .title-font, .poppins-font { 
+        font-family: 'Poppins', sans-serif !important;
         font-weight: 600; 
         text-transform: uppercase; 
         letter-spacing: -0.01em; 
-        padding-bottom: 2px; 
       }
 
       .verified-badge-owner { color: #ff0000; text-shadow: none; }
@@ -80,14 +79,14 @@
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 0, 0.5) !important; border-radius: 10px !important; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent !important; }
       
-      /* Force text content inside boundaries */
+      /* Global overflow safety for containers */
       article, .card-fix, .profile-card, .service-card, .message-bubble {
         overflow: hidden !important;
         word-wrap: break-word;
         overflow-wrap: break-word;
       }
 
-      /* Strict Clamping to 2 lines for Community and Marketplace uniformity */
+      /* Strict Line Clamping for Descriptions */
       .clamp-2 {
         display: -webkit-box;
         -webkit-line-clamp: 2 !important;
@@ -98,15 +97,7 @@
 
       .clamp-3 {
         display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        word-break: break-word;
-      }
-
-      .insta-truncate {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: 3 !important;
         -webkit-box-orient: vertical;
         overflow: hidden;
         word-break: break-word;
@@ -120,17 +111,12 @@
         white-space: normal;
       }
 
-      /* Mandatory solid black hero background */
+      /* Solid black hero for professional depth */
       #home {
         background-color: #000000 !important;
       }
 
-      /* Inputs and text areas scaling safety */
       input, textarea, button {
-        font-family: 'Poppins', sans-serif;
-      }
-
-      .poppins-font {
         font-family: 'Poppins', sans-serif !important;
       }
     </style>
