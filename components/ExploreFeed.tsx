@@ -53,7 +53,7 @@ const PostCaption: React.FC<{ text: string }> = ({ text }) => {
     useEffect(() => {
         if (textRef.current) {
             const el = textRef.current;
-            // Strict check for line clamping overflow
+            // Check if content height exceeds 2 lines
             setIsTruncated(el.scrollHeight > el.clientHeight);
         }
     }, [text]);
@@ -179,27 +179,27 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
     };
 
     const getBadge = (username: string) => {
-        if (username === OWNER_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-owner flex-shrink-0 ml-1.5 w-4 h-4 flex items-center justify-center" style={{ width: '16px', height: '16px', fontSize: '14px' }}></i>;
-        if (username === ADMIN_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-admin flex-shrink-0 ml-1.5 w-4 h-4 flex items-center justify-center" style={{ width: '16px', height: '16px', fontSize: '14px' }}></i>;
+        if (username === OWNER_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-owner ml-1"></i>;
+        if (username === ADMIN_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-admin ml-1"></i>;
         return null;
     };
 
     return (
-        <div className="max-w-7xl mx-auto space-y-12 pb-24 font-sans">
+        <div className="max-w-7xl mx-auto space-y-12 pb-24">
             <AnimatePresence>
                 {shareToast && (
-                    <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:20}} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[200] bg-white text-black px-6 py-3 rounded-full font-bold uppercase text-[10px] tracking-widest shadow-2xl font-sans">Signal Copied</motion.div>
+                    <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:20}} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[200] bg-white text-black px-6 py-3 rounded-full font-bold uppercase text-[10px] tracking-widest shadow-2xl">Link Copied</motion.div>
                 )}
             </AnimatePresence>
 
             {isSignedIn && (
-                <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-6 md:p-10 shadow-2xl space-y-6 max-w-3xl mx-auto card-fix font-sans">
+                <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-6 md:p-10 shadow-2xl space-y-6 max-w-3xl mx-auto card-fix">
                     <div className="flex gap-4">
                         <img src={user.imageUrl} className="w-12 h-12 rounded-full border border-red-600/30 flex-shrink-0 object-cover" alt="Profile" />
-                        <div className="flex-1 space-y-4">
-                            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Transmission Subject..." className="w-full bg-black border border-white/5 rounded-xl p-4 text-white text-xs outline-none focus:border-red-600/50 font-sans" />
+                        <div className="flex-1 space-y-4 font-sans">
+                            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Enter subject line..." className="w-full bg-black border border-white/5 rounded-xl p-4 text-white text-xs outline-none focus:border-red-600/50" />
                             {isOwner && (
-                                <select value={targetSection} onChange={e => setTargetSection(e.target.value)} className="w-full bg-black border border-white/5 rounded-xl p-4 text-red-500 text-[10px] font-bold uppercase tracking-widest outline-none focus:border-red-600/50 appearance-none cursor-pointer font-sans">
+                                <select value={targetSection} onChange={e => setTargetSection(e.target.value)} className="w-full bg-black border border-white/5 rounded-xl p-4 text-red-500 text-[10px] font-bold uppercase tracking-widest outline-none focus:border-red-600/50 appearance-none cursor-pointer">
                                     <option>Marketplace Only</option>
                                     <option>Photo Manipulation</option>
                                     <option>Thumbnail Designs</option>
@@ -207,19 +207,19 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                     <option>VFX</option>
                                 </select>
                             )}
-                            <textarea value={caption} onChange={e => setCaption(e.target.value)} placeholder="Sync your vision with the network... Use @tags and #mentions" className="w-full bg-black border border-white/5 rounded-xl p-4 text-white text-xs outline-none resize-none h-24 focus:border-red-600/50 font-sans" />
+                            <textarea value={caption} onChange={e => setCaption(e.target.value)} placeholder="Broadcast your message... Use @tags and #mentions" className="w-full bg-black border border-white/5 rounded-xl p-4 text-white text-xs outline-none resize-none h-24 focus:border-red-600/50" />
                         </div>
                     </div>
                     
-                    <div className="flex items-center justify-between border-t border-white/5 pt-6 font-sans">
+                    <div className="flex items-center justify-between border-t border-white/5 pt-6">
                         <div className="flex gap-3">
                             <input type="file" hidden ref={fileInputRef} accept="image/*,video/*" onChange={e => setSelectedFile(e.target.files?.[0] || null)} />
-                            <button onClick={() => fileInputRef.current?.click()} className={`flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all font-sans ${selectedFile ? 'bg-green-600 text-white' : 'bg-white/5 text-zinc-400 hover:bg-white/10'}`}>
-                                <PhotoManipulationIcon className="w-4 h-4" /> {selectedFile ? 'Asset Linked' : 'Attach Asset'}
+                            <button onClick={() => fileInputRef.current?.click()} className={`flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${selectedFile ? 'bg-green-600 text-white' : 'bg-white/5 text-zinc-400 hover:bg-white/10'}`}>
+                                <PhotoManipulationIcon className="w-4 h-4" /> {selectedFile ? 'File Attached' : 'Attach File'}
                             </button>
                         </div>
                         <button disabled={isUploading || !caption.trim()} onClick={handleUpload} className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-10 py-3 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] transition-all flex items-center gap-3 shadow-xl font-display">
-                            {isUploading ? 'Transmitting...' : 'Broadcast'} <SendIcon className="w-4 h-4" />
+                            {isUploading ? 'Uploading...' : 'Broadcast'} <SendIcon className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
@@ -233,7 +233,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                     const commentsList = Object.entries(post.comments || {}).map(([id, val]) => ({ id, ...(val as any) }));
 
                     return (
-                        <article key={post.id} className="bg-[#080808] border border-white/5 rounded-xl md:rounded-[2rem] overflow-hidden shadow-xl flex flex-col h-full card-fix font-sans">
+                        <article key={post.id} className="bg-[#080808] border border-white/5 rounded-xl md:rounded-[2rem] overflow-hidden shadow-xl flex flex-col h-full card-fix">
                             <div className="p-4 flex items-center justify-between bg-black/40">
                                 <div className="flex items-center gap-3 cursor-pointer group min-w-0" onClick={() => onOpenProfile?.(post.userId)}>
                                     <img src={post.userAvatar} className="w-8 h-8 rounded-full border border-white/10 object-cover flex-shrink-0" alt="" />
@@ -244,9 +244,9 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex gap-2 font-sans">
+                                <div className="flex gap-2">
                                     {isMyPost && <button onClick={() => handleDelete(post.id)} className="p-2 rounded-full bg-white/5 text-zinc-600 hover:text-red-600 transition-all"><i className="fa-solid fa-trash text-xs"></i></button>}
-                                    <button onClick={() => handleShare(post.id)} title="Copy Signal Link" className="p-2 rounded-full bg-white/5 text-zinc-500 hover:text-white transition-all"><CopyIcon className="w-4 h-4" /></button>
+                                    <button onClick={() => handleShare(post.id)} title="Copy Post Link" className="p-2 rounded-full bg-white/5 text-zinc-500 hover:text-white transition-all"><CopyIcon className="w-4 h-4" /></button>
                                 </div>
                             </div>
 
@@ -266,7 +266,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                 </div>
                             )}
 
-                            <div className="p-5 space-y-4 flex-1 flex flex-col font-sans">
+                            <div className="p-5 space-y-4 flex-1 flex flex-col">
                                 {post.title && <h2 className="text-sm font-semibold text-white uppercase tracking-tight truncate flex-shrink-0 font-display no-clip">{post.title}</h2>}
                                 <PostCaption text={post.caption} />
                                 
@@ -290,18 +290,18 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                                         <div key={c.id} className="flex gap-2 items-start font-sans">
                                                             <img src={c.userAvatar} className="w-6 h-6 rounded-full flex-shrink-0 object-cover" alt="User" />
                                                             <div className="bg-white/5 p-2.5 rounded-xl flex-1 min-w-0">
-                                                                <div className="flex items-center min-w-0">
-                                                                    <p className="text-[10px] font-bold text-white uppercase mb-0.5 truncate font-sans">@{c.userName}</p>
+                                                                <div className="flex items-center">
+                                                                    <p className="text-[10px] font-bold text-white uppercase mb-0.5 truncate">@{c.userName}</p>
                                                                     {getBadge(c.userName)}
                                                                 </div>
-                                                                <p className="text-[12px] text-zinc-400 leading-tight clamp-2 no-clip font-sans">{c.text}</p>
+                                                                <p className="text-[12px] text-zinc-400 leading-tight clamp-2 no-clip">{c.text}</p>
                                                             </div>
                                                         </div>
                                                     ))}
                                                 </div>
                                                 {isSignedIn && (
                                                     <div className="flex gap-2 items-center font-sans">
-                                                        <input value={newComment} onChange={e => setNewComment(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleComment(post.id)} placeholder="Signal in..." className="flex-1 bg-black border border-white/10 rounded-xl px-4 py-2 text-[12px] outline-none focus:border-red-600 text-white font-sans" />
+                                                        <input value={newComment} onChange={e => setNewComment(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleComment(post.id)} placeholder="Join the discussion..." className="flex-1 bg-black border border-white/10 rounded-xl px-4 py-2 text-[12px] outline-none focus:border-red-600 text-white" />
                                                         <button onClick={() => handleComment(post.id)} disabled={!newComment.trim()} className="p-2 bg-red-600 text-white rounded-xl active:scale-90 transition-all"><SendIcon className="w-4 h-4" /></button>
                                                     </div>
                                                 )}
