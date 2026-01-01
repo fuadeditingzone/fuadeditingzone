@@ -17,14 +17,13 @@ const DELETE_SECRET_CODE = '62114@#';
 const PortfolioSection: React.FC<{ 
     title: string; 
     subtitle: string; 
-    icon: React.ReactNode; 
     works: any[]; 
     onItemClick: (items: any[], index: number) => void;
     id: string;
     aspectRatio?: 'square' | 'video' | 'banner';
     isOwner?: boolean;
     onDeleteItem?: (work: any) => void;
-}> = ({ title, subtitle, icon, works, onItemClick, id, aspectRatio = 'square', isOwner, onDeleteItem }) => {
+}> = ({ title, subtitle, works, onItemClick, id, aspectRatio = 'square', isOwner, onDeleteItem }) => {
     const [ref, inView] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
     const [copyToast, setCopyToast] = useState(false);
 
@@ -59,25 +58,20 @@ const PortfolioSection: React.FC<{
     }[aspectRatio];
 
     return (
-        <div id={id} ref={ref as any} className="mb-24 last:mb-0 px-4 md:px-0 overflow-visible">
+        <div id={id} ref={ref as any} className="mb-16 last:mb-0 px-4 md:px-0 overflow-visible">
             <AnimatePresence>
                 {copyToast && (
-                    <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:20}} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-white text-black px-6 py-3 rounded-full font-black uppercase text-[10px] tracking-widest shadow-2xl">Preview Link Copied</motion.div>
+                    <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:20}} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-white text-black px-6 py-3 rounded-full font-bold uppercase text-[10px] tracking-widest shadow-2xl">Preview Link Copied</motion.div>
                 )}
             </AnimatePresence>
             
-            <div className="flex items-center justify-between mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
-                <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
-                        {icon}
-                    </div>
-                    <div>
-                        <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">{subtitle}</span>
-                        <h2 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter leading-none">{title}</h2>
-                    </div>
+            <div className="flex items-center justify-between mb-6 md:mb-8 border-l-4 border-red-600 pl-6">
+                <div>
+                    <span className="text-[8px] md:text-[9px] font-bold text-red-600 uppercase tracking-[0.4em] mb-1 block">{subtitle}</span>
+                    <h2 className="text-white text-xl md:text-3xl font-bold uppercase tracking-tight leading-none">{title}</h2>
                 </div>
                 {isOwner && (
-                    <button onClick={() => window.location.pathname = '/marketplace'} className="bg-red-600/10 border border-red-600/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all">
+                    <button onClick={() => window.location.pathname = '/marketplace'} className="bg-red-600/10 border border-red-600/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all">
                         + Add Work
                     </button>
                 )}
@@ -93,7 +87,7 @@ const PortfolioSection: React.FC<{
                     <motion.div 
                         key={work.id}
                         variants={itemVariants}
-                        className={`group relative ${aspectClass} bg-[#0a0a0a] rounded-[1.2rem] md:rounded-[2rem] overflow-hidden border border-white/10 shadow-xl`}
+                        className={`group relative ${aspectClass} bg-[#0a0a0a] rounded-[1.2rem] md:rounded-[1.5rem] overflow-hidden border border-white/10 shadow-xl`}
                     >
                         <div className="w-full h-full cursor-pointer" onClick={() => onItemClick(works, index)}>
                             <img 
@@ -128,7 +122,7 @@ const PortfolioSection: React.FC<{
                         </div>
 
                         <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4 md:p-6">
-                            <h3 className="text-white font-black uppercase tracking-widest text-[8px] md:text-xs leading-tight truncate">{work.title || 'Portfolio Work'}</h3>
+                            <h3 className="text-white font-bold uppercase tracking-widest text-[8px] md:text-xs leading-tight truncate">{work.title || 'Portfolio Work'}</h3>
                         </div>
                     </motion.div>
                 ))}
@@ -178,10 +172,10 @@ const VfxVideoPlayer: React.FC<{
     }, [isPlaying, isThisVideoInPip]);
 
     return (
-        <motion.div ref={containerRef as any} variants={variants} className="group relative aspect-square bg-black rounded-[1.2rem] md:rounded-[2.5rem] overflow-hidden border border-white/10 hover:border-red-600/50 transition-all duration-500">
+        <motion.div ref={containerRef as any} variants={variants} className="group relative aspect-square bg-black rounded-[1.2rem] md:rounded-[1.5rem] overflow-hidden border border-white/10 hover:border-red-600/50 transition-all duration-500">
             <AnimatePresence>
                 {copyToast && (
-                    <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:10}} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[500] bg-white text-black px-4 py-2 rounded-full font-black uppercase text-[8px] tracking-widest shadow-2xl">Signal Copied</motion.div>
+                    <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:10}} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[500] bg-white text-black px-4 py-2 rounded-full font-bold uppercase text-[8px] tracking-widest shadow-2xl">Signal Copied</motion.div>
                 )}
             </AnimatePresence>
             
@@ -337,17 +331,16 @@ export const Portfolio: React.FC<any> = ({
     };
 
     return (
-        <section id="portfolio" className="py-20 md:py-24 bg-[#050505] relative z-10 select-none overflow-hidden">
+        <section id="portfolio" className="py-16 md:py-20 bg-[#050505] relative z-10 select-none overflow-hidden">
             <div className="container mx-auto px-4 md:px-6 max-w-7xl">
-                <div className="text-center mb-16 md:mb-24">
-                    <h2 className="text-white text-4xl md:text-8xl font-black uppercase tracking-tighter leading-none">Portfolio</h2>
+                <div className="text-center mb-12 md:mb-16">
+                    <h2 className="text-white text-2xl md:text-5xl font-bold uppercase tracking-tight leading-none">Portfolio</h2>
                 </div>
 
                 <PortfolioSection 
                     id="photo-manipulation" 
                     title="Photo Manipulation" 
                     subtitle="Strict 1:1 Composition" 
-                    icon={<PhotoManipulationIcon className="w-5 h-5 md:w-6 md:h-6" />} 
                     works={photoManipWorks} 
                     onItemClick={(items, index) => openModal(items, index)}
                     aspectRatio="square"
@@ -359,7 +352,6 @@ export const Portfolio: React.FC<any> = ({
                     id="thumbnail-designs" 
                     title="Thumbnails" 
                     subtitle="Full High CTR Design" 
-                    icon={<ThumbnailIcon className="w-5 h-5 md:w-6 md:h-6" />} 
                     works={thumbnailWorks} 
                     onItemClick={(items, index) => openModal(items, index)}
                     aspectRatio="video"
@@ -371,7 +363,6 @@ export const Portfolio: React.FC<any> = ({
                     id="banner-designs" 
                     title="Banners" 
                     subtitle="Edge-to-Edge Identity" 
-                    icon={<BannerIcon className="w-5 h-5 md:w-6 md:h-6" />} 
                     works={bannerWorks} 
                     onItemClick={(items, index) => openModal(items, index)}
                     aspectRatio="banner"
@@ -381,21 +372,18 @@ export const Portfolio: React.FC<any> = ({
 
                 <div id="video-editing" className="mb-24 md:mb-32 px-6 md:px-0">
                     <div className="flex items-center gap-4 mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
-                            <YouTubeIcon className="w-5 h-5 md:w-6 md:h-6" />
-                        </div>
                         <div>
-                            <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">YouTube Edits</span>
-                            <h2 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter">Content Feed</h2>
+                            <span className="text-[8px] md:text-[9px] font-bold text-red-600 uppercase tracking-[0.4em] mb-1 block">YouTube Edits</span>
+                            <h2 className="text-white text-xl md:text-3xl font-bold uppercase tracking-tight">Content Feed</h2>
                         </div>
                     </div>
 
                     <div className="lg:flex lg:gap-12 lg:items-start space-y-8 lg:space-y-0">
                         <div className="flex-1 space-y-6">
-                            <div className="relative aspect-video w-full rounded-[1.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl bg-black border border-white/5">
+                            <div className="relative aspect-video w-full rounded-[1.5rem] md:rounded-[2rem] overflow-hidden shadow-2xl bg-black border border-white/5">
                                 <div id="youtube-portfolio-player-inner" className="w-full h-full"></div>
                             </div>
-                            <div className="bg-[#0f0f0f] p-6 md:p-8 border border-white/5 rounded-[1.5rem] md:rounded-[2.5rem]">
+                            <div className="bg-[#0f0f0f] p-6 md:p-8 border border-white/5 rounded-[1.5rem] md:rounded-[2rem]">
                                 <h3 className="text-white font-bold text-lg md:text-2xl mb-4 truncate">{currentVideoStats?.title || 'Syncing...'}</h3>
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="flex items-center gap-3 md:gap-4 min-w-0">
@@ -403,18 +391,18 @@ export const Portfolio: React.FC<any> = ({
                                             <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} className="w-full h-full object-cover" alt="Selected Legend YouTube Profile" />
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-white font-black text-sm md:text-lg uppercase truncate">{stats.channelTitle}</p>
+                                            <p className="text-white font-bold text-sm md:text-lg uppercase truncate">{stats.channelTitle}</p>
                                             <p className="text-zinc-500 text-[10px] uppercase font-bold truncate">{formatNumber(stats.subscribers)} Subscribers</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-6 flex-shrink-0">
                                         <div className="text-center">
-                                            <p className="text-white font-black text-lg md:text-2xl">{formatNumber(animatedViews)}</p>
-                                            <p className="text-[8px] text-zinc-500 uppercase font-black">Views</p>
+                                            <p className="text-white font-bold text-lg md:text-2xl">{formatNumber(animatedViews)}</p>
+                                            <p className="text-[8px] text-zinc-500 uppercase font-bold">Views</p>
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-red-600 font-black text-lg md:text-2xl">{formatNumber(animatedLikes)}</p>
-                                            <p className="text-[8px] text-zinc-500 uppercase font-black">Likes</p>
+                                            <p className="text-red-600 font-bold text-lg md:text-2xl">{formatNumber(animatedLikes)}</p>
+                                            <p className="text-[8px] text-zinc-500 uppercase font-bold">Likes</p>
                                         </div>
                                     </div>
                                 </div>
@@ -432,12 +420,9 @@ export const Portfolio: React.FC<any> = ({
 
                 <div id="vfx-animations" className="mb-24 md:mb-32 px-6 md:px-0" ref={vfxRef as any}>
                      <div className="flex items-center gap-4 mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-600/10 flex items-center justify-center border border-red-600/20 text-red-500">
-                            <VfxIcon className="w-5 h-5 md:w-6 md:h-6" />
-                        </div>
                         <div>
-                            <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 block">Visual Effects</span>
-                            <h2 className="text-white text-2xl md:text-4xl font-black uppercase tracking-tighter">Full VFX Mastery</h2>
+                            <span className="text-[8px] md:text-[9px] font-bold text-red-600 uppercase tracking-[0.4em] mb-1 block">Visual Effects</span>
+                            <h2 className="text-white text-xl md:text-3xl font-bold uppercase tracking-tight">Full VFX Mastery</h2>
                         </div>
                     </div>
                     <motion.div variants={containerVariants} initial="hidden" animate={vfxInView ? "visible" : "hidden"} className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-7xl mx-auto px-2 md:px-0">
@@ -460,14 +445,14 @@ export const Portfolio: React.FC<any> = ({
                 </div>
 
                 {isOwner && hiddenStaticWorks.length > 0 && (
-                    <div className="mt-20 p-10 bg-white/5 border border-white/5 rounded-[3rem]">
-                        <h3 className="text-red-500 font-black uppercase tracking-[0.3em] text-sm mb-6">Owner Console: Hidden Works</h3>
+                    <div className="mt-20 p-10 bg-white/5 border border-white/5 rounded-[2rem]">
+                        <h3 className="text-red-500 font-bold uppercase tracking-[0.3em] text-sm mb-6">Owner Console: Hidden Works</h3>
                         <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
                             {hiddenStaticWorks.map(id => (
                                 <button 
                                     key={id} 
                                     onClick={() => handleRestoreWork(id)}
-                                    className="p-3 bg-red-600/20 text-red-500 rounded-xl font-black text-[9px] uppercase tracking-widest border border-red-600/20 hover:bg-red-600 hover:text-white transition-all"
+                                    className="p-3 bg-red-600/20 text-red-500 rounded-xl font-bold text-[9px] uppercase tracking-widest border border-red-600/20 hover:bg-red-600 hover:text-white transition-all"
                                 >
                                     Restore {id}
                                 </button>

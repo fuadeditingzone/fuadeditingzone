@@ -134,31 +134,42 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
     <section ref={intersectionRef} id="contact" className="py-20 md:py-24 bg-black relative z-10 overflow-hidden">
       <div className="container mx-auto px-4 md:px-6 max-w-6xl">
         <div className="mb-12 md:mb-16 text-center">
-          <span className="text-[10px] font-black uppercase tracking-[0.6em] text-red-600 mb-3 block">Marketplace</span>
-          <h2 className="text-white text-4xl md:text-6xl font-black uppercase tracking-tighter">Order Now</h2>
+          <span className="text-[10px] font-bold uppercase tracking-[0.6em] text-red-600 mb-3 block">Marketplace</span>
+          <h2 className="text-white text-3xl md:text-5xl font-bold uppercase tracking-tight">Order Now</h2>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 items-start">
           <form onSubmit={handleSubmit} className="space-y-8 md:space-y-10 min-w-0">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {SERVICE_TIERS.map(tier => (
-                    <button key={tier.id} onClick={(e) => { e.preventDefault(); setSelectedTier(tier.id); if(tier.id !== 'custom') setFormData(f => ({...f, customPrice: tier.price, customTime: tier.delivery})); }} className={`flex flex-col p-4 rounded-[1.5rem] border transition-all duration-500 bg-white/5 ${selectedTier === tier.id ? 'border-red-600 shadow-xl' : 'border-white/10 hover:border-white/20'}`}>
-                        <tier.icon className={`w-5 h-5 mb-3 ${selectedTier === tier.id ? 'text-red-500' : 'text-zinc-600'}`} />
-                        <h4 className="text-[9px] font-black text-white uppercase leading-tight truncate w-full">{tier.name}</h4>
+                    <button 
+                      key={tier.id} 
+                      onClick={(e) => { e.preventDefault(); setSelectedTier(tier.id); if(tier.id !== 'custom') setFormData(f => ({...f, customPrice: tier.price, customTime: tier.delivery})); }} 
+                      className={`flex items-center gap-6 p-6 md:p-8 rounded-[2rem] border transition-all duration-500 bg-white/5 ${selectedTier === tier.id ? 'border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.2)] bg-white/10 scale-[1.02]' : 'border-white/10 hover:border-white/20'}`}
+                    >
+                        <div className={`p-4 rounded-2xl ${selectedTier === tier.id ? 'bg-red-600 text-white' : 'bg-white/5 text-zinc-600'}`}>
+                          <tier.icon className="w-8 h-8" />
+                        </div>
+                        <div className="text-left">
+                          <h4 className="text-sm md:text-base font-bold text-white uppercase tracking-wider leading-tight">{tier.name}</h4>
+                          <p className="text-[10px] text-zinc-500 font-bold mt-1 uppercase tracking-widest">
+                            {tier.id === 'custom' ? 'Custom Quote' : `Starts at ${currency}${tier.price}`}
+                          </p>
+                        </div>
                     </button>
                 ))}
             </div>
 
             <div className="bg-[#080808] border border-white/10 rounded-[2rem] p-6 md:p-10 space-y-6 shadow-2xl relative">
                 {!isSignedIn ? (
-                    <SignInButton mode="modal"><button className="w-full bg-red-600 py-6 rounded-2xl font-black uppercase tracking-[0.6em] text-[11px] shadow-xl hover:bg-red-700 transition-all active:scale-95">Log in to Order</button></SignInButton>
+                    <SignInButton mode="modal"><button className="w-full bg-red-600 py-6 rounded-2xl font-bold uppercase tracking-[0.6em] text-[11px] shadow-xl hover:bg-red-700 transition-all active:scale-95">Log in to Order</button></SignInButton>
                 ) : (
                     <>
                         <div className="space-y-4">
-                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Project Category:</p>
+                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Project Category:</p>
                             <div className="flex flex-wrap gap-2">
                                 {RECOMMENDED_TAGS.map(tag => (
-                                    <button key={tag} type="button" onClick={() => handleTagClick(tag)} className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${formData.customName === tag ? 'bg-red-600 border-red-500 text-white shadow-lg' : 'bg-white/5 border-white/10 text-zinc-500 hover:text-white'}`}>{tag}</button>
+                                    <button key={tag} type="button" onClick={() => handleTagClick(tag)} className={`px-4 py-2.5 rounded-xl border text-[9px] font-bold uppercase tracking-widest transition-all ${formData.customName === tag ? 'bg-red-600 border-red-500 text-white shadow-lg' : 'bg-white/5 border-white/10 text-zinc-500 hover:text-white'}`}>{tag}</button>
                                 ))}
                             </div>
                             {tagWarning && <p className="text-[9px] text-red-500 font-bold uppercase">{tagWarning}</p>}
@@ -166,21 +177,21 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="relative">
-                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 block ml-1">Budget ($)</label>
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2 block ml-1">Budget</label>
                                 <div className="relative flex items-center">
-                                    <button type="button" onClick={cycleCurrency} className="absolute left-5 z-10 text-red-600 font-black text-lg">{currency}</button>
-                                    <input required type="text" value={formData.customPrice} onChange={e => handleNumInput(e.target.value, 'customPrice')} placeholder="Min $5" className="w-full h-16 md:h-20 bg-black border border-white/10 rounded-2xl py-4 pl-12 pr-5 text-lg font-black text-white outline-none focus:border-red-600 transition-all shadow-inner" />
+                                    <button type="button" onClick={cycleCurrency} className="absolute left-5 z-10 text-red-600 font-bold text-lg">{currency}</button>
+                                    <input required type="text" value={formData.customPrice} onChange={e => handleNumInput(e.target.value, 'customPrice')} placeholder="Min $5" className="w-full h-16 md:h-20 bg-black border border-white/10 rounded-2xl py-4 pl-12 pr-5 text-lg font-bold text-white outline-none focus:border-red-600 transition-all shadow-inner" />
                                 </div>
                             </div>
                             <div className="relative">
-                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 block ml-1">Deadline (Days)</label>
-                                <input required type="text" value={formData.customTime} onChange={e => handleNumInput(e.target.value, 'customTime')} placeholder="Days" className="w-full h-16 md:h-20 bg-black border border-white/10 rounded-2xl py-4 px-6 text-lg font-black text-white outline-none focus:border-red-600 transition-all shadow-inner" />
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2 block ml-1">Deadline (Days)</label>
+                                <input required type="text" value={formData.customTime} onChange={e => handleNumInput(e.target.value, 'customTime')} placeholder="Days" className="w-full h-16 md:h-20 bg-black border border-white/10 rounded-2xl py-4 px-6 text-lg font-bold text-white outline-none focus:border-red-600 transition-all shadow-inner" />
                             </div>
                         </div>
                         
                         <textarea required rows={4} value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} className="w-full bg-black border border-white/10 rounded-2xl px-6 py-5 text-sm text-white focus:border-red-600 outline-none resize-none shadow-lg transition-all" placeholder="Tell me more about your project..." />
                         
-                        <button type="submit" disabled={status === 'submitting' || !selectedTier} className={`w-full py-6 md:py-8 rounded-2xl text-[11px] font-black uppercase tracking-[0.6em] transition-all flex items-center justify-center gap-4 ${!selectedTier ? 'bg-white/5 text-zinc-600' : 'bg-red-600 text-white shadow-xl hover:bg-red-700 active:scale-95'}`}>
+                        <button type="submit" disabled={status === 'submitting' || !selectedTier} className={`w-full py-6 md:py-8 rounded-2xl text-[11px] font-bold uppercase tracking-[0.6em] transition-all flex items-center justify-center gap-4 ${!selectedTier ? 'bg-white/5 text-zinc-600' : 'bg-red-600 text-white shadow-xl hover:bg-red-700 active:scale-95'}`}>
                             {status === 'submitting' ? <SparklesIcon className="w-5 h-5 animate-spin" /> : 'Place Order'}
                         </button>
                     </>
@@ -189,25 +200,25 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
           </form>
 
           <div className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-8 md:p-10 shadow-inner flex flex-col h-full min-h-[500px] max-h-[85vh]">
-                <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-widest mb-8 pb-8 border-b border-white/5 flex-shrink-0">Order Database</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-widest mb-8 pb-8 border-b border-white/5 flex-shrink-0">Order Database</h3>
                 <div className="space-y-6 overflow-y-auto custom-scrollbar flex-1 pr-2">
                     {userOrders.length === 0 ? (
                         <div className="py-24 text-center opacity-10 flex flex-col items-center gap-6">
                             <SparklesIcon className="w-16 h-16 md:w-20 md:h-20" />
-                            <p className="text-[11px] uppercase font-black tracking-widest">No Signals Detected</p>
+                            <p className="text-[11px] uppercase font-bold tracking-widest">No Signals Detected</p>
                         </div>
                     ) : (
                         userOrders.map((order, idx) => (
                             <motion.div key={idx} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="p-6 md:p-8 bg-white/5 border border-white/10 rounded-[2rem] shadow-lg group hover:border-red-600/20 transition-all duration-500">
                                 <div className="flex justify-between items-start mb-6 gap-4">
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-[14px] md:text-[15px] font-black text-white uppercase tracking-wider truncate">{order.service}</p>
+                                        <p className="text-[14px] md:text-[15px] font-bold text-white uppercase tracking-wider truncate">{order.service}</p>
                                     </div>
-                                    <span className={`text-[8px] font-black uppercase px-2.5 py-1 rounded-lg border flex-shrink-0 ${order.status === 'Pending' ? 'text-yellow-500 border-yellow-500/20 bg-yellow-500/5' : order.status === 'Accepted' ? 'text-green-500 border-green-500/20 bg-green-500/5' : 'text-red-500 border-red-500/20 bg-red-500/5'}`}>{order.status}</span>
+                                    <span className={`text-[8px] font-bold uppercase px-2.5 py-1 rounded-lg border flex-shrink-0 ${order.status === 'Pending' ? 'text-yellow-500 border-yellow-500/20 bg-yellow-500/5' : order.status === 'Accepted' ? 'text-green-500 border-green-500/20 bg-green-500/5' : 'text-red-500 border-red-500/20 bg-red-500/5'}`}>{order.status}</span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3 opacity-60">
-                                    <div className="bg-black/60 p-3 rounded-xl border border-white/5 text-[9px] font-black text-zinc-400 uppercase tracking-widest text-center">Price: <span className="text-white">{order.price}</span></div>
-                                    <div className="bg-black/60 p-3 rounded-xl border border-white/5 text-[9px] font-black text-zinc-400 uppercase tracking-widest text-center">Time: <span className="text-white">{order.delivery}</span></div>
+                                    <div className="bg-black/60 p-3 rounded-xl border border-white/5 text-[9px] font-bold text-zinc-400 uppercase tracking-widest text-center">Price: <span className="text-white">{order.price}</span></div>
+                                    <div className="bg-black/60 p-3 rounded-xl border border-white/5 text-[9px] font-bold text-zinc-400 uppercase tracking-widest text-center">Time: <span className="text-white">{order.delivery}</span></div>
                                 </div>
                             </motion.div>
                         ))

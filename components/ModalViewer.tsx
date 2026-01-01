@@ -60,7 +60,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
                 <div className="flex items-center gap-3">
                     <img src={siteConfig.branding.logoUrl} className="w-10 h-10 rounded-full border border-white/20" alt="FEZ" />
                     <div className="flex flex-col">
-                        <span className="text-white font-black text-[10px] uppercase tracking-widest">{isImage(currentItem) ? (currentItem as any).category : 'Cinematic Video'}</span>
+                        <span className="text-white font-bold text-[10px] uppercase tracking-widest">{isImage(currentItem) ? (currentItem as any).category : 'Cinematic Video'}</span>
                         <span className="text-zinc-500 font-bold text-[8px] uppercase tracking-widest">Protocol Viewer</span>
                     </div>
                 </div>
@@ -75,7 +75,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
             <div className="flex-1 relative w-full flex items-center justify-center p-0 overflow-hidden" onClick={onClose}>
                 <div className="relative w-full h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
                     {isImage(currentItem) ? (
-                        <div className="w-full h-full flex items-center justify-center">
+                        <div className="w-full h-full flex items-center justify-center p-4">
                              <img 
                                 src={getImageUrl()} 
                                 className="max-w-full max-h-full object-contain shadow-[0_0_80px_rgba(0,0,0,0.5)] transition-all duration-700 animate-fade-in" 
@@ -106,11 +106,11 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
             <div className="relative z-[100] bg-black/60 backdrop-blur-3xl border-t border-white/10 p-6 md:p-8 flex-shrink-0" onClick={e => e.stopPropagation()}>
                 <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-1.5 flex-1 min-w-0">
-                         <h3 className="text-white font-black text-xl md:text-2xl uppercase tracking-tighter truncate">{currentItem.title || 'Master Design'}</h3>
+                         <h3 className="text-white font-bold text-xl md:text-2xl uppercase tracking-tighter truncate">{currentItem.title || 'Master Design'}</h3>
                          <p className="text-zinc-400 text-[11px] md:text-sm font-medium leading-relaxed italic truncate opacity-80">{currentItem.description || (currentItem as any).caption || 'Exclusive creative project by Fuad Ahmed.'}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button onClick={handleShare} className="flex-1 md:flex-none bg-red-600 text-white font-black py-4 px-10 uppercase tracking-widest text-[10px] shadow-[0_10px_20px_rgba(220,38,38,0.3)] active:scale-95 transition-all">Share Link</button>
+                        <button onClick={handleShare} className="flex-1 md:flex-none bg-red-600 text-white font-bold py-4 px-10 uppercase tracking-widest text-[10px] shadow-[0_10px_20px_rgba(220,38,38,0.3)] active:scale-95 transition-all">Share Link</button>
                         <div className="hidden md:flex gap-2">
                              <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse"></div>
                              <div className="w-1.5 h-1.5 bg-zinc-800 rounded-full"></div>
@@ -122,7 +122,7 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
 
             <AnimatePresence>
                 {showShareToast && (
-                    <motion.div initial={{opacity:0, y: 50}} animate={{opacity:1, y:0}} exit={{opacity:0, y:50}} className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-white text-black px-8 py-4 rounded-full font-black uppercase text-xs tracking-widest shadow-2xl z-[120]">Link Copied</motion.div>
+                    <motion.div initial={{opacity:0, y: 50}} animate={{opacity:1, y:0}} exit={{opacity:0, y:50}} className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-white text-black px-8 py-4 rounded-full font-bold uppercase text-xs tracking-widest shadow-2xl z-[120]">Link Copied</motion.div>
                 )}
             </AnimatePresence>
         </div>
