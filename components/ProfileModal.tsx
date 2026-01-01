@@ -194,52 +194,60 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
         setUserListMode(null);
     };
 
-    const getVerifiedBadge = (u: string) => (u === OWNER_HANDLE ? <i className="fa-solid fa-circle-check verified-badge-owner ml-1 text-xs"></i> : u === ADMIN_HANDLE ? <i className="fa-solid fa-circle-check verified-badge-admin ml-1 text-xs"></i> : null);
+    const getVerifiedBadge = (u: string) => (u === OWNER_HANDLE ? <i className="fa-solid fa-circle-check verified-badge-owner ml-1 text-sm"></i> : u === ADMIN_HANDLE ? <i className="fa-solid fa-circle-check verified-badge-admin ml-1 text-sm"></i> : null);
 
     if (!isLoaded || !clerkUser || !isOpen) return null;
 
     return (
         <AnimatePresence>
             <div className="fixed inset-0 z-[2000000] flex items-center justify-center">
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/98 backdrop-blur-3xl" />
-                <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }} className="relative w-full h-full md:h-fit md:max-h-[90vh] md:max-w-2xl md:rounded-[2rem] bg-[#050505] border-white/5 border-0 md:border flex flex-col overflow-hidden shadow-2xl">
-                    
-                    <div className="p-3 md:p-5 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-xl flex-shrink-0">
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => userListMode ? setUserListMode(null) : onClose()} className="p-1 rounded-full hover:bg-white/5 transition-all text-white"><ChevronLeftIcon className="w-4 h-4" /></button>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black backdrop-blur-3xl" />
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }} 
+                    animate={{ opacity: 1, scale: 1 }} 
+                    exit={{ opacity: 0, scale: 0.95 }} 
+                    className="relative w-full h-full bg-[#050505] flex flex-col overflow-hidden"
+                >
+                    {/* Full Screen Header */}
+                    <div className="px-6 py-5 md:px-12 md:py-8 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-xl flex-shrink-0">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => userListMode ? setUserListMode(null) : onClose()} className="p-2 rounded-full hover:bg-white/5 transition-all text-white"><ChevronLeftIcon className="w-6 h-6" /></button>
                             <div className="flex items-center">
-                                <h2 className="text-xs font-black text-white uppercase tracking-widest truncate max-w-[120px]">{targetUser?.username || clerkUser.username}</h2>
+                                <h2 className="text-lg md:text-2xl font-black text-white uppercase tracking-widest truncate max-w-[200px] md:max-w-md">{targetUser?.username || clerkUser.username}</h2>
                                 {getVerifiedBadge(targetUser?.username || clerkUser.username)}
-                                <button onClick={handleCopyProfileLink} className="ml-2 p-1.5 bg-white/5 hover:bg-red-600/20 rounded-lg text-zinc-500 hover:text-red-500 transition-all border border-white/5" title="Copy Protocol URL">
-                                    <CopyIcon className="w-3.5 h-3.5" />
+                                <button onClick={handleCopyProfileLink} className="ml-4 p-2 bg-white/5 hover:bg-red-600/20 rounded-xl text-zinc-500 hover:text-red-500 transition-all border border-white/5" title="Copy Profile URL">
+                                    <CopyIcon className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            {isMyOwnProfile && <button onClick={() => isEditing ? handleSaveProfile() : setIsEditing(true)} className={`px-3 py-1 rounded-lg font-bold text-[8px] uppercase tracking-widest transition-all ${isEditing ? 'bg-green-600 text-white' : 'bg-white/5 text-zinc-400 hover:text-white border border-white/5'}`}>{isEditing ? 'Sync' : 'Edit'}</button>}
-                            <button onClick={onClose} className="p-1.5 bg-red-600 rounded-full text-white shadow-lg"><CloseIcon className="w-3.5 h-3.5" /></button>
+                        <div className="flex items-center gap-4">
+                            {isMyOwnProfile && <button onClick={() => isEditing ? handleSaveProfile() : setIsEditing(true)} className={`px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${isEditing ? 'bg-green-600 text-white' : 'bg-white/5 text-zinc-400 hover:text-white border border-white/5'}`}>{isEditing ? 'Sync Changes' : 'Edit Identity'}</button>}
+                            <button onClick={onClose} className="p-2 bg-red-600 rounded-full text-white shadow-lg hover:scale-110 transition-transform"><CloseIcon className="w-6 h-6" /></button>
                         </div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar relative">
                         <AnimatePresence>
                             {showCopyToast && (
-                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] bg-white text-black px-4 py-1.5 rounded-full font-black text-[8px] uppercase tracking-widest shadow-xl">Signal Copied</motion.div>
+                                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="absolute top-8 left-1/2 -translate-x-1/2 z-[100] bg-white text-black px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-2xl">Signal Copied</motion.div>
                             )}
                         </AnimatePresence>
 
                         <AnimatePresence>
                             {userListMode && (
-                                <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 50 }} className="absolute inset-0 z-[60] bg-[#050505] p-5 overflow-y-auto custom-scrollbar">
-                                    <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-3">
-                                        <h3 className="text-xs font-black text-white uppercase tracking-[0.2em]">{userListMode}</h3>
-                                        <button onClick={() => setUserListMode(null)} className="p-1.5 bg-white/5 rounded-full text-zinc-400 hover:text-white"><CloseIcon className="w-3.5 h-3.5" /></button>
+                                <motion.div initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 100 }} className="absolute inset-0 z-[60] bg-[#050505] p-6 md:p-12 overflow-y-auto custom-scrollbar">
+                                    <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-6">
+                                        <h3 className="text-xl font-black text-white uppercase tracking-[0.3em]">{userListMode} Data</h3>
+                                        <button onClick={() => setUserListMode(null)} className="p-2 bg-white/5 rounded-full text-zinc-400 hover:text-white"><CloseIcon className="w-6 h-6" /></button>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {resolvedUserList.map((u, i) => (
-                                            <div key={i} onClick={() => handleSwitchToOtherProfile(u.id, u.username)} className="flex items-center gap-3 p-2 bg-white/5 border border-white/5 rounded-lg cursor-pointer hover:bg-red-600/5 hover:border-red-600/20 transition-all">
-                                                <img src={u.avatar || u.imageUrl} className="w-8 h-8 rounded object-cover" alt="" />
-                                                <div className="min-w-0"><p className="text-white font-bold text-[10px] uppercase truncate">{u.name}</p><p className="text-zinc-500 font-medium text-[8px]">@{u.username}</p></div>
+                                            <div key={i} onClick={() => handleSwitchToOtherProfile(u.id, u.username)} className="flex items-center gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl cursor-pointer hover:bg-red-600/5 hover:border-red-600/20 transition-all">
+                                                <img src={u.avatar || u.imageUrl} className="w-12 h-12 rounded-xl object-cover border border-white/10" alt="" />
+                                                <div className="min-w-0">
+                                                    <p className="text-white font-bold text-sm uppercase truncate">{u.name}</p>
+                                                    <p className="text-zinc-500 font-medium text-xs">@{u.username}</p>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -247,73 +255,86 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                             )}
                         </AnimatePresence>
 
-                        <div className="p-4 md:p-6 space-y-5">
-                            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
-                                <div className={`w-16 h-16 md:w-20 md:h-20 rounded-[1.4rem] border-2 p-0.5 flex-shrink-0 ${targetUser?.username === OWNER_HANDLE ? 'border-red-600/50' : targetUser?.username === ADMIN_HANDLE ? 'border-blue-600/50' : 'border-white/10'}`}>
-                                    <img src={targetUser?.avatar || clerkUser.imageUrl} className="w-full h-full object-cover rounded-[1.2rem]" alt="" />
+                        <div className="max-w-5xl mx-auto p-6 md:p-12 space-y-10">
+                            {/* Profile Header Block */}
+                            <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+                                <div className={`w-32 h-32 md:w-48 md:h-48 rounded-[2.5rem] border-4 p-1 flex-shrink-0 ${targetUser?.username === OWNER_HANDLE ? 'border-red-600 shadow-[0_0_40px_rgba(255,0,0,0.2)]' : targetUser?.username === ADMIN_HANDLE ? 'border-blue-600 shadow-[0_0_40px_rgba(59,130,246,0.2)]' : 'border-white/10'}`}>
+                                    <img src={targetUser?.avatar || clerkUser.imageUrl} className="w-full h-full object-cover rounded-[2.2rem]" alt="" />
                                 </div>
-                                <div className="flex-1 text-center md:text-left">
-                                    <div className="flex flex-col md:flex-row items-center gap-2 mb-2">
-                                        <h3 className="text-base font-light text-white">@{targetUser?.username || clerkUser.username}</h3>
-                                        <div className="flex gap-2">
+                                <div className="flex-1 text-center md:text-left pt-4">
+                                    <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
+                                        <h3 className="text-2xl md:text-4xl font-black text-white tracking-tighter">@{targetUser?.username || clerkUser.username}</h3>
+                                        <div className="flex gap-3">
                                             {isViewingOther ? (
-                                                <><button onClick={() => handleAction('follow')} className={`px-3 py-1 rounded-lg font-bold text-[7px] uppercase tracking-widest transition-all ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white shadow-md'}`}>{socialState.isFollowing ? 'Following' : 'Follow'}</button>
-                                                  <button onClick={() => handleAction('friend')} className={`px-3 py-1 rounded-lg font-bold text-[7px] uppercase tracking-widest transition-all ${socialState.friendStatus === 'accepted' ? 'bg-green-600/20 text-green-500 border border-green-600/30' : 'bg-white/5 border border-white/10 text-white'}`}>{socialState.friendStatus === 'accepted' ? 'Friends' : socialState.friendStatus === 'pending' ? 'Accept' : socialState.friendStatus === 'requested' ? 'Pending' : 'Add Friend'}</button>
-                                                  <button onClick={() => onMessageUser?.(viewingUserId!)} className="px-2 py-1 bg-white/5 border border-white/10 rounded-lg font-bold text-[7px] uppercase tracking-widest text-white hover:bg-white/10">Message</button></>
-                                            ) : (!isEditing && <button onClick={() => setIsEditing(true)} className="px-3 py-1 bg-white/10 rounded-lg font-bold text-[7px] uppercase tracking-widest text-white">Edit Profile</button>)}
+                                                <><button onClick={() => handleAction('follow')} className={`px-8 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${socialState.isFollowing ? 'bg-white/10 text-white' : 'bg-red-600 text-white shadow-xl'}`}>{socialState.isFollowing ? 'Following' : 'Follow User'}</button>
+                                                  <button onClick={() => handleAction('friend')} className={`px-8 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${socialState.friendStatus === 'accepted' ? 'bg-green-600/20 text-green-500 border border-green-600/30' : 'bg-white/5 border border-white/10 text-white'}`}>{socialState.friendStatus === 'accepted' ? 'Friends' : socialState.friendStatus === 'pending' ? 'Accept' : socialState.friendStatus === 'requested' ? 'Pending' : 'Sync Connection'}</button>
+                                                  <button onClick={() => onMessageUser?.(viewingUserId!)} className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl font-black text-[10px] uppercase tracking-widest text-white hover:bg-white/10">Message</button></>
+                                            ) : (!isEditing && <button onClick={() => setIsEditing(true)} className="px-8 py-2.5 bg-white/10 rounded-xl font-black text-[10px] uppercase tracking-widest text-white border border-white/10 hover:bg-white/20 transition-all">Edit Identity</button>)}
                                         </div>
                                     </div>
-                                    <div className="flex justify-center md:justify-start gap-4 mb-2">
-                                        <div className="text-center md:text-left"><p className="text-sm font-bold text-white leading-tight">{userPosts.length}</p><p className="text-[6px] text-zinc-500 uppercase font-black">Posts</p></div>
-                                        <button onClick={() => setUserListMode('followers')} className="text-center md:text-left hover:opacity-80 transition-opacity"><p className="text-sm font-bold text-white leading-tight">{socialState.followers.length}</p><p className="text-[6px] text-zinc-500 uppercase font-black">Followers</p></button>
-                                        <button onClick={() => setUserListMode('following')} className="text-center md:text-left hover:opacity-80 transition-opacity"><p className="text-sm font-bold text-white leading-tight">{socialState.following.length}</p><p className="text-[6px] text-zinc-500 uppercase font-black">Following</p></button>
+                                    
+                                    <div className="flex justify-center md:justify-start gap-12 mb-8 border-y border-white/5 py-6">
+                                        <div className="text-center md:text-left"><p className="text-2xl font-black text-white leading-tight font-display">{userPosts.length}</p><p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Master Posts</p></div>
+                                        <button onClick={() => setUserListMode('followers')} className="text-center md:text-left hover:opacity-80 transition-opacity"><p className="text-2xl font-black text-white leading-tight font-display">{socialState.followers.length}</p><p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Followers</p></button>
+                                        <button onClick={() => setUserListMode('following')} className="text-center md:text-left hover:opacity-80 transition-opacity"><p className="text-2xl font-black text-white leading-tight font-display">{socialState.following.length}</p><p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Following</p></button>
                                     </div>
-                                    <div className="space-y-0.5">
+
+                                    <div className="space-y-4">
                                         {isEditing ? (
-                                            <><input value={editData.name || ''} onChange={e => setEditData({...editData, name: e.target.value})} placeholder="Display Identity" className="w-full bg-black border border-white/10 rounded px-2 py-1 text-white font-medium text-[10px] outline-none focus:border-red-600 mb-1" />
-                                              <textarea value={editData.profile?.bio || ''} onChange={e => setEditData({...editData, profile: {...editData.profile, bio: e.target.value}})} placeholder="Bio..." className="w-full bg-black border border-white/10 rounded px-2 py-1 text-zinc-400 text-[9px] italic outline-none h-10 resize-none" /></>
+                                            <><input value={editData.name || ''} onChange={e => setEditData({...editData, name: e.target.value})} placeholder="Full Display Identity" className="w-full bg-black border border-white/10 rounded-xl p-4 text-white font-bold text-sm outline-none focus:border-red-600 mb-2" />
+                                              <textarea value={editData.profile?.bio || ''} onChange={e => setEditData({...editData, profile: {...editData.profile, bio: e.target.value}})} placeholder="Describe your creative essence..." className="w-full bg-black border border-white/10 rounded-xl p-4 text-zinc-400 text-sm italic outline-none h-24 resize-none focus:border-red-600" /></>
                                         ) : (
-                                            <><p className="text-[10px] font-bold text-white uppercase tracking-wider">{targetUser?.name || clerkUser.fullName}</p>
-                                              <p className="text-zinc-400 text-[9px] font-light italic leading-snug truncate">"{targetUser?.profile?.bio || 'Active.'}"</p></>
+                                            <><p className="text-lg font-black text-white uppercase tracking-tight">{targetUser?.name || clerkUser.fullName}</p>
+                                              <p className="text-zinc-400 text-base font-light italic leading-relaxed">"{targetUser?.profile?.bio || 'Fuad Editing Zone active member.'}"</p></>
                                         )}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="space-y-3 bg-white/5 p-3 rounded-xl border border-white/5">
-                                <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[8px] uppercase tracking-widest font-black">
-                                    <div className="flex items-center gap-1.5"><span className="text-red-600">Location:</span> {isEditing ? <input value={editData.profile?.origin} onChange={e => setEditData({...editData, profile: {...editData.profile, origin: e.target.value}})} className="bg-transparent border-b border-white/10 outline-none text-white w-16" /> : <span className="text-white">{targetUser?.profile?.origin || 'Hidden'}</span>}</div>
-                                    <div className="flex items-center gap-1.5"><span className="text-red-600">Expertise:</span> {isEditing ? <input value={editData.profile?.profession} onChange={e => setEditData({...editData, profile: {...editData.profile, profession: e.target.value}})} className="bg-transparent border-b border-white/10 outline-none text-white w-16" /> : <span className="text-white">{targetUser?.profile?.profession || 'Artist'}</span>}</div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-6 bg-white/5 p-8 rounded-[2rem] border border-white/5">
+                                    <h4 className="text-xs font-black text-red-600 uppercase tracking-[0.4em]">Protocol Details</h4>
+                                    <div className="space-y-4 text-sm uppercase tracking-widest font-bold">
+                                        <div className="flex items-center gap-4"><span className="text-zinc-500 w-24">Location:</span> {isEditing ? <input value={editData.profile?.origin} onChange={e => setEditData({...editData, profile: {...editData.profile, origin: e.target.value}})} className="bg-transparent border-b border-white/20 outline-none text-white flex-1" /> : <span className="text-white">{targetUser?.profile?.origin || 'Encrypted'}</span>}</div>
+                                        <div className="flex items-center gap-4"><span className="text-zinc-500 w-24">Expertise:</span> {isEditing ? <input value={editData.profile?.profession} onChange={e => setEditData({...editData, profile: {...editData.profile, profession: e.target.value}})} className="bg-transparent border-b border-white/20 outline-none text-white flex-1" /> : <span className="text-white">{targetUser?.profile?.profession || 'Digital Creator'}</span>}</div>
+                                    </div>
+                                    <div className="pt-4">
+                                        <span className="text-[10px] text-red-600 font-black uppercase tracking-widest block mb-4">Core Capabilities</span>
+                                        <div className="flex flex-wrap gap-2">
+                                            {(isEditing ? (editData.profile?.skills || []) : (targetUser?.profile?.skills || [])).map((s: string, i: number) => (
+                                                <span key={i} className="px-4 py-2 bg-black/40 border border-white/10 rounded-xl text-[10px] font-black text-zinc-300 uppercase tracking-widest flex items-center gap-2">{s} {isEditing && <button onClick={() => setEditData({...editData, profile: {...editData.profile, skills: editData.profile.skills.filter((_:any,idx:number)=>idx!==i)}})} className="text-red-600 hover:scale-125 transition-transform font-black">×</button>}</span>
+                                            ))}
+                                            {isEditing && <button onClick={() => { const s = window.prompt("New Capability Signal:"); if(s) setEditData({...editData, profile: {...editData.profile, skills: [...(editData.profile.skills||[]), s]}}); }} className="text-red-600 text-[10px] font-black hover:underline">+ ADD SKILL</button>}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex flex-wrap gap-1">
-                                    <span className="text-[8px] text-red-600 font-black uppercase tracking-widest mr-1">Skills:</span>
-                                    {(isEditing ? (editData.profile?.skills || []) : (targetUser?.profile?.skills || [])).map((s: string, i: number) => (
-                                        <span key={i} className="px-1.5 py-0.5 bg-black/40 border border-white/10 rounded text-[7px] font-medium text-zinc-400 flex items-center gap-1">{s} {isEditing && <button onClick={() => setEditData({...editData, profile: {...editData.profile, skills: editData.profile.skills.filter((_:any,idx:number)=>idx!==i)}})} className="text-red-600">×</button>}</span>
-                                    ))}
-                                    {isEditing && <button onClick={() => { const s = window.prompt("Capability:"); if(s) setEditData({...editData, profile: {...editData.profile, skills: [...(editData.profile.skills||[]), s]}}); }} className="text-red-600 text-[7px] font-black">+ ADD</button>}
+
+                                <div className="space-y-6 bg-white/5 p-8 rounded-[2rem] border border-white/5">
+                                    <div className="flex justify-between items-center"><h4 className="text-xs font-black text-red-600 uppercase tracking-[0.4em]">External Links</h4>{isMyOwnProfile && isEditing && <button onClick={() => { const name = window.prompt("Target (Facebook, Instagram, YouTube, TikTok, Behance):"); if (name && NETWORK_CONFIGS[name]) setEditData({...editData, profile: {...editData.profile, networks: [...(editData.profile.networks || []), { name, handle: '' }]}}); }} className="text-[10px] text-zinc-500 hover:text-red-600 font-black">+ ADD NETWORK</button>}</div>
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {(isEditing ? (editData.profile?.networks || []) : (targetUser?.profile?.networks || [])).map((net: any, i: number) => {
+                                            const cfg = NETWORK_CONFIGS[net.name] || { icon: GlobeAltIcon, baseUrl: '' };
+                                            return isEditing ? (<div key={i} className="bg-black/30 border border-white/10 rounded-xl p-4"><p className="text-[9px] text-zinc-600 uppercase font-black mb-1">{net.name}</p><input value={net.handle} onChange={e => { const n = [...editData.profile.networks]; n[i].handle = e.target.value.replace('@',''); setEditData({...editData, profile: {...editData.profile, networks: n}}); }} placeholder="@handle" className="bg-transparent text-sm font-bold text-white w-full outline-none" /></div>) : (net.handle && <a key={i} href={`${cfg.baseUrl}${net.handle}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-red-600/10 hover:border-red-600/20 transition-all group"><cfg.icon className="w-5 h-5 text-zinc-500 group-hover:text-red-500 transition-colors" /><span className="text-sm font-bold text-zinc-400 group-hover:text-white transition-colors">@{net.handle}</span></a>);
+                                        })}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between items-center"><h4 className="text-[8px] font-black text-red-600 uppercase tracking-widest">Connect</h4>{isMyOwnProfile && isEditing && <button onClick={() => { const name = window.prompt("Facebook, Instagram, YouTube, TikTok, Behance:"); if (name && NETWORK_CONFIGS[name]) setEditData({...editData, profile: {...editData.profile, networks: [...(editData.profile.networks || []), { name, handle: '' }]}}); }} className="text-[7px] text-zinc-500 hover:text-red-600">+ ADD</button>}</div>
-                                <div className="grid grid-cols-3 gap-1.5">
-                                    {(isEditing ? (editData.profile?.networks || []) : (targetUser?.profile?.networks || [])).map((net: any, i: number) => {
-                                        const cfg = NETWORK_CONFIGS[net.name] || { icon: GlobeAltIcon, baseUrl: '' };
-                                        return isEditing ? (<div key={i} className="bg-black/30 border border-white/10 rounded-lg p-1.5"><p className="text-[6px] text-zinc-600">{net.name}</p><input value={net.handle} onChange={e => { const n = [...editData.profile.networks]; n[i].handle = e.target.value.replace('@',''); setEditData({...editData, profile: {...editData.profile, networks: n}}); }} className="bg-transparent text-[8px] text-white w-full outline-none" /></div>) : (net.handle && <a key={i} href={`${cfg.baseUrl}${net.handle}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 p-1.5 bg-white/5 rounded-lg border border-white/5 hover:bg-red-600/10 transition-all"><cfg.icon className="w-2.5 h-2.5 text-zinc-500" /><span className="text-[7px] text-zinc-400 truncate">@{net.handle}</span></a>);
-                                    })}
-                                </div>
-                            </div>
-
-                            <div className="space-y-2 pt-3 border-t border-white/5">
-                                <h4 className="text-[8px] font-black text-white uppercase tracking-[0.3em] text-center">Master Works</h4>
-                                <div className="grid grid-cols-3 gap-1">
+                            <div className="space-y-8 pt-10 border-t border-white/5">
+                                <h4 className="text-lg font-black text-white uppercase tracking-[0.4em] text-center font-display">Archived Master Works</h4>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                     {userPosts.map((post, i) => (
-                                        <div key={i} onClick={() => onOpenModal?.(userPosts, i)} className="aspect-square bg-white/5 rounded-md overflow-hidden group relative cursor-pointer border border-white/5 shadow-sm">
+                                        <div key={i} onClick={() => onOpenModal?.(userPosts, i)} className="aspect-square bg-white/5 rounded-3xl overflow-hidden group relative cursor-pointer border border-white/5 shadow-xl">
                                             {post.mediaType === 'video' ? <video src={post.mediaUrl} className="w-full h-full object-cover" /> : <img src={post.mediaUrl} className="w-full h-full object-cover" alt="" />}
-                                            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center"><div className="flex gap-2 text-[7px] font-bold text-white"><span className="text-red-500">♥ {Object.keys(post.likes || {}).length}</span><span>💬 {Object.keys(post.comments || {}).length}</span></div></div>
+                                            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center">
+                                                <div className="flex gap-4 text-xs font-black text-white uppercase tracking-widest">
+                                                    <span className="text-red-500">♥ {Object.keys(post.likes || {}).length}</span>
+                                                    <span>💬 {Object.keys(post.comments || {}).length}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     ))}
-                                    {userPosts.length === 0 && <div className="col-span-3 py-8 text-center opacity-10"><GalleryIcon className="w-6 h-6 mx-auto mb-1" /><p className="text-[7px] font-black uppercase tracking-[0.4em]">Empty Frequency</p></div>}
+                                    {userPosts.length === 0 && <div className="col-span-full py-20 text-center opacity-10"><GalleryIcon className="w-16 h-16 mx-auto mb-4" /><p className="text-sm font-black uppercase tracking-[0.4em]">Empty Transmission Data</p></div>}
                                 </div>
                             </div>
                         </div>

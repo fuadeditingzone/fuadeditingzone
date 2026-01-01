@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useUser, SignInButton } from '@clerk/clerk-react';
+import { useUser } from '@clerk/clerk-react';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, push, onValue, query, limitToLast, set, update, get, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { siteConfig } from '../config';
-import { PhotoManipulationIcon, SendIcon, CopyIcon, PlayIcon, SparklesIcon, CloseIcon, CheckCircleIcon, ChatBubbleIcon, EyeIcon } from './Icons';
+import { getDatabase, ref, push, onValue, query, limitToLast, set, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { PhotoManipulationIcon, SendIcon, CopyIcon, CloseIcon, ChatBubbleIcon, EyeIcon } from './Icons';
+import type { ModalItem } from '../hooks/types';
 
 const firebaseConfig = {
   databaseURL: "https://fuad-editing-zone-default-rtdb.firebaseio.com/",
@@ -45,39 +45,59 @@ interface Post {
     comments?: Record<string, Comment>;
 }
 
-const PostCaption: React.FC<{ text: string }> = ({ text }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
+const PostCaption: React.FC<{ 
+    text: string; 
+    isExpanded: boolean; 
+    onToggle: (expanded: boolean) => void 
+}> = ({ text, isExpanded, onToggle }) => {
     const textRef = useRef<HTMLParagraphElement>(null);
     const [isTruncated, setIsTruncated] = useState(false);
 
     useEffect(() => {
-        if (textRef.current) {
+        if (textRef.current && !isExpanded) {
             const el = textRef.current;
             setIsTruncated(el.scrollHeight > el.clientHeight);
         }
-    }, [text]);
+    }, [text, isExpanded]);
 
     return (
         <div className="min-h-[1.5em] font-sans">
             <p 
                 ref={textRef}
-                className={`text-zinc-400 text-[11px] md:text-[13px] leading-relaxed break-words no-clip ${!isExpanded ? 'clamp-2' : ''}`}
+                className={`text-zinc-400 text-[11px] md:text-[13px] leading-relaxed break-words no-clip transition-all duration-300 ${!isExpanded ? 'clamp-2' : ''}`}
             >
                 {text}
             </p>
             {isTruncated && !isExpanded && (
                 <button 
-                    onClick={() => setIsExpanded(true)} 
-                    className="text-zinc-500 font-bold hover:text-white transition-colors text-[10px] md:text-[11px] mt-1 block uppercase tracking-wider"
+                    onClick={(e) => { e.stopPropagation(); onToggle(true); }} 
+                    className="text-zinc-500 font-bold hover:text-red-600 transition-colors text-[10px] md:text-[11px] mt-1 block uppercase tracking-wider"
                 >
-                    ...read more
+                    ....read more
+                </button>
+            )}
+            {isExpanded && (
+                <button 
+                    onClick={(e) => { e.stopPropagation(); onToggle(false); }} 
+                    className="text-zinc-500 font-bold hover:text-red-600 transition-colors text-[10px] md:text-[11px] mt-1 block uppercase tracking-wider"
+                >
+                    ....see less
                 </button>
             )}
         </div>
     );
 };
 
-export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string, username?: string) => void; onOpenModal?: (items: any[], index: number) => void }> = ({ onOpenProfile, onOpenModal }) => {
+const getBadge = (username: string) => {
+    if (username === OWNER_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-owner ml-1 text-[12px]"></i>;
+    if (username === ADMIN_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-admin ml-1 text-[12px]"></i>;
+    return null;
+};
+
+export const ExploreFeed: React.FC<{ 
+    onOpenProfile?: (id: string, username?: string) => void;
+    onOpenModal?: (items: ModalItem[], index: number) => void; 
+}> = ({ onOpenProfile, onOpenModal }) => {
     const { user, isSignedIn } = useUser();
     const [posts, setPosts] = useState<Post[]>([]);
     const [isUploading, setIsUploading] = useState(false);
@@ -88,6 +108,8 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string, username?: str
     const [activeCommentsPost, setActiveCommentsPost] = useState<string | null>(null);
     const [newComment, setNewComment] = useState('');
     const [shareToast, setShareToast] = useState(false);
+    const [fullScreenMedia, setFullScreenMedia] = useState<Post | null>(null);
+    const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const isOwner = user?.username === OWNER_HANDLE;
@@ -177,17 +199,49 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string, username?: str
         setTimeout(() => setShareToast(false), 2000);
     };
 
-    const getBadge = (username: string) => {
-        if (username === OWNER_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-owner ml-1"></i>;
-        if (username === ADMIN_HANDLE) return <i className="fa-solid fa-circle-check verified-badge-admin ml-1"></i>;
-        return null;
-    };
-
     return (
         <div className="max-w-7xl mx-auto space-y-12 pb-24">
             <AnimatePresence>
                 {shareToast && (
                     <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:20}} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[200] bg-white text-black px-6 py-3 rounded-full font-black uppercase text-[10px] tracking-widest shadow-2xl">Link Copied</motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Seamless Full Screen Media Viewer */}
+            <AnimatePresence>
+                {fullScreenMedia && (
+                    <div className="fixed inset-0 z-[100000] flex items-center justify-center">
+                        <motion.div 
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 1 }} 
+                            exit={{ opacity: 0 }} 
+                            onClick={() => setFullScreenMedia(null)}
+                            className="absolute inset-0 bg-black backdrop-blur-3xl"
+                        />
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0 }} 
+                            animate={{ scale: 1, opacity: 1 }} 
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="relative w-full h-full flex items-center justify-center p-0 pointer-events-none"
+                        >
+                            {fullScreenMedia.mediaUrl && (
+                                <div className="w-full h-full flex items-center justify-center pointer-events-auto">
+                                    {fullScreenMedia.mediaType === 'video' ? (
+                                        <video src={fullScreenMedia.mediaUrl} controls autoPlay className="max-w-full max-h-full object-contain" />
+                                    ) : (
+                                        <img src={fullScreenMedia.mediaUrl} className="max-w-full max-h-full object-contain" alt="" />
+                                    )}
+                                </div>
+                            )}
+                            
+                            <button 
+                                onClick={() => setFullScreenMedia(null)}
+                                className="absolute top-6 right-6 p-4 rounded-full bg-black/50 hover:bg-red-600 text-white transition-all shadow-2xl pointer-events-auto border border-white/10"
+                            >
+                                <CloseIcon className="w-6 h-6" />
+                            </button>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
 
@@ -224,7 +278,8 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string, username?: str
                 </div>
             )}
 
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-[20px] px-2 md:px-0">
+            {/* Masonry Puzzle Layout Support */}
+            <div className="columns-1 md:columns-2 xl:columns-3 gap-5 px-2 md:px-0">
                 {posts.map((post, idx) => {
                     const postLikes = Object.keys(post.likes || {}).length;
                     const isLikedByMe = user ? !!post.likes?.[user.id] : false;
@@ -232,7 +287,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string, username?: str
                     const commentsList = Object.entries(post.comments || {}).map(([id, val]) => ({ id, ...(val as any) }));
 
                     return (
-                        <article key={post.id} className="bg-[#080808] border border-white/5 rounded-xl md:rounded-[2rem] overflow-hidden shadow-xl flex flex-col h-full card-fix">
+                        <article key={post.id} className="break-inside-avoid mb-5 bg-[#080808] border border-white/5 rounded-xl md:rounded-[2rem] overflow-hidden shadow-xl flex flex-col card-fix transition-all duration-300">
                             <div className="p-4 flex items-center justify-between bg-black/40">
                                 <div className="flex items-center gap-3 cursor-pointer group min-w-0" onClick={() => onOpenProfile?.(post.userId, post.userName)}>
                                     <img src={post.userAvatar} className="w-8 h-8 rounded-full border border-white/10 object-cover flex-shrink-0" alt="" />
@@ -251,13 +306,13 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string, username?: str
 
                             {post.mediaUrl && (
                                 <div 
-                                    className="w-full bg-[#050505] flex items-center justify-center relative group overflow-hidden border-b border-white/5 cursor-pointer h-[250px]"
-                                    onClick={() => onOpenModal?.(posts, idx)}
+                                    className="w-full bg-[#050505] flex items-center justify-center relative group overflow-hidden border-b border-white/5 cursor-pointer"
+                                    onClick={() => setFullScreenMedia(post)}
                                 >
                                     {post.mediaType === 'video' ? (
-                                        <video src={post.mediaUrl} className="w-full h-full object-cover" title={post.title || "VFX Project"} />
+                                        <video src={post.mediaUrl} className="w-full h-auto max-h-[600px] object-contain" title={post.title || "VFX Project"} />
                                     ) : (
-                                        <img src={post.mediaUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={post.title || post.caption || "Design Asset"} />
+                                        <img src={post.mediaUrl} className="w-full h-auto max-h-[600px] object-contain transition-transform duration-700 group-hover:scale-105" alt={post.title || post.caption || "Design Asset"} />
                                     )}
                                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                         <EyeIcon className="w-8 h-8 text-white/80" />
@@ -267,7 +322,11 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string, username?: str
 
                             <div className="p-5 space-y-4 flex-1 flex flex-col">
                                 {post.title && <h2 className="text-sm font-semibold text-white uppercase tracking-tight truncate flex-shrink-0 font-display no-clip">{post.title}</h2>}
-                                <PostCaption text={post.caption} />
+                                <PostCaption 
+                                    text={post.caption} 
+                                    isExpanded={expandedPostId === post.id} 
+                                    onToggle={(expanded) => setExpandedPostId(expanded ? post.id : null)} 
+                                />
                                 
                                 <div className="mt-auto">
                                     <div className="flex items-center gap-6 pt-4 border-t border-white/5">
