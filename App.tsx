@@ -180,7 +180,7 @@ export default function App() {
 
   return (
     <ParallaxProvider>
-      <div className="text-white bg-black overflow-x-hidden flex flex-col h-[100dvh] max-h-[100dvh] font-sans">
+      <div className="text-white bg-black overflow-x-hidden flex flex-col h-[100dvh] max-h-[100dvh] font-sans no-clip">
           <VFXBackground /><MediaGridBackground />
           <div className="fixed top-0 left-0 right-0 z-[100]">
             <DesktopHeader onScrollTo={handleScrollTo} onNavigateMarketplace={() => navigateTo('marketplace')} onNavigateCommunity={() => navigateTo('community')} onOpenChatWithUser={handleOpenChatWithUser} onOpenProfile={handleOpenProfile} activeRoute={route} />

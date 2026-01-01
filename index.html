@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
   <head>
-    <!-- Social Meta Tags at the VERY TOP for Bot Detection -->
+    <!-- SOCIAL PREVIEW META TAGS - ABSOLUTE TOP -->
+    <meta property="og:image" id="og-img" content="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1" />
+    <meta name="twitter:image" id="tw-img" content="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1" />
     <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta property="og:url" content="https://fuadeditingzone.pages.dev" />
     <meta property="og:title" id="og-title" content="Fuad Editing Zone | VFX & Design" />
     <meta property="og:description" id="og-desc" content="Graphic Designer & VFX Editor portfolio by Fuad Ahmed. High-impact visuals." />
-    <meta property="og:image" id="og-img" content="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" id="tw-title" content="Fuad Editing Zone | VFX & Design" />
     <meta name="twitter:description" id="tw-desc" content="Graphic Designer & VFX Editor portfolio by Fuad Ahmed." />
-    <meta name="twitter:image" id="tw-img" content="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1" />
     
     <meta charset="UTF-8" />
     <title>Fuad Editing Zone | VFX & Design</title>
@@ -21,11 +19,11 @@
     <meta name="theme-color" content="#000000" />
     <link rel="icon" type="image/png" href="https://dl.dropboxusercontent.com/scl/fi/vvk2qlo8i0mer2n4sip1h/faeez-logo.png?rlkey=xiahu40vwixf0uf96wwnvqlw2&raw=1" />
 
-    <!-- Modern Typography: Poppins for Titles, Inter for Body -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Spotify-Style Typography: Poppins for Titles, Inter for Body -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 
     <script type="text/javascript">
-      // Global SEO Synchronizer to update meta tags dynamically
+      // Global SEO Synchronizer
       window.updatePortalMetadata = function(title, desc, image) {
         if (title) {
           document.title = title + " | Fuad Editing Zone";
@@ -43,10 +41,11 @@
           if (twDesc) twDesc.setAttribute('content', desc);
         }
         if (image) {
+          const absoluteImgUrl = image.startsWith('http') ? image : window.location.origin + image;
           const ogImg = document.getElementById('og-img');
           const twImg = document.getElementById('tw-img');
-          if (ogImg) ogImg.setAttribute('content', image);
-          if (twImg) twImg.setAttribute('content', image);
+          if (ogImg) ogImg.setAttribute('content', absoluteImgUrl);
+          if (twImg) twImg.setAttribute('content', absoluteImgUrl);
         }
       };
     </script>
@@ -61,17 +60,16 @@
       html, body { 
         margin: 0; 
         background-color: var(--background-base); 
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+        font-family: 'Inter', sans-serif; 
         color: #ffffff; 
         overflow-x: hidden; 
         scrollbar-width: none; 
       }
       ::-webkit-scrollbar { display: none !important; }
       
-      /* Titles using Poppins */
       h1, h2, h3, h4, .title-font { 
         font-family: 'Poppins', sans-serif;
-        font-weight: 700;
+        font-weight: 600; 
         text-transform: uppercase; 
         letter-spacing: -0.01em; 
       }
@@ -89,8 +87,13 @@
         overflow: hidden;
       }
 
-      /* Ensure content doesn't clip */
       * { box-sizing: border-box; }
+      
+      .no-clip {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+      }
     </style>
 
     <script type="importmap">
