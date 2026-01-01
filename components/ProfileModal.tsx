@@ -5,7 +5,7 @@ import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.
 import { getDatabase, ref, update, onValue, set, remove, push, query, orderByChild, equalTo, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { 
   CloseIcon, GlobeAltIcon, ChevronLeftIcon, InstagramIcon, FacebookIcon, 
-  YouTubeIcon, TikTokIcon, BehanceIcon, GalleryIcon
+  YouTubeIcon, TikTokIcon, BehanceIcon, GalleryIcon, CopyIcon
 } from './Icons';
 import { siteConfig } from '../config';
 
@@ -47,6 +47,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
     const [editData, setEditData] = useState<any>({});
     const [userListMode, setUserListMode] = useState<'followers' | 'following' | null>(null);
     const [resolvedUserList, setResolvedUserList] = useState<any[]>([]);
+    const [showCopyToast, setShowCopyToast] = useState(false);
     
     const [socialState, setSocialState] = useState({ 
       isFollowing: false, 
@@ -123,7 +124,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                 if (s1.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'requested' }));
                 else {
                     onValue(ref(db, `social/${clerkUser.id}/requests/received/${viewingUserId}`), (s2) => {
-                        setSocialState(prev => ({ ...prev, friendStatus: s2.exists() ? 'pending' : 'none' }));
+                        if (s2.exists()) setSocialState(prev => ({ ...prev, friendStatus: 'pending' }));
+                        else setSocialState(prev => ({ ...prev, friendStatus: 'none' }));
                     });
                 }
               });
@@ -137,16 +139,65 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
         if (type === 'follow') {
             const path = `social/${clerkUser.id}/following/${viewingUserId}`;
             const fPath = `social/${viewingUserId}/followers/${clerkUser.id}`;
-            if (socialState.isFollowing) { await remove(ref(db, path)); await remove(ref(db, fPath)); }
-            else { await set(ref(db, path), true); await set(ref(db, fPath), true); await push(ref(db, `notifications/${viewingUserId}`), { type: 'follow', fromId: clerkUser.id, fromName: clerkUser.username || clerkUser.fullName, fromAvatar: clerkUser.imageUrl, timestamp: Date.now(), read: false }); }
+            if (socialState.isFollowing) {
+                await remove(ref(db, path));
+                await remove(ref(db, fPath));
+            } else {
+                await set(ref(db, path), true);
+                await set(ref(db, fPath), true);
+                await push(ref(db, `notifications/${viewingUserId}`), { 
+                    type: 'follow', fromId: clerkUser.id, fromName: clerkUser.username || clerkUser.fullName, fromAvatar: clerkUser.imageUrl, timestamp: Date.now(), read: false 
+                });
+            }
         } else {
-            if (socialState.friendStatus === 'accepted') { if (window.confirm(`Unfriend @${targetUser?.username}?`)) { await remove(ref(db, `social/${clerkUser.id}/friends/${viewingUserId}`)); await remove(ref(db, `social/${viewingUserId}/friends/${clerkUser.id}`)); } }
-            else if (socialState.friendStatus === 'pending') { await remove(ref(db, `social/${clerkUser.id}/requests/received/${viewingUserId}`)); await remove(ref(db, `social/${viewingUserId}/requests/sent/${clerkUser.id}`)); await set(ref(db, `social/${clerkUser.id}/friends/${viewingUserId}`), true); await set(ref(db, `social/${viewingUserId}/friends/${clerkUser.id}`), true); await push(ref(db, `notifications/${viewingUserId}`), { type: 'friend_accepted', fromId: clerkUser.id, fromName: clerkUser.username || clerkUser.fullName, fromAvatar: clerkUser.imageUrl, timestamp: Date.now(), read: false }); }
-            else if (socialState.friendStatus === 'none') { await set(ref(db, `social/${clerkUser.id}/requests/sent/${viewingUserId}`), { timestamp: Date.now() }); await set(ref(db, `social/${clerkUser.id}/requests/received/${clerkUser.id}`), { timestamp: Date.now() }); await push(ref(db, `notifications/${viewingUserId}`), { type: 'friend_request', fromId: clerkUser.id, fromName: clerkUser.username || clerkUser.fullName, fromAvatar: clerkUser.imageUrl, timestamp: Date.now(), read: false }); }
+            if (socialState.friendStatus === 'accepted') {
+                if (window.confirm(`Unfriend @${targetUser?.username}?`)) {
+                    await remove(ref(db, `social/${clerkUser.id}/friends/${viewingUserId}`));
+                    await remove(ref(db, `social/${viewingUserId}/friends/${clerkUser.id}`));
+                }
+            } else if (socialState.friendStatus === 'pending') {
+                await remove(ref(db, `social/${clerkUser.id}/requests/received/${viewingUserId}`));
+                await remove(ref(db, `social/${viewingUserId}/requests/sent/${clerkUser.id}`));
+                await set(ref(db, `social/${clerkUser.id}/friends/${viewingUserId}`), true);
+                await set(ref(db, `social/${viewingUserId}/friends/${clerkUser.id}`), true);
+                await push(ref(db, `notifications/${viewingUserId}`), { 
+                    type: 'friend_accepted', fromId: clerkUser.id, fromName: clerkUser.username || clerkUser.fullName, fromAvatar: clerkUser.imageUrl, timestamp: Date.now(), read: false 
+                });
+            } else if (socialState.friendStatus === 'none') {
+                await set(ref(db, `social/${clerkUser.id}/requests/sent/${viewingUserId}`), { timestamp: Date.now() });
+                await set(ref(db, `social/${clerkUser.id}/requests/received/${clerkUser.id}`), { timestamp: Date.now() });
+                await push(ref(db, `notifications/${viewingUserId}`), { 
+                    type: 'friend_request', fromId: clerkUser.id, fromName: clerkUser.username || clerkUser.fullName, fromAvatar: clerkUser.imageUrl, timestamp: Date.now(), read: false 
+                });
+            }
         }
     };
 
-    const handleSaveProfile = async () => { if (isMyOwnProfile) { await update(ref(db, `users/${clerkUser?.id}`), editData); setIsEditing(false); } };
+    const handleSaveProfile = async () => {
+        if (isMyOwnProfile) {
+            await update(ref(db, `users/${clerkUser?.id}`), editData);
+            setIsEditing(false);
+        }
+    };
+
+    const handleCopyProfileLink = () => {
+        const username = targetUser?.username || clerkUser?.username || currentProfileId;
+        const url = `${window.location.origin}/@${username}`;
+        navigator.clipboard.writeText(url);
+        setShowCopyToast(true);
+        setTimeout(() => setShowCopyToast(false), 2000);
+    };
+
+    const handleSwitchToOtherProfile = (id: string, username: string) => {
+        window.history.pushState(null, '', `/@${username}`);
+        // This relies on the parent's viewingUserId prop being updated or the state within this modal re-triggering.
+        // Assuming we update the URL, the App component's popstate or direct call should handle it.
+        // For standard behavior, we'll force the profile update by triggering the ID change.
+        if (window.location.pathname.startsWith('/@')) {
+            window.location.href = `/@${username}`;
+        }
+    };
+
     const getVerifiedBadge = (u: string) => (u === OWNER_HANDLE ? <i className="fa-solid fa-circle-check verified-badge-owner ml-1 text-xs"></i> : u === ADMIN_HANDLE ? <i className="fa-solid fa-circle-check verified-badge-admin ml-1 text-xs"></i> : null);
 
     if (!isLoaded || !clerkUser || !isOpen) return null;
@@ -163,6 +214,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                             <div className="flex items-center">
                                 <h2 className="text-xs font-black text-white uppercase tracking-widest truncate max-w-[120px]">{targetUser?.username || clerkUser.username}</h2>
                                 {getVerifiedBadge(targetUser?.username || clerkUser.username)}
+                                <button onClick={handleCopyProfileLink} className="ml-2 p-1.5 bg-white/5 hover:bg-red-600/20 rounded-lg text-zinc-500 hover:text-red-500 transition-all border border-white/5" title="Copy Protocol URL">
+                                    <CopyIcon className="w-3.5 h-3.5" />
+                                </button>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -173,6 +227,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar relative">
                         <AnimatePresence>
+                            {showCopyToast && (
+                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] bg-white text-black px-4 py-1.5 rounded-full font-black text-[8px] uppercase tracking-widest shadow-xl">Signal Copied</motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <AnimatePresence>
                             {userListMode && (
                                 <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 50 }} className="absolute inset-0 z-[60] bg-[#050505] p-5 overflow-y-auto custom-scrollbar">
                                     <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-3">
@@ -181,7 +241,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                         {resolvedUserList.map((u, i) => (
-                                            <div key={i} className="flex items-center gap-3 p-2 bg-white/5 border border-white/5 rounded-lg">
+                                            <div key={i} onClick={() => handleSwitchToOtherProfile(u.id, u.username)} className="flex items-center gap-3 p-2 bg-white/5 border border-white/5 rounded-lg cursor-pointer hover:bg-red-600/5 hover:border-red-600/20 transition-all">
                                                 <img src={u.avatar || u.imageUrl} className="w-8 h-8 rounded object-cover" alt="" />
                                                 <div className="min-w-0"><p className="text-white font-bold text-[10px] uppercase truncate">{u.name}</p><p className="text-zinc-500 font-medium text-[8px]">@{u.username}</p></div>
                                             </div>

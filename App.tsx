@@ -76,6 +76,14 @@ export default function App() {
         if (postSnap.exists()) setModalState({ items: [{ id, ...postSnap.val() }], currentIndex: 0 });
       } else if (path.startsWith('/profile/')) {
         setViewingProfileId(path.split('/')[2]);
+      } else if (path.startsWith('/@')) {
+        const handle = path.substring(2);
+        const usersSnap = await get(ref(db, 'users'));
+        const usersData = usersSnap.val();
+        if (usersData) {
+            const userEntry = Object.entries(usersData).find(([id, data]: [string, any]) => data.username === handle || id === handle);
+            if (userEntry) setViewingProfileId(userEntry[0]);
+        }
       }
     };
     handleInitialLink();
@@ -105,8 +113,17 @@ export default function App() {
   };
 
   const handleCloseModal = () => {
-    const base = viewingProfileId ? `/profile/${viewingProfileId}` : (route === 'home' ? '/' : `/${route}`);
-    window.history.pushState(null, '', base);
+    let base = route === 'home' ? '/' : `/${route}`;
+    if (viewingProfileId) {
+        // If we were viewing a profile, stay on that URL format
+        get(ref(db, `users/${viewingProfileId}`)).then(snap => {
+            const userData = snap.val();
+            const handle = userData?.username || viewingProfileId;
+            window.history.pushState(null, '', `/@${handle}`);
+        });
+    } else {
+        window.history.pushState(null, '', base);
+    }
     setModalState(null);
   };
 
@@ -114,7 +131,7 @@ export default function App() {
     const handlePopState = () => {
       const path = window.location.pathname;
       if (!path.includes('/work/') && !path.includes('/post/')) setModalState(null);
-      if (!path.includes('/profile/')) setViewingProfileId(null);
+      if (!path.includes('/profile/') && !path.startsWith('/@')) setViewingProfileId(null);
       setRoute(path === '/marketplace' ? 'marketplace' : path === '/community' ? 'community' : 'home');
     };
     window.addEventListener('popstate', handlePopState);
@@ -127,8 +144,9 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenProfile = (userId: string) => {
-    window.history.pushState(null, '', `/profile/${userId}`);
+  const handleOpenProfile = (userId: string, username?: string) => {
+    const handle = username || userId;
+    window.history.pushState(null, '', `/@${handle}`);
     setViewingProfileId(userId);
   };
 

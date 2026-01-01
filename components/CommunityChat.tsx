@@ -59,7 +59,7 @@ const AgentProfileModal: React.FC<{
   currentUser: any; 
   onClose: () => void; 
   onMessage: () => void;
-  onShowFullProfile?: (id: string) => void;
+  onShowFullProfile?: (id: string, username?: string) => void;
 }> = ({ user, currentUser, onClose, onMessage, onShowFullProfile }) => {
   const isOwner = user.username === OWNER_HANDLE;
   const isAdmin = user.username === ADMIN_HANDLE;
@@ -117,11 +117,11 @@ const AgentProfileModal: React.FC<{
       <div className="w-full max-w-[380px] bg-[#0f0f0f] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-3xl" onClick={e => e.stopPropagation()}>
         <div className="p-8 pb-6">
             <div className="flex items-center gap-5 mb-8">
-                <div className={`w-16 h-16 rounded-full p-1 border-2 flex-shrink-0 cursor-pointer ${isOwner ? 'border-red-600 shadow-[0_0_15px_rgba(255,0,0,0.4)]' : isAdmin ? 'border-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'border-white/10'}`} onClick={() => onShowFullProfile?.(user.id)}>
+                <div className={`w-16 h-16 rounded-full p-1 border-2 flex-shrink-0 cursor-pointer ${isOwner ? 'border-red-600 shadow-[0_0_15px_rgba(255,0,0,0.4)]' : isAdmin ? 'border-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'border-white/10'}`} onClick={() => onShowFullProfile?.(user.id, user.username)}>
                     <img src={user.avatar} className="w-full h-full rounded-full object-cover" alt="" />
                 </div>
                 <div className="min-w-0">
-                    <h3 className="text-white font-black text-lg truncate flex items-center gap-1 cursor-pointer" onClick={() => onShowFullProfile?.(user.id)}>
+                    <h3 className="text-white font-black text-lg truncate flex items-center gap-1 cursor-pointer" onClick={() => onShowFullProfile?.(user.id, user.username)}>
                         {user.username} {getBadge(user.username)}
                     </h3>
                     <p className="text-zinc-500 text-xs font-bold truncate">@{user.username}</p>
@@ -149,13 +149,13 @@ const AgentProfileModal: React.FC<{
                 </button>
             </div>
         </div>
-        <button onClick={() => { onShowFullProfile?.(user.id); onClose(); }} className="w-full py-4 bg-black/40 text-[9px] font-black uppercase tracking-widest text-zinc-500 border-t border-white/5 hover:text-white transition-colors">View Master Profile</button>
+        <button onClick={() => { onShowFullProfile?.(user.id, user.username); onClose(); }} className="w-full py-4 bg-black/40 text-[9px] font-black uppercase tracking-widest text-zinc-500 border-t border-white/5 hover:text-white transition-colors">View Master Profile</button>
       </div>
     </motion.div>
   );
 };
 
-export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserId?: string | null; onShowProfile?: (id: string, tab?: any, openUpload?: boolean) => void }> = ({ isModalMode, initialTargetUserId, onShowProfile }) => {
+export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserId?: string | null; onShowProfile?: (id: string, username?: string) => void }> = ({ isModalMode, initialTargetUserId, onShowProfile }) => {
   const { user: clerkUser, isSignedIn } = useUser();
   const [users, setUsers] = useState<ChatUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
@@ -244,7 +244,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
   return (
     <section id="community" className={`flex-1 flex flex-col min-h-0 bg-black relative z-10 overflow-hidden ${isModalMode ? 'h-full' : 'pb-2 md:pb-6'}`}>
       <AnimatePresence>
-        {viewingProfile && <AgentProfileModal user={viewingProfile} currentUser={clerkUser} onClose={() => setViewingProfile(null)} onMessage={() => { setIsGlobal(false); setSelectedUser(viewingProfile); setShowConversationOnMobile(true); }} onShowFullProfile={(id) => onShowProfile?.(id)} />}
+        {viewingProfile && <AgentProfileModal user={viewingProfile} currentUser={clerkUser} onClose={() => setViewingProfile(null)} onMessage={() => { setIsGlobal(false); setSelectedUser(viewingProfile); setShowConversationOnMobile(true); }} onShowFullProfile={(id, username) => onShowProfile?.(id, username)} />}
       </AnimatePresence>
 
       <div className={`flex-1 flex flex-col min-h-0 ${isModalMode ? 'h-full px-0' : 'container mx-auto px-2 md:px-4 max-w-6xl'}`}>
@@ -255,20 +255,18 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                <span className="text-[9px] font-black text-white uppercase tracking-widest">Network Terminal</span>
             </div>
             
-            {/* Search Input & Controls */}
             <div className="p-3 space-y-3 border-b border-white/5 flex-shrink-0">
                 <div className="flex gap-1.5">
                     <button onClick={() => { setIsGlobal(true); setSelectedUser(null); setShowConversationOnMobile(true); }} className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-[1.2rem] transition-all border ${isGlobal ? 'bg-red-600/10 border-red-600/20 text-red-500' : 'border-transparent hover:bg-white/5 text-zinc-500'}`}>
                         <GlobeAltIcon className="w-4 h-4" />
                         <span className="text-[9px] font-black uppercase tracking-widest">Global</span>
                     </button>
-                    <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id)} className="flex-1 flex items-center justify-center gap-2 p-3 rounded-[1.2rem] hover:bg-white/5 transition-all text-zinc-500 group">
+                    <button onClick={() => clerkUser && onShowProfile?.(clerkUser.id, clerkUser.username || undefined)} className="flex-1 flex items-center justify-center gap-2 p-3 rounded-[1.2rem] hover:bg-white/5 transition-all text-zinc-500 group">
                         <UserCircleIcon className="w-4 h-4 group-hover:text-red-500 transition-colors" />
                         <span className="text-[9px] font-black uppercase tracking-widest group-hover:text-white transition-colors">Profile</span>
                     </button>
                 </div>
                 
-                {/* Community Real-time Search */}
                 <div className="relative">
                     <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 w-3.5 h-3.5" />
                     <input 
@@ -306,7 +304,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             <div className="p-4 md:p-6 border-b border-white/5 flex items-center gap-3 bg-black/40 backdrop-blur-xl flex-shrink-0">
                <button onClick={() => setShowConversationOnMobile(false)} className="md:hidden p-1.5 text-white bg-white/5 rounded-full"><ChevronLeftIcon className="w-5 h-5" /></button>
                <div className={`w-10 h-10 rounded-xl bg-red-600/15 flex items-center justify-center border overflow-hidden flex-shrink-0 ${!isGlobal && selectedUser?.username === OWNER_HANDLE ? 'border-red-600' : !isGlobal && selectedUser?.username === ADMIN_HANDLE ? 'border-blue-600' : 'border-white/10'}`}>
-                  {isGlobal ? <GlobeAltIcon className="w-5 h-5 text-red-600" /> : <img src={selectedUser?.avatar} className="w-full h-full object-cover cursor-pointer" onClick={() => onShowProfile?.(selectedUser!.id)} alt="" />}
+                  {isGlobal ? <GlobeAltIcon className="w-5 h-5 text-red-600" /> : <img src={selectedUser?.avatar} className="w-full h-full object-cover cursor-pointer" onClick={() => onShowProfile?.(selectedUser!.id, selectedUser!.username)} alt="" />}
                </div>
                <div className="flex-1 truncate">
                   <h4 className="text-[12px] font-black text-white uppercase tracking-widest truncate flex items-center">
@@ -327,15 +325,16 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-5 custom-scrollbar bg-black/20 min-h-0">
               {messages.map(msg => {
                 const isOrder = msg.text.startsWith('[ORDER INQUIRY]');
+                // Extracting username for looking up link if possible, though ID is safer for callback
+                const msgUsername = msg.senderName.split(' ')[0].replace('@', '');
                 return (
                   <div key={msg.id} className={`flex gap-3 ${msg.senderId === clerkUser?.id ? 'flex-row-reverse' : 'flex-row'} items-end`}>
-                    <img src={msg.senderAvatar} className={`w-8 h-8 rounded-lg border object-cover cursor-pointer flex-shrink-0 shadow-lg ${msg.senderName.includes(OWNER_HANDLE) ? 'border-red-600' : msg.senderName.includes(ADMIN_HANDLE) ? 'border-blue-600' : 'border-white/5'}`} alt="" onClick={() => onShowProfile?.(msg.senderId)} />
+                    <img src={msg.senderAvatar} className={`w-8 h-8 rounded-lg border object-cover cursor-pointer flex-shrink-0 shadow-lg ${msg.senderName.includes(OWNER_HANDLE) ? 'border-red-600' : msg.senderName.includes(ADMIN_HANDLE) ? 'border-blue-600' : 'border-white/5'}`} alt="" onClick={() => onShowProfile?.(msg.senderId, msgUsername)} />
                     <div className={`max-w-[85%] ${msg.senderId === clerkUser?.id ? 'items-end' : 'items-start'} flex flex-col min-w-0`}>
-                        <span className="text-[8px] font-black text-zinc-600 uppercase mb-1.5 px-1 truncate max-w-full flex items-center">
+                        <span className="text-[8px] font-black text-zinc-600 uppercase mb-1.5 px-1 truncate max-w-full flex items-center cursor-pointer" onClick={() => onShowProfile?.(msg.senderId, msgUsername)}>
                             {msg.senderName}
-                            {getBadge(msg.senderName)}
+                            {getBadge(msgUsername)}
                         </span>
-                        {/* Strictly clamp descriptions to 2 lines as requested */}
                         <div className={`clamp-2 p-3 md:p-4 rounded-[1.2rem] text-[12px] md:text-[13px] border whitespace-pre-wrap ${isOrder ? 'bg-red-600/20 border-red-600/50 text-white font-bold' : (msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-zinc-300 rounded-tl-none')}`} style={{ overflowWrap: 'anywhere' }}>{msg.text}</div>
                     </div>
                   </div>
@@ -351,11 +350,6 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                         <input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="Send signal..." className="flex-1 bg-transparent px-4 py-2 text-sm font-bold text-white outline-none min-w-0 poppins-font" />
                         <button type="submit" disabled={!inputValue.trim()} className="bg-red-600 text-white w-10 h-10 flex items-center justify-center rounded-2xl active:scale-90 transition-all shadow-2xl disabled:opacity-50 flex-shrink-0"><SendIcon className="w-4 h-4" /></button>
                     </div>
-                    {!isGlobal && !isFriend && (
-                        <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest text-center px-4">
-                           Link Protocol: {Math.max(0, 3 - messages.filter(m => m.senderId === clerkUser?.id).length)} credits remaining.
-                        </p>
-                    )}
                 </form>
               ) : <div className="text-center py-2"><SignInButton mode="modal"><button className="bg-red-600 text-white font-black py-3 px-10 rounded-2xl uppercase text-[9px] tracking-widest shadow-2xl transition-all hover:bg-red-700 active:scale-95">Initiate Sync</button></SignInButton></div>}
             </div>

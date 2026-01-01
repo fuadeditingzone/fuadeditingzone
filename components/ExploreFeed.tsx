@@ -53,7 +53,6 @@ const PostCaption: React.FC<{ text: string }> = ({ text }) => {
     useEffect(() => {
         if (textRef.current) {
             const el = textRef.current;
-            // Check if content height exceeds 2 lines
             setIsTruncated(el.scrollHeight > el.clientHeight);
         }
     }, [text]);
@@ -78,7 +77,7 @@ const PostCaption: React.FC<{ text: string }> = ({ text }) => {
     );
 };
 
-export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpenModal?: (items: any[], index: number) => void }> = ({ onOpenProfile, onOpenModal }) => {
+export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string, username?: string) => void; onOpenModal?: (items: any[], index: number) => void }> = ({ onOpenProfile, onOpenModal }) => {
     const { user, isSignedIn } = useUser();
     const [posts, setPosts] = useState<Post[]>([]);
     const [isUploading, setIsUploading] = useState(false);
@@ -188,7 +187,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
         <div className="max-w-7xl mx-auto space-y-12 pb-24">
             <AnimatePresence>
                 {shareToast && (
-                    <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:20}} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[200] bg-white text-black px-6 py-3 rounded-full font-bold uppercase text-[10px] tracking-widest shadow-2xl">Link Copied</motion.div>
+                    <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:20}} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[200] bg-white text-black px-6 py-3 rounded-full font-black uppercase text-[10px] tracking-widest shadow-2xl">Link Copied</motion.div>
                 )}
             </AnimatePresence>
 
@@ -235,7 +234,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                     return (
                         <article key={post.id} className="bg-[#080808] border border-white/5 rounded-xl md:rounded-[2rem] overflow-hidden shadow-xl flex flex-col h-full card-fix">
                             <div className="p-4 flex items-center justify-between bg-black/40">
-                                <div className="flex items-center gap-3 cursor-pointer group min-w-0" onClick={() => onOpenProfile?.(post.userId)}>
+                                <div className="flex items-center gap-3 cursor-pointer group min-w-0" onClick={() => onOpenProfile?.(post.userId, post.userName)}>
                                     <img src={post.userAvatar} className="w-8 h-8 rounded-full border border-white/10 object-cover flex-shrink-0" alt="" />
                                     <div className="min-w-0">
                                         <div className="flex items-center">
@@ -290,7 +289,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                                         <div key={c.id} className="flex gap-2 items-start font-sans">
                                                             <img src={c.userAvatar} className="w-6 h-6 rounded-full flex-shrink-0 object-cover" alt="User" />
                                                             <div className="bg-white/5 p-2.5 rounded-xl flex-1 min-w-0">
-                                                                <div className="flex items-center">
+                                                                <div className="flex items-center cursor-pointer" onClick={() => onOpenProfile?.(c.userId, c.userName)}>
                                                                     <p className="text-[10px] font-bold text-white uppercase mb-0.5 truncate">@{c.userName}</p>
                                                                     {getBadge(c.userName)}
                                                                 </div>
