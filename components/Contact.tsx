@@ -38,7 +38,6 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [currency, setCurrency] = useState('$');
-  const [numWarning, setNumWarning] = useState<string | null>(null);
   const [tagWarning, setTagWarning] = useState<string | null>(null);
   const [formData, setFormData] = useState({ message: '', customName: '', customPrice: '', customTime: '' });
   const [userOrders, setUserOrders] = useState<any[]>([]);
@@ -134,7 +133,7 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
     <section ref={intersectionRef} id="contact" className="py-20 md:py-28 bg-black relative z-10 overflow-hidden no-clip">
       <div className="container mx-auto px-6 md:px-8 max-w-7xl">
         <div className="mb-16 text-center">
-          <h2 className="text-white text-3xl md:text-6xl font-bold uppercase tracking-tight font-display">Order Database</h2>
+          <h2 className="text-white text-3xl md:text-6xl font-black uppercase tracking-tight font-display">Order Database</h2>
           <p className="text-zinc-500 text-xs md:text-sm uppercase tracking-[0.3em] font-bold mt-4">Secure Terminal • Project Initiation</p>
         </div>
 
@@ -216,7 +215,7 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
 
           <div className="bg-[#121212] border border-white/5 rounded-[2.5rem] p-8 md:p-12 shadow-inner flex flex-col h-full min-h-[600px] overflow-hidden">
                 <div className="text-center mb-10 pb-8 border-b border-white/5 flex-shrink-0">
-                    <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-[0.2em] font-display">Transmission Logs</h3>
+                    <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-[0.2em] font-display">Transmission Logs</h3>
                     <p className="text-zinc-600 text-[9px] font-black uppercase tracking-widest mt-2">Personal Project Database</p>
                 </div>
                 <div className="space-y-6 overflow-y-auto custom-scrollbar flex-1 pr-4">
@@ -232,7 +231,7 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
                             <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{delay: idx * 0.05}} className="p-8 md:p-10 bg-black/40 border border-white/5 rounded-3xl hover:bg-black/60 transition-all duration-300 group cursor-default">
                                 <div className="flex justify-between items-start mb-8 gap-4">
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-lg font-bold text-white uppercase tracking-wider truncate no-clip">{order.service}</p>
+                                        <p className="text-lg font-black text-white uppercase tracking-wider truncate no-clip">{order.service}</p>
                                         <p className="text-[9px] text-zinc-600 font-bold uppercase mt-1 tracking-widest">{new Date(order.timestamp).toLocaleDateString()}</p>
                                     </div>
                                     <span className={`text-[9px] font-black uppercase px-4 py-2 rounded-full border flex-shrink-0 ${order.status === 'Pending' ? 'text-yellow-500 border-yellow-500/20 bg-yellow-500/5' : order.status === 'Accepted' ? 'text-green-500 border-green-500/20 bg-green-500/5' : 'text-red-500 border-red-500/20 bg-red-500/5'}`}>{order.status}</span>

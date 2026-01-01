@@ -86,7 +86,7 @@
         overflow-wrap: break-word;
       }
 
-      /* Strict Line Clamping for Descriptions */
+      /* Strict Line Clamping for Descriptions - Fixes layout spills */
       .clamp-2 {
         display: -webkit-box;
         -webkit-line-clamp: 2 !important;
@@ -118,6 +118,16 @@
 
       input, textarea, button {
         font-family: 'Poppins', sans-serif !important;
+      }
+
+      /* Centering for Order Database section as requested */
+      #contact .text-center {
+        text-align: center !important;
+      }
+      #contact .flex-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
     </style>
 
