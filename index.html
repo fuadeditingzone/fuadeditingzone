@@ -19,7 +19,7 @@
     <meta name="theme-color" content="#000000" />
     <link rel="icon" type="image/png" href="https://dl.dropboxusercontent.com/scl/fi/vvk2qlo8i0mer2n4sip1h/faeez-logo.png?rlkey=xiahu40vwixf0uf96wwnvqlw2&raw=1" />
 
-    <!-- Typography: Poppins is the PRIMARY font for professional readability -->
+    <!-- Typography: Poppins is now the PRIMARY professional font for the entire UI -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script type="text/javascript">
@@ -56,16 +56,10 @@
 
     <style>
       :root { --background-base: #000000; --accent-base: #ff0000; }
-      
-      /* Force Poppins globally */
-      * {
-        font-family: 'Poppins', sans-serif !important;
-        box-sizing: border-box;
-      }
-
       html, body { 
         margin: 0; 
         background-color: var(--background-base); 
+        font-family: 'Poppins', sans-serif !important; 
         color: #ffffff; 
         overflow-x: hidden; 
         scrollbar-width: none; 
@@ -73,6 +67,7 @@
       ::-webkit-scrollbar { display: none !important; }
       
       h1, h2, h3, h4, h5, h6, .title-font, .poppins-font { 
+        font-family: 'Poppins', sans-serif !important;
         font-weight: 600; 
         text-transform: uppercase; 
         letter-spacing: -0.01em; 
@@ -80,6 +75,9 @@
 
       .verified-badge-owner { color: #ff0000; text-shadow: none; }
       .verified-badge-admin { color: #3b82f6; text-shadow: none; }
+      .custom-scrollbar::-webkit-scrollbar { width: 4px !important; display: block !important; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 0, 0.5) !important; border-radius: 10px !important; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent !important; }
       
       /* Global overflow safety for containers */
       article, .card-fix, .profile-card, .service-card, .message-bubble {
@@ -88,41 +86,49 @@
         overflow-wrap: break-word;
       }
 
-      /* Strict Line Clamping for Descriptions to prevent overflow */
+      /* Strict Line Clamping for Descriptions - Fixes layout spills */
       .clamp-2 {
-        display: -webkit-box !important;
+        display: -webkit-box;
         -webkit-line-clamp: 2 !important;
-        -webkit-box-orient: vertical !important;
-        overflow: hidden !important;
-        word-break: break-word !important;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
       }
 
       .clamp-3 {
-        display: -webkit-box !important;
+        display: -webkit-box;
         -webkit-line-clamp: 3 !important;
-        -webkit-box-orient: vertical !important;
-        overflow: hidden !important;
-        word-break: break-word !important;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
       }
 
+      * { box-sizing: border-box; }
+      
       .no-clip {
         word-wrap: break-word;
         overflow-wrap: break-word;
         white-space: normal;
       }
 
+      /* Solid black hero for professional depth */
       #home {
         background-color: #000000 !important;
       }
 
-      /* Centering for Order Database section */
+      input, textarea, button {
+        font-family: 'Poppins', sans-serif !important;
+      }
+
+      /* Centering for Order Database section as requested */
       #contact .text-center {
         text-align: center !important;
       }
-      
-      .custom-scrollbar::-webkit-scrollbar { width: 4px !important; display: block !important; }
-      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 0, 0.5) !important; border-radius: 10px !important; }
-      .custom-scrollbar::-webkit-scrollbar-track { background: transparent !important; }
+      #contact .flex-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
     </style>
 
     <script type="importmap">
