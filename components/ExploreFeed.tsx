@@ -47,14 +47,26 @@ interface Post {
 
 const PostCaption: React.FC<{ text: string }> = ({ text }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const shouldTruncate = text.length > 60;
+    const textRef = useRef<HTMLParagraphElement>(null);
+    const [isTruncated, setIsTruncated] = useState(false);
+
+    useEffect(() => {
+        if (textRef.current) {
+            const el = textRef.current;
+            // Check if content height exceeds the clamped height (roughly 2 lines)
+            setIsTruncated(el.scrollHeight > el.clientHeight);
+        }
+    }, [text]);
 
     return (
         <div className="min-h-[1.5em] font-sans">
-            <p className={`text-zinc-400 text-[11px] md:text-[13px] leading-relaxed break-words no-clip ${!isExpanded ? 'line-clamp-2' : ''}`}>
+            <p 
+                ref={textRef}
+                className={`text-zinc-400 text-[11px] md:text-[13px] leading-relaxed break-words no-clip ${!isExpanded ? 'line-clamp-2' : ''}`}
+            >
                 {text}
             </p>
-            {shouldTruncate && !isExpanded && (
+            {isTruncated && !isExpanded && (
                 <button 
                     onClick={() => setIsExpanded(true)} 
                     className="text-zinc-500 font-bold hover:text-white transition-colors text-[10px] md:text-[11px] mt-1 block uppercase tracking-wider"

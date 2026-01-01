@@ -16,14 +16,13 @@ const DELETE_SECRET_CODE = '62114@#';
 
 const PortfolioSection: React.FC<{ 
     title: string; 
-    subtitle: string; 
     works: any[]; 
     onItemClick: (items: any[], index: number) => void;
     id: string;
     aspectRatio?: 'square' | 'video' | 'banner';
     isOwner?: boolean;
     onDeleteItem?: (work: any) => void;
-}> = ({ title, subtitle, works, onItemClick, id, aspectRatio = 'square', isOwner, onDeleteItem }) => {
+}> = ({ title, works, onItemClick, id, aspectRatio = 'square', isOwner, onDeleteItem }) => {
     const [ref, inView] = useIntersectionObserver({ threshold: 0.1, triggerOnce: true });
     const [copyToast, setCopyToast] = useState(false);
 
@@ -65,10 +64,9 @@ const PortfolioSection: React.FC<{
                 )}
             </AnimatePresence>
             
-            <div className="flex items-center justify-between mb-6 md:mb-8 border-l-4 border-red-600 pl-6">
+            <div className="flex items-center justify-between mb-8 border-l-4 border-red-600 pl-6">
                 <div className="min-w-0">
-                    <span className="text-[8px] md:text-[9px] font-medium text-red-600 uppercase tracking-[0.4em] mb-1 block font-sans">{subtitle}</span>
-                    <h2 className="text-white text-xl md:text-3xl font-bold uppercase tracking-tight leading-tight font-display no-clip">{title}</h2>
+                    <h2 className="text-white text-2xl md:text-4xl font-bold uppercase tracking-tight leading-none font-display no-clip">{title}</h2>
                 </div>
                 {isOwner && (
                     <button onClick={() => window.location.pathname = '/marketplace'} className="flex-shrink-0 bg-red-600/10 border border-red-600/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all ml-4">
@@ -331,14 +329,10 @@ export const Portfolio: React.FC<any> = ({
     return (
         <section id="portfolio" className="py-16 md:py-20 bg-[#050505] relative z-10 select-none overflow-hidden no-clip">
             <div className="container mx-auto px-4 md:px-6 max-w-7xl">
-                <div className="text-center mb-12 md:mb-16">
-                    <h2 className="text-white text-2xl md:text-5xl font-bold uppercase tracking-tight leading-none font-display">Portfolio</h2>
-                </div>
-
+                
                 <PortfolioSection 
                     id="photo-manipulation" 
                     title="Photo Manipulation" 
-                    subtitle="Strict 1:1 Composition" 
                     works={photoManipWorks} 
                     onItemClick={(items, index) => openModal(items, index)}
                     aspectRatio="square"
@@ -349,7 +343,6 @@ export const Portfolio: React.FC<any> = ({
                 <PortfolioSection 
                     id="thumbnail-designs" 
                     title="Thumbnails" 
-                    subtitle="Full High CTR Design" 
                     works={thumbnailWorks} 
                     onItemClick={(items, index) => openModal(items, index)}
                     aspectRatio="video"
@@ -360,7 +353,6 @@ export const Portfolio: React.FC<any> = ({
                 <PortfolioSection 
                     id="banner-designs" 
                     title="Banners" 
-                    subtitle="Edge-to-Edge Identity" 
                     works={bannerWorks} 
                     onItemClick={(items, index) => openModal(items, index)}
                     aspectRatio="banner"
@@ -371,8 +363,7 @@ export const Portfolio: React.FC<any> = ({
                 <div id="video-editing" className="mb-24 md:mb-32 px-6 md:px-0">
                     <div className="flex items-center gap-4 mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
                         <div className="min-w-0">
-                            <span className="text-[8px] md:text-[9px] font-medium text-red-600 uppercase tracking-[0.4em] mb-1 block font-sans">YouTube Edits</span>
-                            <h2 className="text-white text-xl md:text-3xl font-bold uppercase tracking-tight font-display no-clip">Content Feed</h2>
+                            <h2 className="text-white text-2xl md:text-4xl font-bold uppercase tracking-tight font-display no-clip">Content Feed</h2>
                         </div>
                     </div>
 
@@ -419,8 +410,7 @@ export const Portfolio: React.FC<any> = ({
                 <div id="vfx-animations" className="mb-24 md:mb-32 px-6 md:px-0" ref={vfxRef as any}>
                      <div className="flex items-center gap-4 mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
                         <div className="min-w-0">
-                            <span className="text-[8px] md:text-[9px] font-medium text-red-600 uppercase tracking-[0.4em] mb-1 block font-sans">Visual Effects</span>
-                            <h2 className="text-white text-xl md:text-3xl font-bold uppercase tracking-tight font-display no-clip">Full VFX Mastery</h2>
+                            <h2 className="text-white text-2xl md:text-4xl font-bold uppercase tracking-tight font-display no-clip">Full VFX Mastery</h2>
                         </div>
                     </div>
                     <motion.div variants={containerVariants} initial="hidden" animate={vfxInView ? "visible" : "hidden"} className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-7xl mx-auto px-2 md:px-0">

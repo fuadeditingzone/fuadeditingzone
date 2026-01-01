@@ -19,11 +19,10 @@
     <meta name="theme-color" content="#000000" />
     <link rel="icon" type="image/png" href="https://dl.dropboxusercontent.com/scl/fi/vvk2qlo8i0mer2n4sip1h/faeez-logo.png?rlkey=xiahu40vwixf0uf96wwnvqlw2&raw=1" />
 
-    <!-- Spotify-Style Typography: Poppins for Titles, Inter for Body -->
+    <!-- Typography: Poppins for Titles, Inter for Body -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 
     <script type="text/javascript">
-      // Global SEO Synchronizer
       window.updatePortalMetadata = function(title, desc, image) {
         if (title) {
           document.title = title + " | Fuad Editing Zone";
@@ -72,6 +71,8 @@
         font-weight: 600; 
         text-transform: uppercase; 
         letter-spacing: -0.01em; 
+        /* Prevent descender clipping (g, y, p, q, j) */
+        padding-bottom: 5px; 
       }
 
       .verified-badge-owner { color: #ff0000; text-shadow: none; }
