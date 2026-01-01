@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDatabase, ref, onValue, query, orderByChild, equalTo, update, set, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
@@ -42,11 +43,12 @@ const PortfolioSection: React.FC<{
         }
     };
 
+    // Fix: Using `as any` for ease array to avoid type mismatch with Easing type in certain framer-motion versions
     const itemVariants = {
         hidden: { opacity: 0, scale: 0.9, y: 10 },
         visible: { 
             opacity: 1, scale: 1, y: 0,
-            transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] }
+            transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as any }
         }
     };
 
@@ -318,11 +320,12 @@ export const Portfolio: React.FC<any> = ({
         }
     };
 
+    // Fix: Using `as any` for ease array to avoid type mismatch with Easing type in certain framer-motion versions
     const itemVariants = {
         hidden: { opacity: 0, scale: 0.95, y: 15 },
         visible: { 
             opacity: 1, scale: 1, y: 0,
-            transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+            transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as any }
         }
     };
 
