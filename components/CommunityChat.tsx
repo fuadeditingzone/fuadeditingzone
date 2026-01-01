@@ -222,7 +222,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
     if (!isGlobal && !isFriend) {
         const sentCount = messages.filter(m => m.senderId === clerkUser.id).length;
         if (sentCount >= 3) {
-            alert("Security Protocol: Unfriend communication limited to 3 signals. Request connection via Profile.");
+            alert("Security Protocol: Sync required for extensive transmission. Proceed to Profile for connection.");
             return;
         }
     }
@@ -255,7 +255,6 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                <span className="text-[9px] font-black text-white uppercase tracking-widest">Network Terminal</span>
             </div>
             
-            {/* Search Input & Controls */}
             <div className="p-3 space-y-3 border-b border-white/5 flex-shrink-0">
                 <div className="flex gap-1.5">
                     <button onClick={() => { setIsGlobal(true); setSelectedUser(null); setShowConversationOnMobile(true); }} className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-[1.2rem] transition-all border ${isGlobal ? 'bg-red-600/10 border-red-600/20 text-red-500' : 'border-transparent hover:bg-white/5 text-zinc-500'}`}>
@@ -268,14 +267,13 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                     </button>
                 </div>
                 
-                {/* Community Real-time Search */}
                 <div className="relative">
                     <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 w-3.5 h-3.5" />
                     <input 
                       value={sidebarSearchQuery} 
                       onChange={e => setSidebarSearchQuery(e.target.value)} 
-                      placeholder="Search Network Profiles..." 
-                      className="poppins-font w-full bg-black/60 border border-white/5 rounded-[1.2rem] py-2.5 pl-10 pr-4 text-white text-[10px] outline-none focus:border-red-600/50 transition-all shadow-inner placeholder-zinc-700" 
+                      placeholder="Search signals..." 
+                      className="w-full bg-black/60 border border-white/5 rounded-[1.2rem] py-2.5 pl-10 pr-4 text-white text-[10px] outline-none focus:border-red-600/50 transition-all shadow-inner placeholder-zinc-700 font-sans" 
                     />
                 </div>
             </div>
@@ -335,8 +333,8 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                             {msg.senderName}
                             {getBadge(msg.senderName)}
                         </span>
-                        {/* Strictly clamp descriptions to 2 lines as requested */}
-                        <div className={`clamp-2 p-3 md:p-4 rounded-[1.2rem] text-[12px] md:text-[13px] border whitespace-pre-wrap ${isOrder ? 'bg-red-600/20 border-red-600/50 text-white font-bold' : (msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-zinc-300 rounded-tl-none')}`} style={{ overflowWrap: 'anywhere' }}>{msg.text}</div>
+                        {/* Clamping utility applied to prevent text leaking */}
+                        <div className={`clamp-2 p-3 md:p-4 rounded-[1.2rem] text-[12px] md:text-[13px] border whitespace-pre-wrap font-sans ${isOrder ? 'bg-red-600/20 border-red-600/50 text-white font-bold' : (msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-zinc-300 rounded-tl-none')}`} style={{ overflowWrap: 'anywhere' }}>{msg.text}</div>
                     </div>
                   </div>
                 );
@@ -348,12 +346,12 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
               {isSignedIn ? (
                 <form onSubmit={handleSendMessage} className="flex flex-col gap-2">
                     <div className="flex gap-2 bg-white/5 border border-white/10 rounded-[1.8rem] p-1.5">
-                        <input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="Send signal..." className="flex-1 bg-transparent px-4 py-2 text-sm font-bold text-white outline-none min-w-0 poppins-font" />
+                        <input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="Transmit message..." className="flex-1 bg-transparent px-4 py-2 text-sm font-bold text-white outline-none min-w-0 font-sans" />
                         <button type="submit" disabled={!inputValue.trim()} className="bg-red-600 text-white w-10 h-10 flex items-center justify-center rounded-2xl active:scale-90 transition-all shadow-2xl disabled:opacity-50 flex-shrink-0"><SendIcon className="w-4 h-4" /></button>
                     </div>
                     {!isGlobal && !isFriend && (
                         <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest text-center px-4">
-                           Link Protocol: {Math.max(0, 3 - messages.filter(m => m.senderId === clerkUser?.id).length)} credits remaining.
+                           Link Protocol: {Math.max(0, 3 - messages.filter(m => m.senderId === clerkUser?.id).length)} signals remaining.
                         </p>
                     )}
                 </form>

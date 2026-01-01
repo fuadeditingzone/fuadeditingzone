@@ -56,10 +56,16 @@
 
     <style>
       :root { --background-base: #000000; --accent-base: #ff0000; }
+      
+      /* Global Font Enforcement */
+      * {
+        font-family: 'Poppins', sans-serif !important;
+        box-sizing: border-box;
+      }
+
       html, body { 
         margin: 0; 
         background-color: var(--background-base); 
-        font-family: 'Poppins', sans-serif !important; 
         color: #ffffff; 
         overflow-x: hidden; 
         scrollbar-width: none; 
@@ -67,7 +73,6 @@
       ::-webkit-scrollbar { display: none !important; }
       
       h1, h2, h3, h4, h5, h6, .title-font, .poppins-font { 
-        font-family: 'Poppins', sans-serif !important;
         font-weight: 600; 
         text-transform: uppercase; 
         letter-spacing: -0.01em; 
@@ -75,6 +80,7 @@
 
       .verified-badge-owner { color: #ff0000; text-shadow: none; }
       .verified-badge-admin { color: #3b82f6; text-shadow: none; }
+      
       .custom-scrollbar::-webkit-scrollbar { width: 4px !important; display: block !important; }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 0, 0.5) !important; border-radius: 10px !important; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent !important; }
@@ -86,32 +92,29 @@
         overflow-wrap: break-word;
       }
 
-      /* Strict Line Clamping for Descriptions - Fixes layout spills */
+      /* Strict Line Clamping Utility */
       .clamp-2 {
-        display: -webkit-box;
+        display: -webkit-box !important;
         -webkit-line-clamp: 2 !important;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        word-break: break-word;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        word-break: break-word !important;
       }
 
       .clamp-3 {
-        display: -webkit-box;
+        display: -webkit-box !important;
         -webkit-line-clamp: 3 !important;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        word-break: break-word;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        word-break: break-word !important;
       }
 
-      * { box-sizing: border-box; }
-      
       .no-clip {
         word-wrap: break-word;
         overflow-wrap: break-word;
         white-space: normal;
       }
 
-      /* Solid black hero for professional depth */
       #home {
         background-color: #000000 !important;
       }
@@ -120,15 +123,8 @@
         font-family: 'Poppins', sans-serif !important;
       }
 
-      /* Centering for Order Database section as requested */
-      #contact .text-center {
-        text-align: center !important;
-      }
-      #contact .flex-center {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
+      /* Centering for sections */
+      .text-center { text-align: center !important; }
     </style>
 
     <script type="importmap">
