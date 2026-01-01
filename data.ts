@@ -30,7 +30,7 @@ export const graphicWorks: GraphicWork[] = [
         id: 1, 
         imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/8whz5z17ra4evztzr8tei/7cbe5e230085811.Y3JvcCwxOTk5LDE1NjQsMCwyMTc.jpg?rlkey=te4mefjp0q9xj39dzjh77swin&raw=1', 
         category: 'Photo Manipulation',
-        title: 'Cyberpunk Warrior Manipulation',
+        title: 'Monster Energy Ultra - Mythic Power Concept',
         description: 'Advanced character composition with neon lighting and high-end texture blending.'
     },
     { 
@@ -44,7 +44,7 @@ export const graphicWorks: GraphicWork[] = [
         id: 3, 
         imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/llmz5fjru7u9xqd1dy6es/abdb99229320593.Y3JvcCwyMDQ4LDE2MDEsMCwyMjM.jpg?rlkey=1mjr7rc57esbkyptaok9ti6sr&raw=1', 
         category: 'Photo Manipulation',
-        title: 'Urban Legends Edit',
+        title: 'Education Abroad Social Media Post',
         description: 'Street-style character manipulation with gritty textures and cinematic color grading.'
     },
     { 

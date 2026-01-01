@@ -93,12 +93,12 @@ const PortfolioSection: React.FC<{
                     <motion.div 
                         key={work.id}
                         variants={itemVariants}
-                        className={`group relative ${aspectClass} bg-black rounded-[1.2rem] md:rounded-[2rem] overflow-hidden border border-white/10 shadow-xl`}
+                        className={`group relative ${aspectClass} bg-[#0a0a0a] rounded-[1.2rem] md:rounded-[2rem] overflow-hidden border border-white/10 shadow-xl`}
                     >
                         <div className="w-full h-full cursor-pointer" onClick={() => onItemClick(works, index)}>
                             <img 
                                 src={work.imageUrl || work.thumbnailUrl || (work.mediaUrl && work.mediaType === 'image' ? work.mediaUrl : `https://i.ytimg.com/vi/${work.videoId}/mqdefault.jpg`)} 
-                                className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 alt={`${work.title || 'Portfolio Work'} | Fuad Editing Zone - ${title}`}
                             />
                             {work.mediaType === 'video' && (
@@ -186,7 +186,7 @@ const VfxVideoPlayer: React.FC<{
             </AnimatePresence>
             
             <figure className="w-full h-full m-0 p-0 cursor-pointer" onClick={() => onPlayRequest(isPlaying ? null : video)}>
-                <video ref={videoRef} src={videoUrl} loop muted={isMuted} playsInline className="w-full h-full object-contain" onCanPlay={() => setIsLoading(false)} title={`${video.title || 'VFX Work'} | Fuad Editing Zone Mastery`} />
+                <video ref={videoRef} src={videoUrl} loop muted={isMuted} playsInline className="w-full h-full object-cover" onCanPlay={() => setIsLoading(false)} title={`${video.title || 'VFX Work'} | Fuad Editing Zone Mastery`} />
                 <div className={`absolute inset-0 bg-black/20 transition-opacity flex items-center justify-center ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
                      {!isPlaying && !isLoading && <PlayIcon className="w-10 h-10 text-white/80 drop-shadow-lg" />}
                 </div>

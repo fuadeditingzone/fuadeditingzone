@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import type { GraphicWork, VideoWork, ModalItem } from '../hooks/types';
-import { LazyImage } from './LazyImage';
 import { 
     CloseIcon, ZoomInIcon, ZoomOutIcon, PlayIcon, 
-    SearchIcon, MicrophoneIcon, Bars3Icon, UserCircleIcon, 
-    HomeIcon, ReelsIcon, PlaylistIcon, YouTubeIcon,
-    ThreeDotsIcon, CheckCircleIcon, InstagramIcon, HeartHoverIcon,
-    CommentIcon, ShareIcon, BookmarkIcon, CheckCircleIcon as CheckIcon,
+    ThreeDotsIcon, CheckCircleIcon, HeartHoverIcon,
+    CommentIcon, ShareIcon, BookmarkIcon,
     EyeIcon, ChevronLeftIcon, ChevronRightIcon, DownloadIcon
 } from './Icons';
 import { siteConfig } from '../config';
@@ -19,59 +16,9 @@ interface ModalViewerProps {
   onPrev: (idx: number) => void;
 }
 
-const InstagramMockup: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
-    const channelPic = siteConfig.branding.profilePicUrl;
-    const channelName = "fuadeditingzone";
-
-    return (
-        <div className="w-full max-w-md border border-white/10 rounded-lg overflow-hidden bg-black h-fit shadow-2xl">
-            <div className="p-3 flex items-center justify-between border-b border-white/5">
-                <div className="flex items-center gap-3">
-                    <img src={channelPic} className="w-9 h-9 rounded-full object-cover p-[1px] bg-red-600" alt="" />
-                    <span className="text-sm font-bold text-white">{channelName}</span>
-                </div>
-                <ThreeDotsIcon className="w-4 h-4 text-white" />
-            </div>
-            <div className="aspect-square bg-white/5"><img src={imageUrl} className="w-full h-full object-contain" alt="" /></div>
-            <div className="p-4 space-y-2">
-                <div className="flex gap-4 text-white text-2xl"><i className="fa-solid fa-heart text-red-600"></i><i className="fa-regular fa-comment"></i></div>
-                <div className="text-sm font-bold text-white">12,402 likes</div>
-                <p className="text-sm text-gray-200 leading-snug"><span className="font-bold">{channelName}</span> Visualizing the impossible at FEZ Zone. ✨</p>
-            </div>
-        </div>
-    );
-};
-
-const YouTubeMockup: React.FC<{ imageUrl: string }> = ({ imageUrl }) => {
-    const channelPic = siteConfig.branding.profilePicUrl;
-    const channelName = "fuadeditingzone";
-
-    return (
-        <div className="w-full max-w-5xl mx-auto bg-[#0f0f0f] rounded-xl overflow-hidden shadow-2xl flex flex-col border border-white/10 max-h-[75vh]">
-            <div className="h-14 flex items-center px-4 bg-[#0f0f0f] border-b border-white/5 gap-4">
-                <Bars3Icon className="w-6 h-6 text-white" /><YouTubeIcon className="w-8 h-8 text-red-600" /><span className="font-bold text-xl text-white">YouTube</span>
-                <div className="flex-1 max-w-xl mx-8 bg-white/5 border border-white/10 rounded-full h-10"></div>
-            </div>
-            <div className="flex-1 p-8 overflow-y-auto">
-                <div className="space-y-4">
-                    <div className="aspect-video w-full max-w-2xl rounded-xl overflow-hidden shadow-2xl relative group">
-                        <img src={imageUrl} className="w-full h-full object-cover" alt="" />
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><PlayIcon className="w-16 h-16 text-white/80" /></div>
-                    </div>
-                    <div className="flex gap-4">
-                        <img src={channelPic} className="w-12 h-12 rounded-full object-cover" alt="" />
-                        <div><h3 className="text-xl font-bold text-white">Professional Portfolio Design Series</h3><p className="text-gray-400 font-medium">{channelName} • 1.2M views</p></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
 export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext, onPrev }) => {
     const { items, currentIndex } = state;
     const currentItem = items[currentIndex];
-    const [useMockup, setUseMockup] = useState(true);
     const [showShareToast, setShowShareToast] = useState(false);
     
     useEffect(() => {
@@ -80,10 +27,18 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [onClose]);
 
-    const isImage = (item: ModalItem): item is GraphicWork => 'imageUrl' in item;
-    const isVideo = (item: ModalItem): item is VideoWork => ('url' in item || 'videoId' in item);
-    const isYTThumbnail = isImage(currentItem) && currentItem.category === 'Thumbnail Designs';
-    const isManipulation = isImage(currentItem) && currentItem.category === 'Photo Manipulation';
+    const isImage = (item: ModalItem): item is GraphicWork => 'imageUrl' in item || ('mediaUrl' in item && (item as any).mediaType === 'image');
+    const isVideo = (item: ModalItem): item is VideoWork => ('url' in item || 'videoId' in item || ('mediaUrl' in item && (item as any).mediaType === 'video'));
+    
+    const getImageUrl = () => {
+        const item = currentItem as any;
+        return item.imageUrl || item.mediaUrl || item.thumbnailUrl;
+    };
+
+    const getVideoUrl = () => {
+        const item = currentItem as any;
+        return item.url || item.mediaUrl;
+    };
 
     const handleShare = () => {
         const item = currentItem as any;
@@ -96,57 +51,75 @@ export const ModalViewer: React.FC<ModalViewerProps> = ({ state, onClose, onNext
 
     return (
         <div className="fixed inset-0 bg-black z-[9999] flex flex-col animate-fade-in overflow-hidden" onClick={onClose}>
-            <div className="absolute inset-0 bg-cover bg-center filter blur-3xl brightness-[0.2] opacity-40 scale-110 pointer-events-none" 
-                 style={{ backgroundImage: `url(${isImage(currentItem) ? currentItem.imageUrl : (currentItem.thumbnailUrl || siteConfig.branding.profilePicUrl)})` }} />
+            {/* Immersive Blurred Background */}
+            <div className="absolute inset-0 bg-cover bg-center filter blur-2xl brightness-[0.15] opacity-60 scale-110 pointer-events-none" 
+                 style={{ backgroundImage: `url(${isImage(currentItem) ? getImageUrl() : (currentItem.thumbnailUrl || siteConfig.branding.profilePicUrl)})` }} />
 
-            <div className="relative z-[100] flex justify-between items-center p-6 bg-gradient-to-b from-black/80 to-transparent flex-shrink-0">
+            {/* Header Overlay */}
+            <div className="relative z-[100] flex justify-between items-center p-6 bg-gradient-to-b from-black/60 to-transparent flex-shrink-0">
                 <div className="flex items-center gap-3">
                     <img src={siteConfig.branding.logoUrl} className="w-10 h-10 rounded-full border border-white/20" alt="FEZ" />
-                    <span className="text-white font-black text-xs uppercase tracking-widest">{isImage(currentItem) ? currentItem.category : 'Cinematic Video'}</span>
+                    <div className="flex flex-col">
+                        <span className="text-white font-black text-[10px] uppercase tracking-widest">{isImage(currentItem) ? (currentItem as any).category : 'Cinematic Video'}</span>
+                        <span className="text-zinc-500 font-bold text-[8px] uppercase tracking-widest">Protocol Viewer</span>
+                    </div>
                 </div>
                 <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
-                    {(isYTThumbnail || isManipulation) && (
-                        <button onClick={() => setUseMockup(!useMockup)} className={`text-white p-3 rounded-full border transition-all ${!useMockup ? 'bg-red-600 border-red-500' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
-                            <EyeIcon className="h-6 w-6" />
-                        </button>
-                    )}
-                    <button onClick={onClose} className="text-white p-3 rounded-full bg-white/5 border border-white/10 hover:bg-red-600 transition-all">
+                    <button onClick={onClose} className="text-white p-3 rounded-full bg-white/5 border border-white/10 hover:bg-red-600 transition-all shadow-xl">
                         <CloseIcon className="h-6 w-6" />
                     </button>
                 </div>
             </div>
 
-            <div className="flex-1 relative w-full flex items-center justify-center p-4 md:p-12 overflow-hidden" onClick={onClose}>
+            {/* Main Content Area: Optimized for "No Extra Area" */}
+            <div className="flex-1 relative w-full flex items-center justify-center p-0 overflow-hidden" onClick={onClose}>
                 <div className="relative w-full h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
                     {isImage(currentItem) ? (
-                        (useMockup && isYTThumbnail) ? <YouTubeMockup imageUrl={currentItem.imageUrl} /> :
-                        (useMockup && isManipulation) ? <InstagramMockup imageUrl={currentItem.imageUrl} /> :
-                        <img src={currentItem.imageUrl} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl border border-white/5" />
+                        <div className="w-full h-full flex items-center justify-center">
+                             <img 
+                                src={getImageUrl()} 
+                                className="max-w-full max-h-full object-contain shadow-[0_0_80px_rgba(0,0,0,0.5)] transition-all duration-700 animate-fade-in" 
+                                alt={currentItem.title || "FEZ Artwork"}
+                             />
+                        </div>
                     ) : isVideo(currentItem) ? (
-                        <div className="w-full max-w-5xl aspect-video bg-black rounded-xl shadow-2xl overflow-hidden border border-white/10">
-                            {currentItem.url ? <video src={currentItem.url} controls autoPlay className="w-full h-full" /> : 
-                            <iframe src={`https://www.youtube.com/embed/${currentItem.videoId}?autoplay=1`} className="w-full h-full border-0" allowFullScreen></iframe>}
+                        <div className="w-full h-full max-w-7xl max-h-[85vh] aspect-video bg-black rounded-xl shadow-2xl overflow-hidden border border-white/5 mx-4 md:mx-12">
+                            {getVideoUrl() ? (
+                                <video src={getVideoUrl()} controls autoPlay className="w-full h-full object-contain" />
+                            ) : (
+                                <iframe src={`https://www.youtube.com/embed/${currentItem.videoId}?autoplay=1`} className="w-full h-full border-0" allowFullScreen></iframe>
+                            )}
                         </div>
                     ) : null}
 
-                    <button onClick={(e) => { e.stopPropagation(); onPrev((currentIndex - 1 + items.length) % items.length); }} className="absolute left-4 md:-left-20 top-1/2 -translate-y-1/2 text-white/30 hover:text-white p-4 rounded-full transition-all">
-                        <ChevronLeftIcon className="w-12 h-12" />
+                    {/* Navigation Controls */}
+                    <button onClick={(e) => { e.stopPropagation(); onPrev((currentIndex - 1 + items.length) % items.length); }} className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 text-white/20 hover:text-white p-2 md:p-4 rounded-full transition-all z-[110] bg-black/20 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none">
+                        <ChevronLeftIcon className="w-10 h-10 md:w-12 md:h-12" />
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); onNext((currentIndex + 1) % items.length); }} className="absolute right-4 md:-right-20 top-1/2 -translate-y-1/2 text-white/30 hover:text-white p-4 rounded-full transition-all">
-                        <ChevronRightIcon className="w-12 h-12" />
+                    <button onClick={(e) => { e.stopPropagation(); onNext((currentIndex + 1) % items.length); }} className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 text-white/20 hover:text-white p-2 md:p-4 rounded-full transition-all z-[110] bg-black/20 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none">
+                        <ChevronRightIcon className="w-10 h-10 md:w-12 md:h-12" />
                     </button>
                 </div>
             </div>
 
-            <div className="relative z-[100] bg-black/90 backdrop-blur-3xl border-t border-white/10 p-8 flex-shrink-0" onClick={e => e.stopPropagation()}>
-                <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                    <div className="space-y-2 flex-1">
-                         <h3 className="text-white font-black text-2xl uppercase tracking-tighter">{currentItem.title || 'Untitled Masterpiece'}</h3>
-                         <p className="text-gray-400 text-sm font-medium leading-relaxed italic">{currentItem.description || (currentItem as any).caption || 'Exclusive creative project by Fuad Ahmed.'}</p>
+            {/* Bottom Info Bar: Compressed and Immersive */}
+            <div className="relative z-[100] bg-black/60 backdrop-blur-3xl border-t border-white/10 p-6 md:p-8 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                         <h3 className="text-white font-black text-xl md:text-2xl uppercase tracking-tighter truncate">{currentItem.title || 'Master Design'}</h3>
+                         <p className="text-zinc-400 text-[11px] md:text-sm font-medium leading-relaxed italic truncate opacity-80">{currentItem.description || (currentItem as any).caption || 'Exclusive creative project by Fuad Ahmed.'}</p>
                     </div>
-                    <button onClick={handleShare} className="btn-angular bg-red-600 text-white font-black py-4 px-10 uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all">Share Link</button>
+                    <div className="flex items-center gap-4">
+                        <button onClick={handleShare} className="flex-1 md:flex-none bg-red-600 text-white font-black py-4 px-10 uppercase tracking-widest text-[10px] shadow-[0_10px_20px_rgba(220,38,38,0.3)] active:scale-95 transition-all">Share Link</button>
+                        <div className="hidden md:flex gap-2">
+                             <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse"></div>
+                             <div className="w-1.5 h-1.5 bg-zinc-800 rounded-full"></div>
+                             <div className="w-1.5 h-1.5 bg-zinc-800 rounded-full"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
             <AnimatePresence>
                 {showShareToast && (
                     <motion.div initial={{opacity:0, y: 50}} animate={{opacity:1, y:0}} exit={{opacity:0, y:50}} className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-white text-black px-8 py-4 rounded-full font-black uppercase text-xs tracking-widest shadow-2xl z-[120]">Link Copied</motion.div>

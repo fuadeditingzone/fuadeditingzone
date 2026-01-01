@@ -65,7 +65,6 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
         const unsubscribe = onValue(postsRef, (snap) => {
             const data = snap.val();
             if (data) {
-                // Fix: Spread types may only be created from object types. Using (val as any) for safer spread.
                 const list = Object.entries(data).map(([id, val]: [string, any]) => ({
                     id, 
                     ...(val as any)
@@ -198,7 +197,6 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                     const postLikes = Object.keys(post.likes || {}).length;
                     const isLikedByMe = user ? !!post.likes?.[user.id] : false;
                     const isMyPost = user?.id === post.userId;
-                    // Fix: Spread types may only be created from object types. Ensuring 'val' is any.
                     const commentsList = Object.entries(post.comments || {}).map(([id, val]) => ({ id, ...(val as any) }));
 
                     return (
@@ -221,15 +219,15 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
 
                             {post.mediaUrl && (
                                 <div 
-                                    className="w-full bg-black flex items-center justify-center relative group overflow-hidden border-b border-white/5 cursor-pointer"
+                                    className="w-full bg-[#050505] flex items-center justify-center relative group overflow-hidden border-b border-white/5 cursor-pointer aspect-square"
                                     onClick={() => onOpenModal?.(posts, idx)}
                                 >
                                     {post.mediaType === 'video' ? (
-                                        <video src={post.mediaUrl} className="w-full h-auto" title={post.title || "Marketplace Video"} />
+                                        <video src={post.mediaUrl} className="w-full h-full object-cover" title={post.title || "Marketplace Video"} />
                                     ) : (
-                                        <img src={post.mediaUrl} className="w-full h-auto" alt={post.title || post.caption || "Marketplace Artwork"} />
+                                        <img src={post.mediaUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={post.title || post.caption || "Marketplace Artwork"} />
                                     )}
-                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                         <EyeIcon className="w-8 h-8 text-white/80" />
                                     </div>
                                 </div>

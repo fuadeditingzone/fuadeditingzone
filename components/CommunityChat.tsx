@@ -270,7 +270,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             </div>
             
             <div className="p-3 space-y-1.5 border-b border-white/5 flex-shrink-0">
-                <button onClick={() => { setIsGlobal(true); setSelectedUser(null); }} className={`w-full flex items-center gap-3 p-3 rounded-[1.2rem] transition-all border ${isGlobal ? 'bg-red-600/10 border-red-600/20' : 'border-transparent hover:bg-white/5'}`}>
+                <button onClick={() => { setIsGlobal(true); setSelectedUser(null); setShowConversationOnMobile(true); }} className={`w-full flex items-center gap-3 p-3 rounded-[1.2rem] transition-all border ${isGlobal ? 'bg-red-600/10 border-red-600/20' : 'border-transparent hover:bg-white/5'}`}>
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center border flex-shrink-0 ${isGlobal ? 'bg-red-600 text-white' : 'bg-white/5 text-zinc-500'}`}><GlobeAltIcon className="w-4 h-4" /></div>
                     <div className="text-left"><p className={`text-[10px] font-black uppercase tracking-widest ${isGlobal ? 'text-white' : 'text-zinc-500'}`}>Public Hub</p></div>
                 </button>
