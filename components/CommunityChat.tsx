@@ -147,15 +147,13 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                         <GlobeAltIcon className="w-5 h-5" />
                         <span className="font-bold text-sm tracking-tight">Global Sync</span>
                     </button>
-                    {isSignedIn && (
-                        <button 
-                            onClick={() => onShowProfile?.(clerkUser.id)}
-                            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all"
-                        >
-                            <UserCircleIcon className="w-5 h-5" />
-                            <span className="font-bold text-sm tracking-tight">My Profile</span>
-                        </button>
-                    )}
+                    <button 
+                        onClick={() => isSignedIn ? onShowProfile?.(clerkUser.id) : alert('Sign in to view your profile')}
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-zinc-400 hover:text-white hover:bg-white/5`}
+                    >
+                        <UserCircleIcon className="w-5 h-5" />
+                        <span className="font-bold text-sm tracking-tight">My Profile</span>
+                    </button>
                 </div>
             </div>
 
@@ -165,7 +163,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                     <input 
                         value={sidebarSearchQuery}
                         onChange={e => setSidebarSearchQuery(e.target.value)}
-                        placeholder="Search signals..."
+                        placeholder="Search artists..."
                         className="w-full bg-[#242424] border-none rounded-lg py-2.5 pl-10 pr-4 text-xs text-white placeholder-zinc-500 focus:ring-1 focus:ring-red-600 outline-none transition-all font-sans"
                     />
                 </div>
