@@ -161,7 +161,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, vie
                         <div className="flex items-center gap-2">
                             <button onClick={() => userListMode ? setUserListMode(null) : onClose()} className="p-1 rounded-full hover:bg-white/5 transition-all text-white"><ChevronLeftIcon className="w-4 h-4" /></button>
                             <div className="flex items-center">
-                                <h2 className="text-xs md:text-sm font-light text-white uppercase tracking-tight truncate max-w-[120px]">{targetUser?.username || clerkUser.username}</h2>
+                                <h2 className="text-xs font-black text-white uppercase tracking-widest truncate max-w-[120px]">{targetUser?.username || clerkUser.username}</h2>
                                 {getVerifiedBadge(targetUser?.username || clerkUser.username)}
                             </div>
                         </div>
