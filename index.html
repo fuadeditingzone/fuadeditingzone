@@ -19,8 +19,8 @@
     <meta name="theme-color" content="#000000" />
     <link rel="icon" type="image/png" href="https://dl.dropboxusercontent.com/scl/fi/vvk2qlo8i0mer2n4sip1h/faeez-logo.png?rlkey=xiahu40vwixf0uf96wwnvqlw2&raw=1" />
 
-    <!-- Typography: Poppins for Titles, Inter for Body -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Typography: Poppins is now the PRIMARY professional font for the entire UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
     <script type="text/javascript">
       window.updatePortalMetadata = function(title, desc, image) {
@@ -59,7 +59,7 @@
       html, body { 
         margin: 0; 
         background-color: var(--background-base); 
-        font-family: 'Inter', sans-serif; 
+        font-family: 'Poppins', sans-serif; 
         color: #ffffff; 
         overflow-x: hidden; 
         scrollbar-width: none; 
@@ -71,8 +71,7 @@
         font-weight: 600; 
         text-transform: uppercase; 
         letter-spacing: -0.01em; 
-        /* Prevent descender clipping (g, y, p, q, j) */
-        padding-bottom: 5px; 
+        padding-bottom: 2px; 
       }
 
       .verified-badge-owner { color: #ff0000; text-shadow: none; }
@@ -81,13 +80,14 @@
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 0, 0.5) !important; border-radius: 10px !important; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent !important; }
       
-      /* Global Card Safety - Force text inside cards */
-      article, .card-fix, .profile-card, .service-card {
+      /* Force text content inside boundaries */
+      article, .card-fix, .profile-card, .service-card, .message-bubble {
         overflow: hidden !important;
         word-wrap: break-word;
         overflow-wrap: break-word;
       }
 
+      /* Clamping rules for consistent card heights */
       .clamp-3 {
         display: -webkit-box;
         -webkit-line-clamp: 3;
@@ -120,14 +120,14 @@
         white-space: normal;
       }
 
-      /* Hero section background safety */
+      /* Mandatory solid black hero background */
       #home {
         background-color: #000000 !important;
       }
 
-      /* Ensure form fields and search bars don't clip text */
-      input, textarea {
-        padding-bottom: 2px;
+      /* Inputs and text areas scaling safety */
+      input, textarea, button {
+        font-family: 'Poppins', sans-serif;
       }
 
       .poppins-font {
@@ -160,7 +160,7 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
+              sans: ['Poppins', 'sans-serif'],
               display: ['Poppins', 'sans-serif'],
             }
           }

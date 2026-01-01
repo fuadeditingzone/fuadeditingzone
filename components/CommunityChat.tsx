@@ -268,7 +268,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                     </button>
                 </div>
                 
-                {/* Community Real-time Search */}
+                {/* Community Real-time Search - FUAD: Fully wired to Poppins font and search logic */}
                 <div className="relative">
                     <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 w-3.5 h-3.5" />
                     <input 
@@ -283,7 +283,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar min-h-0">
               {filteredUsers.length === 0 ? (
                 <div className="py-12 text-center opacity-10">
-                   <p className="text-[8px] font-black uppercase tracking-widest">No Matches Detected</p>
+                   <p className="text-[8px] font-black uppercase tracking-widest">No Signals Detected</p>
                 </div>
               ) : (
                 filteredUsers.map(u => (
@@ -335,7 +335,8 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
                             {msg.senderName}
                             {getBadge(msg.senderName)}
                         </span>
-                        <div className={`clamp-3 p-3 md:p-4 rounded-[1.2rem] text-[12px] md:text-[13px] border whitespace-pre-wrap ${isOrder ? 'bg-red-600/20 border-red-600/50 text-white font-bold' : (msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-zinc-300 rounded-tl-none')}`} style={{ overflowWrap: 'anywhere' }}>{msg.text}</div>
+                        {/* FUAD: Added clamp-2 to message descriptions for neatness */}
+                        <div className={`clamp-2 p-3 md:p-4 rounded-[1.2rem] text-[12px] md:text-[13px] border whitespace-pre-wrap ${isOrder ? 'bg-red-600/20 border-red-600/50 text-white font-bold' : (msg.senderId === clerkUser?.id ? 'bg-red-600/10 border-red-600/30 text-white rounded-tr-none' : 'bg-white/5 border-white/10 text-zinc-300 rounded-tl-none')}`} style={{ overflowWrap: 'anywhere' }}>{msg.text}</div>
                     </div>
                   </div>
                 );
@@ -347,7 +348,7 @@ export const CommunityChat: React.FC<{ isModalMode?: boolean; initialTargetUserI
               {isSignedIn ? (
                 <form onSubmit={handleSendMessage} className="flex flex-col gap-2">
                     <div className="flex gap-2 bg-white/5 border border-white/10 rounded-[1.8rem] p-1.5">
-                        <input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="Send signal..." className="flex-1 bg-transparent px-4 py-2 text-sm font-bold text-white outline-none min-w-0" />
+                        <input value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="Send signal..." className="flex-1 bg-transparent px-4 py-2 text-sm font-bold text-white outline-none min-w-0 poppins-font" />
                         <button type="submit" disabled={!inputValue.trim()} className="bg-red-600 text-white w-10 h-10 flex items-center justify-center rounded-2xl active:scale-90 transition-all shadow-2xl disabled:opacity-50 flex-shrink-0"><SendIcon className="w-4 h-4" /></button>
                     </div>
                     {!isGlobal && !isFriend && (
