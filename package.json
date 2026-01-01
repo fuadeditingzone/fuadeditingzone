@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "next build --webpack",
+    "build": "npx next build --webpack",
     "preview": "vite preview"
   },
   "dependencies": {
