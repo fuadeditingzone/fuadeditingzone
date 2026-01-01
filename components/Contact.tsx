@@ -145,14 +145,14 @@ export const Contact: React.FC<{ onStartOrder: (platform: 'whatsapp' | 'email') 
                     <button 
                       key={tier.id} 
                       onClick={(e) => { e.preventDefault(); setSelectedTier(tier.id); if(tier.id !== 'custom') setFormData(f => ({...f, customPrice: tier.price, customTime: tier.delivery})); }} 
-                      className={`flex items-center gap-6 p-6 md:p-8 rounded-[2rem] border transition-all duration-500 bg-white/5 ${selectedTier === tier.id ? 'border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.2)] bg-white/10 scale-[1.02]' : 'border-white/10 hover:border-white/20'}`}
+                      className={`flex items-center gap-6 p-8 md:p-10 rounded-[2.5rem] border transition-all duration-500 bg-white/5 ${selectedTier === tier.id ? 'border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.2)] bg-white/10 scale-[1.02]' : 'border-white/10 hover:border-white/20'}`}
                     >
-                        <div className={`p-4 rounded-2xl ${selectedTier === tier.id ? 'bg-red-600 text-white' : 'bg-white/5 text-zinc-600'}`}>
-                          <tier.icon className="w-8 h-8" />
+                        <div className={`p-5 rounded-2xl ${selectedTier === tier.id ? 'bg-red-600 text-white' : 'bg-white/5 text-zinc-600'}`}>
+                          <tier.icon className="w-10 h-10" />
                         </div>
                         <div className="text-left">
-                          <h4 className="text-sm md:text-base font-bold text-white uppercase tracking-wider leading-tight">{tier.name}</h4>
-                          <p className="text-[10px] text-zinc-500 font-bold mt-1 uppercase tracking-widest">
+                          <h4 className="text-lg md:text-xl font-bold text-white uppercase tracking-wider leading-tight">{tier.name}</h4>
+                          <p className="text-[12px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">
                             {tier.id === 'custom' ? 'Custom Quote' : `Starts at ${currency}${tier.price}`}
                           </p>
                         </div>

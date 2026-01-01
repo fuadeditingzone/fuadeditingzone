@@ -1,35 +1,55 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
   <head>
-    <!-- 1. Bot-First Critical Meta -->
-    <title>Fuad Editing Zone | VFX & Design</title>
-    <meta name="description" content="Graphic Designer & VFX Editor portfolio by Fuad Ahmed. High-impact visuals and cinematic VFX." />
-    
-    <!-- 2. Open Graph / Facebook (Full HTTPS URLs) -->
+    <!-- Social Meta Tags at the VERY TOP for Bot Detection -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://fuadeditingzone.pages.dev" />
-    <meta property="og:title" content="Fuad Editing Zone | VFX & Design" />
-    <meta property="og:description" content="Graphic Designer & VFX Editor portfolio by Fuad Ahmed." />
-    <meta property="og:image" content="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1" />
+    <meta property="og:title" id="og-title" content="Fuad Editing Zone | VFX & Design" />
+    <meta property="og:description" id="og-desc" content="Graphic Designer & VFX Editor portfolio by Fuad Ahmed. High-impact visuals." />
+    <meta property="og:image" id="og-img" content="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-
-    <!-- 3. Google / Search Engine Backup -->
-    <meta itemprop="name" content="Fuad Editing Zone | VFX & Design">
-    <meta itemprop="description" content="Graphic Designer & VFX Editor portfolio by Fuad Ahmed.">
-    <meta itemprop="image" content="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1">
-
-    <!-- 4. Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Fuad Editing Zone | VFX & Design" />
-    <meta name="twitter:description" content="Graphic Designer & VFX Editor portfolio by Fuad Ahmed." />
-    <meta name="twitter:image" content="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1" />
-
-    <!-- Cache Buster: v1.0.5 - 2024-05-24 -->
+    <meta name="twitter:title" id="tw-title" content="Fuad Editing Zone | VFX & Design" />
+    <meta name="twitter:description" id="tw-desc" content="Graphic Designer & VFX Editor portfolio by Fuad Ahmed." />
+    <meta name="twitter:image" id="tw-img" content="https://www.dropbox.com/scl/fi/uq92m0e5o05mvzt65pd43/Gemini_Generated_Image_hhs74dhhs74dhhs7.png?rlkey=kq52p7r4aetsyokvags5dx73x&raw=1" />
+    
     <meta charset="UTF-8" />
+    <title>Fuad Editing Zone | VFX & Design</title>
+    <meta name="description" content="Graphic Designer & VFX Editor portfolio by Fuad Ahmed. High-impact visuals and cinematic VFX." />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#000000" />
     <link rel="icon" type="image/png" href="https://dl.dropboxusercontent.com/scl/fi/vvk2qlo8i0mer2n4sip1h/faeez-logo.png?rlkey=xiahu40vwixf0uf96wwnvqlw2&raw=1" />
+
+    <!-- Modern Typography: Poppins for Titles, Inter for Body -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <script type="text/javascript">
+      // Global SEO Synchronizer to update meta tags dynamically
+      window.updatePortalMetadata = function(title, desc, image) {
+        if (title) {
+          document.title = title + " | Fuad Editing Zone";
+          const ogTitle = document.getElementById('og-title');
+          const twTitle = document.getElementById('tw-title');
+          if (ogTitle) ogTitle.setAttribute('content', title);
+          if (twTitle) twTitle.setAttribute('content', title);
+        }
+        if (desc) {
+          const descMeta = document.querySelector('meta[name="description"]');
+          const ogDesc = document.getElementById('og-desc');
+          const twDesc = document.getElementById('tw-desc');
+          if (descMeta) descMeta.setAttribute('content', desc);
+          if (ogDesc) ogDesc.setAttribute('content', desc);
+          if (twDesc) twDesc.setAttribute('content', desc);
+        }
+        if (image) {
+          const ogImg = document.getElementById('og-img');
+          const twImg = document.getElementById('tw-img');
+          if (ogImg) ogImg.setAttribute('content', image);
+          if (twImg) twImg.setAttribute('content', image);
+        }
+      };
+    </script>
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
@@ -37,26 +57,40 @@
     </script>
 
     <style>
-      :root { --background-base: #050505; --accent-base: #ff0000; }
+      :root { --background-base: #000000; --accent-base: #ff0000; }
       html, body { 
         margin: 0; 
         background-color: var(--background-base); 
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
         color: #ffffff; 
         overflow-x: hidden; 
         scrollbar-width: none; 
       }
       ::-webkit-scrollbar { display: none !important; }
-      h1, h2, h3, h4 { 
-        font-weight: 800;
+      
+      /* Titles using Poppins */
+      h1, h2, h3, h4, .title-font { 
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
         text-transform: uppercase; 
-        letter-spacing: -0.02em; 
+        letter-spacing: -0.01em; 
       }
+
       .verified-badge-owner { color: #ff0000; text-shadow: none; }
       .verified-badge-admin { color: #3b82f6; text-shadow: none; }
       .custom-scrollbar::-webkit-scrollbar { width: 4px !important; display: block !important; }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 0, 0.5) !important; border-radius: 10px !important; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent !important; }
+      
+      .insta-truncate {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      /* Ensure content doesn't clip */
+      * { box-sizing: border-box; }
     </style>
 
     <script type="importmap">
@@ -79,6 +113,18 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Poppins', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

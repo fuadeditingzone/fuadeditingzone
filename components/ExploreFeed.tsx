@@ -45,6 +45,27 @@ interface Post {
     comments?: Record<string, Comment>;
 }
 
+const PostCaption: React.FC<{ text: string }> = ({ text }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const shouldTruncate = text.length > 60;
+
+    return (
+        <div className="min-h-[1.5em]">
+            <p className={`text-zinc-400 text-[7px] md:text-[10px] leading-relaxed break-words ${!isExpanded ? 'line-clamp-2' : ''}`}>
+                {text}
+            </p>
+            {shouldTruncate && !isExpanded && (
+                <button 
+                    onClick={() => setIsExpanded(true)} 
+                    className="text-zinc-500 font-bold hover:text-white transition-colors text-[7px] md:text-[9px] mt-0.5 block"
+                >
+                    more
+                </button>
+            )}
+        </div>
+    );
+};
+
 export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpenModal?: (items: any[], index: number) => void }> = ({ onOpenProfile, onOpenModal }) => {
     const { user, isSignedIn } = useUser();
     const [posts, setPosts] = useState<Post[]>([]);
@@ -233,47 +254,49 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                 </div>
                             )}
 
-                            <div className="p-2 md:p-5 space-y-2 md:space-y-4">
-                                {post.title && <h2 className="text-[7px] md:text-xs font-bold text-white uppercase tracking-tight truncate">{post.title}</h2>}
-                                <p className="text-zinc-400 text-[6px] md:text-[10px] leading-relaxed line-clamp-1 md:line-clamp-none">{post.caption}</p>
+                            <div className="p-2 md:p-5 space-y-2 md:space-y-4 flex-1 flex flex-col">
+                                {post.title && <h2 className="text-[7px] md:text-xs font-bold text-white uppercase tracking-tight truncate flex-shrink-0">{post.title}</h2>}
+                                <PostCaption text={post.caption} />
                                 
-                                <div className="flex items-center gap-2 md:gap-6 pt-1 md:pt-4 border-t border-white/5">
-                                    <button onClick={() => handleLike(post, isLikedByMe)} className={`flex items-center gap-1 md:gap-2 transition-all ${isLikedByMe ? 'text-red-600' : 'text-zinc-500 hover:text-white'}`}>
-                                        <i className={`fa-${isLikedByMe ? 'solid' : 'regular'} fa-heart text-[8px] md:text-base`}></i>
-                                        <span className="text-[7px] md:text-[10px] font-bold">{postLikes}</span>
-                                    </button>
-                                    <button onClick={() => setActiveCommentsPost(activeCommentsPost === post.id ? null : post.id)} className={`flex items-center gap-1 md:gap-2 transition-all ${activeCommentsPost === post.id ? 'text-red-500' : 'text-zinc-500 hover:text-white'}`}>
-                                        <ChatBubbleIcon className="w-3 h-3 md:w-4 md:h-4" />
-                                        <span className="text-[7px] md:text-[10px] font-bold">{commentsList.length}</span>
-                                    </button>
-                                </div>
+                                <div className="mt-auto">
+                                    <div className="flex items-center gap-2 md:gap-6 pt-1 md:pt-4 border-t border-white/5">
+                                        <button onClick={() => handleLike(post, isLikedByMe)} className={`flex items-center gap-1 md:gap-2 transition-all ${isLikedByMe ? 'text-red-600' : 'text-zinc-500 hover:text-white'}`}>
+                                            <i className={`fa-${isLikedByMe ? 'solid' : 'regular'} fa-heart text-[8px] md:text-base`}></i>
+                                            <span className="text-[7px] md:text-[10px] font-bold">{postLikes}</span>
+                                        </button>
+                                        <button onClick={() => setActiveCommentsPost(activeCommentsPost === post.id ? null : post.id)} className={`flex items-center gap-1 md:gap-2 transition-all ${activeCommentsPost === post.id ? 'text-red-500' : 'text-zinc-500 hover:text-white'}`}>
+                                            <ChatBubbleIcon className="w-3 h-3 md:w-4 md:h-4" />
+                                            <span className="text-[7px] md:text-[10px] font-bold">{commentsList.length}</span>
+                                        </button>
+                                    </div>
 
-                                <AnimatePresence>
-                                    {activeCommentsPost === post.id && (
-                                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="pt-2 md:pt-4 space-y-2 md:space-y-4 overflow-hidden border-t border-white/5">
-                                            <div className="space-y-2 max-h-[80px] md:max-h-[120px] overflow-y-auto custom-scrollbar pr-1">
-                                                {commentsList.map(c => (
-                                                    <div key={c.id} className="flex gap-1 md:gap-2 items-start">
-                                                        <img src={c.userAvatar} className="w-4 h-4 md:w-6 md:h-6 rounded-full flex-shrink-0 object-cover" alt="Commenter" />
-                                                        <div className="bg-white/5 p-1.5 md:p-2.5 rounded-lg md:rounded-xl flex-1 min-w-0">
-                                                            <div className="flex items-center">
-                                                                <p className="text-[6px] md:text-[8px] font-bold text-white uppercase mb-0.5 truncate">@{c.userName}</p>
-                                                                {getBadge(c.userName)}
+                                    <AnimatePresence>
+                                        {activeCommentsPost === post.id && (
+                                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="pt-2 md:pt-4 space-y-2 md:space-y-4 overflow-hidden border-t border-white/5">
+                                                <div className="space-y-2 max-h-[80px] md:max-h-[120px] overflow-y-auto custom-scrollbar pr-1">
+                                                    {commentsList.map(c => (
+                                                        <div key={c.id} className="flex gap-1 md:gap-2 items-start">
+                                                            <img src={c.userAvatar} className="w-4 h-4 md:w-6 md:h-6 rounded-full flex-shrink-0 object-cover" alt="Commenter" />
+                                                            <div className="bg-white/5 p-1.5 md:p-2.5 rounded-lg md:rounded-xl flex-1 min-w-0">
+                                                                <div className="flex items-center">
+                                                                    <p className="text-[6px] md:text-[8px] font-bold text-white uppercase mb-0.5 truncate">@{c.userName}</p>
+                                                                    {getBadge(c.userName)}
+                                                                </div>
+                                                                <p className="text-[7px] md:text-[10px] text-zinc-400 leading-tight">{c.text}</p>
                                                             </div>
-                                                            <p className="text-[7px] md:text-[10px] text-zinc-400 leading-tight">{c.text}</p>
                                                         </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            {isSignedIn && (
-                                                <div className="flex gap-1 md:gap-2 items-center">
-                                                    <input value={newComment} onChange={e => setNewComment(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleComment(post.id)} placeholder="..." className="flex-1 bg-black border border-white/10 rounded-lg md:rounded-xl px-2 md:px-4 py-1 md:py-2 text-[7px] md:text-[10px] outline-none focus:border-red-600 text-white" />
-                                                    <button onClick={() => handleComment(post.id)} disabled={!newComment.trim()} className="p-1 md:p-2 bg-red-600 text-white rounded-lg md:rounded-xl active:scale-90 transition-all"><SendIcon className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" /></button>
+                                                    ))}
                                                 </div>
-                                            )}
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
+                                                {isSignedIn && (
+                                                    <div className="flex gap-1 md:gap-2 items-center">
+                                                        <input value={newComment} onChange={e => setNewComment(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleComment(post.id)} placeholder="..." className="flex-1 bg-black border border-white/10 rounded-lg md:rounded-xl px-2 md:px-4 py-1 md:py-2 text-[7px] md:text-[10px] outline-none focus:border-red-600 text-white" />
+                                                        <button onClick={() => handleComment(post.id)} disabled={!newComment.trim()} className="p-1 md:p-2 bg-red-600 text-white rounded-lg md:rounded-xl active:scale-90 transition-all"><SendIcon className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" /></button>
+                                                    </div>
+                                                )}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             </div>
                         </article>
                     );

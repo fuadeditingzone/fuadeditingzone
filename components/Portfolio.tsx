@@ -66,12 +66,12 @@ const PortfolioSection: React.FC<{
             </AnimatePresence>
             
             <div className="flex items-center justify-between mb-6 md:mb-8 border-l-4 border-red-600 pl-6">
-                <div>
-                    <span className="text-[8px] md:text-[9px] font-bold text-red-600 uppercase tracking-[0.4em] mb-1 block">{subtitle}</span>
-                    <h2 className="text-white text-xl md:text-3xl font-bold uppercase tracking-tight leading-none">{title}</h2>
+                <div className="min-w-0">
+                    <span className="text-[8px] md:text-[9px] font-medium text-red-600 uppercase tracking-[0.4em] mb-1 block font-sans">{subtitle}</span>
+                    <h2 className="text-white text-xl md:text-3xl font-bold uppercase tracking-tight leading-tight font-display truncate">{title}</h2>
                 </div>
                 {isOwner && (
-                    <button onClick={() => window.location.pathname = '/marketplace'} className="bg-red-600/10 border border-red-600/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all">
+                    <button onClick={() => window.location.pathname = '/marketplace'} className="flex-shrink-0 bg-red-600/10 border border-red-600/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all ml-4">
                         + Add Work
                     </button>
                 )}
@@ -122,7 +122,7 @@ const PortfolioSection: React.FC<{
                         </div>
 
                         <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4 md:p-6">
-                            <h3 className="text-white font-bold uppercase tracking-widest text-[8px] md:text-xs leading-tight truncate">{work.title || 'Portfolio Work'}</h3>
+                            <h3 className="text-white font-bold uppercase tracking-widest text-[8px] md:text-xs leading-tight truncate font-display">{work.title || 'Portfolio Work'}</h3>
                         </div>
                     </motion.div>
                 ))}
@@ -278,7 +278,7 @@ export const Portfolio: React.FC<any> = ({
         if (!isOwner) return;
         
         const code = window.prompt("Security clearance required. Enter secret code to remove this item:");
-        if (code === null) return; // User cancelled
+        if (code === null) return; 
         
         if (code !== DELETE_SECRET_CODE) {
             alert("Authorization denied: Incorrect secret code.");
@@ -286,10 +286,8 @@ export const Portfolio: React.FC<any> = ({
         }
 
         if (work.id && typeof work.id === 'string' && work.userId) {
-            // This is a dynamic post from marketplace
             await update(ref(db, `explore_posts/${work.id}`), { targetSection: 'Marketplace Only' });
         } else {
-            // This is a static hardcoded item, hide it
             await set(ref(db, `system/hidden_portfolio_items/${work.id}`), true);
         }
     };
@@ -334,7 +332,7 @@ export const Portfolio: React.FC<any> = ({
         <section id="portfolio" className="py-16 md:py-20 bg-[#050505] relative z-10 select-none overflow-hidden">
             <div className="container mx-auto px-4 md:px-6 max-w-7xl">
                 <div className="text-center mb-12 md:mb-16">
-                    <h2 className="text-white text-2xl md:text-5xl font-bold uppercase tracking-tight leading-none">Portfolio</h2>
+                    <h2 className="text-white text-2xl md:text-5xl font-bold uppercase tracking-tight leading-none font-display">Portfolio</h2>
                 </div>
 
                 <PortfolioSection 
@@ -372,9 +370,9 @@ export const Portfolio: React.FC<any> = ({
 
                 <div id="video-editing" className="mb-24 md:mb-32 px-6 md:px-0">
                     <div className="flex items-center gap-4 mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
-                        <div>
-                            <span className="text-[8px] md:text-[9px] font-bold text-red-600 uppercase tracking-[0.4em] mb-1 block">YouTube Edits</span>
-                            <h2 className="text-white text-xl md:text-3xl font-bold uppercase tracking-tight">Content Feed</h2>
+                        <div className="min-w-0">
+                            <span className="text-[8px] md:text-[9px] font-medium text-red-600 uppercase tracking-[0.4em] mb-1 block font-sans">YouTube Edits</span>
+                            <h2 className="text-white text-xl md:text-3xl font-bold uppercase tracking-tight font-display">Content Feed</h2>
                         </div>
                     </div>
 
@@ -384,25 +382,25 @@ export const Portfolio: React.FC<any> = ({
                                 <div id="youtube-portfolio-player-inner" className="w-full h-full"></div>
                             </div>
                             <div className="bg-[#0f0f0f] p-6 md:p-8 border border-white/5 rounded-[1.5rem] md:rounded-[2rem]">
-                                <h3 className="text-white font-bold text-lg md:text-2xl mb-4 truncate">{currentVideoStats?.title || 'Syncing...'}</h3>
+                                <h3 className="text-white font-bold text-lg md:text-2xl mb-4 truncate font-display">{currentVideoStats?.title || 'Syncing...'}</h3>
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="flex items-center gap-3 md:gap-4 min-w-0">
                                         <div className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden border border-red-600/30 flex-shrink-0">
                                             <img src={stats.channelProfilePic || siteConfig.branding.profilePicUrl} className="w-full h-full object-cover" alt="Selected Legend YouTube Profile" />
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-white font-bold text-sm md:text-lg uppercase truncate">{stats.channelTitle}</p>
-                                            <p className="text-zinc-500 text-[10px] uppercase font-bold truncate">{formatNumber(stats.subscribers)} Subscribers</p>
+                                            <p className="text-white font-bold text-sm md:text-lg uppercase truncate font-display">{stats.channelTitle}</p>
+                                            <p className="text-zinc-500 text-[10px] uppercase font-medium truncate font-sans">{formatNumber(stats.subscribers)} Subscribers</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-6 flex-shrink-0">
                                         <div className="text-center">
-                                            <p className="text-white font-bold text-lg md:text-2xl">{formatNumber(animatedViews)}</p>
-                                            <p className="text-[8px] text-zinc-500 uppercase font-bold">Views</p>
+                                            <p className="text-white font-bold text-lg md:text-2xl font-display">{formatNumber(animatedViews)}</p>
+                                            <p className="text-[8px] text-zinc-500 uppercase font-bold font-sans">Views</p>
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-red-600 font-bold text-lg md:text-2xl">{formatNumber(animatedLikes)}</p>
-                                            <p className="text-[8px] text-zinc-500 uppercase font-bold">Likes</p>
+                                            <p className="text-red-600 font-bold text-lg md:text-2xl font-display">{formatNumber(animatedLikes)}</p>
+                                            <p className="text-[8px] text-zinc-500 uppercase font-bold font-sans">Likes</p>
                                         </div>
                                     </div>
                                 </div>
@@ -420,9 +418,9 @@ export const Portfolio: React.FC<any> = ({
 
                 <div id="vfx-animations" className="mb-24 md:mb-32 px-6 md:px-0" ref={vfxRef as any}>
                      <div className="flex items-center gap-4 mb-8 md:mb-12 border-l-4 border-red-600 pl-6">
-                        <div>
-                            <span className="text-[8px] md:text-[9px] font-bold text-red-600 uppercase tracking-[0.4em] mb-1 block">Visual Effects</span>
-                            <h2 className="text-white text-xl md:text-3xl font-bold uppercase tracking-tight">Full VFX Mastery</h2>
+                        <div className="min-w-0">
+                            <span className="text-[8px] md:text-[9px] font-medium text-red-600 uppercase tracking-[0.4em] mb-1 block font-sans">Visual Effects</span>
+                            <h2 className="text-white text-xl md:text-3xl font-bold uppercase tracking-tight font-display">Full VFX Mastery</h2>
                         </div>
                     </div>
                     <motion.div variants={containerVariants} initial="hidden" animate={vfxInView ? "visible" : "hidden"} className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-7xl mx-auto px-2 md:px-0">
@@ -446,13 +444,13 @@ export const Portfolio: React.FC<any> = ({
 
                 {isOwner && hiddenStaticWorks.length > 0 && (
                     <div className="mt-20 p-10 bg-white/5 border border-white/5 rounded-[2rem]">
-                        <h3 className="text-red-500 font-bold uppercase tracking-[0.3em] text-sm mb-6">Owner Console: Hidden Works</h3>
+                        <h3 className="text-red-500 font-bold uppercase tracking-[0.3em] text-sm mb-6 font-display">Owner Console: Hidden Works</h3>
                         <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
                             {hiddenStaticWorks.map(id => (
                                 <button 
                                     key={id} 
                                     onClick={() => handleRestoreWork(id)}
-                                    className="p-3 bg-red-600/20 text-red-500 rounded-xl font-bold text-[9px] uppercase tracking-widest border border-red-600/20 hover:bg-red-600 hover:text-white transition-all"
+                                    className="p-3 bg-red-600/20 text-red-500 rounded-xl font-bold text-[9px] uppercase tracking-widest border border-red-600/20 hover:bg-red-600 hover:text-white transition-all font-sans"
                                 >
                                     Restore {id}
                                 </button>

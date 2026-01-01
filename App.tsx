@@ -36,21 +36,10 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getDatabase(app);
 
-const updateSEO = (title: string, desc: string, image?: string, url?: string) => {
-  const finalTitle = `${title} | Fuad Editing Zone`;
-  document.title = finalTitle;
-  document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
-  document.querySelector('meta[property="og:title"]')?.setAttribute('content', finalTitle);
-  document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
-  document.querySelector('meta[property="og:type"]')?.setAttribute('content', 'article');
-  document.querySelector('meta[property="twitter:title"]')?.setAttribute('content', finalTitle);
-  document.querySelector('meta[property="twitter:description"]')?.setAttribute('content', desc);
-  if (image) {
-    document.querySelector('meta[property="og:image"]')?.setAttribute('content', image);
-    document.querySelector('meta[property="twitter:image"]')?.setAttribute('content', image);
-    document.querySelector('meta[name="twitter:card"]')?.setAttribute('content', 'summary_large_image');
+const updateSEO = (title: string, desc: string, image?: string) => {
+  if ((window as any).updatePortalMetadata) {
+    (window as any).updatePortalMetadata(title, desc, image);
   }
-  if (url) document.querySelector('meta[property="og:url"]')?.setAttribute('content', url);
 };
 
 export default function App() {
@@ -98,14 +87,13 @@ export default function App() {
       const title = item.title || 'Exclusive Masterpiece';
       const desc = item.description || item.caption || "Official work from Fuad Editing Zone.";
       const img = item.imageUrl || item.thumbnailUrl || (item.mediaUrl && item.mediaType === 'image' ? item.mediaUrl : siteConfig.branding.profilePicUrl);
-      const url = window.location.origin + (item.userId ? `/post/${item.id}` : `/work/${item.id}`);
-      updateSEO(title, desc, img, url);
+      updateSEO(title, desc, img);
     } else if (viewingProfileId) {
-      updateSEO("Profile", "View designer profile on FEZ Zone", siteConfig.branding.logoUrl, window.location.origin + `/profile/${viewingProfileId}`);
+      updateSEO("Profile", "View designer profile on FEZ Zone", siteConfig.branding.logoUrl);
     } else {
-      if (route === 'home') updateSEO(siteConfig.seo.title, siteConfig.seo.description, siteConfig.branding.profilePicUrl, window.location.origin);
-      else if (route === 'marketplace') updateSEO("Marketplace", "Discover premium assets.", siteConfig.branding.logoUrl, window.location.origin + "/marketplace");
-      else if (route === 'community') updateSEO("Community Hub", "Professional design network.", siteConfig.branding.logoUrl, window.location.origin + "/community");
+      if (route === 'home') updateSEO(siteConfig.seo.title, siteConfig.seo.description, siteConfig.branding.profilePicUrl);
+      else if (route === 'marketplace') updateSEO("Marketplace", "Discover premium assets.", siteConfig.branding.logoUrl);
+      else if (route === 'community') updateSEO("Community Hub", "Professional design network.", siteConfig.branding.logoUrl);
     }
   }, [modalState, route, viewingProfileId]);
 
@@ -192,7 +180,7 @@ export default function App() {
 
   return (
     <ParallaxProvider>
-      <div className="text-white bg-black overflow-x-hidden flex flex-col h-[100dvh] max-h-[100dvh]">
+      <div className="text-white bg-black overflow-x-hidden flex flex-col h-[100dvh] max-h-[100dvh] font-sans">
           <VFXBackground /><MediaGridBackground />
           <div className="fixed top-0 left-0 right-0 z-[100]">
             <DesktopHeader onScrollTo={handleScrollTo} onNavigateMarketplace={() => navigateTo('marketplace')} onNavigateCommunity={() => navigateTo('community')} onOpenChatWithUser={handleOpenChatWithUser} onOpenProfile={handleOpenProfile} activeRoute={route} />

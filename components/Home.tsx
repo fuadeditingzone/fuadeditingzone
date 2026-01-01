@@ -94,9 +94,9 @@ export const Home: React.FC<HomeProps> = ({
     return (
         <section 
             id="home" 
-            className="h-[100dvh] w-full flex flex-col items-center justify-center relative select-none overflow-hidden p-0 bg-[#1C1B1A]"
+            className="h-[100dvh] w-full flex flex-col items-center justify-center relative select-none overflow-hidden p-0 bg-black"
         >
-            <div className="absolute inset-0 z-0 bg-[#1C1B1A]"></div>
+            <div className="absolute inset-0 z-0 bg-black"></div>
 
             <motion.div 
                 initial={{ opacity: 0, y: 15 }}
@@ -134,8 +134,7 @@ export const Home: React.FC<HomeProps> = ({
                             initial={{ opacity: 0, x: 25 }}
                             animate={isImageLoaded ? { opacity: 1, x: 0 } : { opacity: 0 }}
                             transition={{ duration: 1.2, delay: 0.5 }}
-                            className="font-black text-white tracking-tighter uppercase m-0 p-0" 
-                            style={{ fontFamily: '"Montserrat", sans-serif' }}
+                            className="font-black text-white tracking-tighter uppercase m-0 p-0 font-display"
                         >
                             <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl block -mb-[0.1em] relative leading-[0.7] opacity-90 whitespace-nowrap drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">FUAD</span>
                             <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl block text-red-600 relative leading-[0.7] opacity-100 whitespace-nowrap drop-shadow-[0_5px_15px_rgba(220,38,38,0.2)]">AHMED</span>
@@ -150,7 +149,7 @@ export const Home: React.FC<HomeProps> = ({
                             initial={{ opacity: 0, y: 10 }}
                             animate={isImageLoaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
                             transition={{ delay: 0.9 + (0.05 * i), duration: 0.5 }}
-                            className="flex items-center bg-white/5 border border-white/10 rounded-lg md:rounded-xl px-3 py-1.5 md:px-5 md:py-2.5 text-[7px] md:text-[9px] font-black text-zinc-400 uppercase tracking-widest transition-all duration-500 hover:text-white hover:bg-red-600/20 hover:border-red-600/50 hover:-translate-y-1"
+                            className="flex items-center bg-white/5 border border-white/10 rounded-lg md:rounded-xl px-3 py-1.5 md:px-5 md:py-2.5 text-[7px] md:text-[9px] font-medium text-zinc-400 uppercase tracking-widest transition-all duration-500 hover:text-white hover:bg-red-600/20 hover:border-red-600/50 hover:-translate-y-1"
                         >
                             {skill}
                             {proSkills.includes(skill) && (
@@ -175,7 +174,7 @@ export const Home: React.FC<HomeProps> = ({
                         animate={isImageLoaded ? { opacity: 1, scale: 1 } : { opacity: 0 }}
                         transition={{ delay: 1.4, duration: 1, ease: [0.16, 1, 0.3, 1] }}
                         onClick={(e) => { e.stopPropagation(); onOrderNow(); }}
-                        className="relative overflow-hidden bg-white text-black text-xs md:text-sm font-black px-10 py-4 md:px-16 md:py-6 rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-[0.4em] flex-shrink-0 group/order"
+                        className="relative overflow-hidden bg-white text-black text-xs md:text-sm font-bold px-10 py-4 md:px-16 md:py-6 rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-[0.4em] flex-shrink-0 group/order"
                     >
                         <span className="relative z-10">Get a Quote</span>
                     </motion.button>
@@ -188,22 +187,22 @@ export const Home: React.FC<HomeProps> = ({
                     >
                         <div className="text-left cursor-pointer group/stat flex-shrink-0" onClick={onYouTubeClick}>
                             <div className="flex items-center gap-2 md:gap-3 mb-1">
-                                <div className="text-2xl sm:text-3xl md:text-5xl font-black text-white leading-none group-hover:text-red-600 transition-colors" style={{ fontFamily: '"Montserrat", sans-serif' }}>
+                                <div className="text-2xl sm:text-3xl md:text-5xl font-black text-white leading-none group-hover:text-red-600 transition-colors font-display">
                                     {loading ? '---' : <StretchyCounter value={animatedSubs} />}
                                 </div>
                                 <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-red-600 rounded-full animate-pulse"></div>
                             </div>
-                            <span className="text-[8px] md:text-[10px] text-zinc-500 font-bold uppercase tracking-[0.3em] group-hover:text-red-600 transition-colors whitespace-nowrap">Followers</span>
+                            <span className="text-[8px] md:text-[10px] text-zinc-500 font-medium uppercase tracking-[0.3em] group-hover:text-red-600 transition-colors whitespace-nowrap">Followers</span>
                         </div>
 
                         <div className="text-left border-l border-white/10 pl-6 sm:pl-10 md:pl-12 cursor-pointer group/stat flex-shrink-0" onClick={onYouTubeClick}>
                             <div className="flex items-center gap-2 md:gap-3 mb-1">
-                                <div className="text-2xl sm:text-3xl md:text-5xl font-black text-white leading-none group-hover:text-red-600 transition-colors" style={{ fontFamily: '"Montserrat", sans-serif' }}>
+                                <div className="text-2xl sm:text-3xl md:text-5xl font-black text-white leading-none group-hover:text-red-600 transition-colors font-display">
                                     {loading ? '---' : <StretchyCounter value={animatedViews} />}
                                 </div>
                                 <YouTubeIcon className="w-4 h-4 md:w-6 md:h-6 text-red-600 opacity-60 group-hover:opacity-100 transition-all" />
                             </div>
-                            <span className="text-[8px] md:text-[10px] text-zinc-500 font-bold uppercase tracking-[0.3em] group-hover:text-red-600 transition-colors whitespace-nowrap">Views</span>
+                            <span className="text-[8px] md:text-[10px] text-zinc-500 font-medium uppercase tracking-[0.3em] group-hover:text-red-600 transition-colors whitespace-nowrap">Views</span>
                         </div>
                     </motion.div>
                 </div>
