@@ -53,7 +53,7 @@ const PostCaption: React.FC<{ text: string }> = ({ text }) => {
     useEffect(() => {
         if (textRef.current) {
             const el = textRef.current;
-            // Check if content height exceeds the clamped height (roughly 3 lines)
+            // Check if content height exceeds the clamped height (exactly 3 lines)
             setIsTruncated(el.scrollHeight > el.clientHeight);
         }
     }, [text]);
@@ -71,7 +71,7 @@ const PostCaption: React.FC<{ text: string }> = ({ text }) => {
                     onClick={() => setIsExpanded(true)} 
                     className="text-zinc-500 font-bold hover:text-white transition-colors text-[10px] md:text-[11px] mt-1 block uppercase tracking-wider"
                 >
-                    ...more
+                    ...read more
                 </button>
             )}
         </div>
@@ -109,7 +109,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
     }, []);
 
     const handleDelete = async (postId: string) => {
-        if (!window.confirm("Permanent Deletion Request: Continue?")) return;
+        if (!window.confirm("Perform Permanent Deletion? This cannot be undone.")) return;
         await remove(ref(db, `explore_posts/${postId}`));
     };
 
@@ -188,16 +188,16 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
         <div className="max-w-7xl mx-auto space-y-12 pb-24">
             <AnimatePresence>
                 {shareToast && (
-                    <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:20}} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[200] bg-white text-black px-6 py-3 rounded-full font-bold uppercase text-[10px] tracking-widest shadow-2xl">Signal Copied</motion.div>
+                    <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:20}} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[200] bg-white text-black px-6 py-3 rounded-full font-bold uppercase text-[10px] tracking-widest shadow-2xl">Link Copied</motion.div>
                 )}
             </AnimatePresence>
 
             {isSignedIn && (
-                <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-6 md:p-10 shadow-2xl space-y-6 max-w-3xl mx-auto">
+                <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-6 md:p-10 shadow-2xl space-y-6 max-w-3xl mx-auto card-fix">
                     <div className="flex gap-4">
-                        <img src={user.imageUrl} className="w-12 h-12 rounded-full border border-red-600/30 flex-shrink-0" alt="Active Profile" />
+                        <img src={user.imageUrl} className="w-12 h-12 rounded-full border border-red-600/30 flex-shrink-0 object-cover" alt="Profile" />
                         <div className="flex-1 space-y-4 font-sans">
-                            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Subject line..." className="w-full bg-black border border-white/5 rounded-xl p-4 text-white text-xs outline-none focus:border-red-600/50" />
+                            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Enter subject line..." className="w-full bg-black border border-white/5 rounded-xl p-4 text-white text-xs outline-none focus:border-red-600/50" />
                             {isOwner && (
                                 <select value={targetSection} onChange={e => setTargetSection(e.target.value)} className="w-full bg-black border border-white/5 rounded-xl p-4 text-red-500 text-[10px] font-bold uppercase tracking-widest outline-none focus:border-red-600/50 appearance-none cursor-pointer">
                                     <option>Marketplace Only</option>
@@ -207,7 +207,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                     <option>VFX</option>
                                 </select>
                             )}
-                            <textarea value={caption} onChange={e => setCaption(e.target.value)} placeholder="Broadcast intel... Use @tags and #mentions" className="w-full bg-black border border-white/5 rounded-xl p-4 text-white text-xs outline-none resize-none h-24 focus:border-red-600/50" />
+                            <textarea value={caption} onChange={e => setCaption(e.target.value)} placeholder="Broadcast your message... Use @tags and #mentions" className="w-full bg-black border border-white/5 rounded-xl p-4 text-white text-xs outline-none resize-none h-24 focus:border-red-600/50" />
                         </div>
                     </div>
                     
@@ -215,17 +215,16 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                         <div className="flex gap-3">
                             <input type="file" hidden ref={fileInputRef} accept="image/*,video/*" onChange={e => setSelectedFile(e.target.files?.[0] || null)} />
                             <button onClick={() => fileInputRef.current?.click()} className={`flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${selectedFile ? 'bg-green-600 text-white' : 'bg-white/5 text-zinc-400 hover:bg-white/10'}`}>
-                                <PhotoManipulationIcon className="w-4 h-4" /> {selectedFile ? 'Media Ready' : 'Attach'}
+                                <PhotoManipulationIcon className="w-4 h-4" /> {selectedFile ? 'File Attached' : 'Attach File'}
                             </button>
                         </div>
                         <button disabled={isUploading || !caption.trim()} onClick={handleUpload} className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-10 py-3 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] transition-all flex items-center gap-3 shadow-xl font-display">
-                            {isUploading ? 'Syncing...' : 'Broadcast'} <SendIcon className="w-4 h-4" />
+                            {isUploading ? 'Uploading...' : 'Broadcast'} <SendIcon className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* Marketplace Grid Fix */}
             <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-[20px] px-2 md:px-0">
                 {posts.map((post, idx) => {
                     const postLikes = Object.keys(post.likes || {}).length;
@@ -234,7 +233,7 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                     const commentsList = Object.entries(post.comments || {}).map(([id, val]) => ({ id, ...(val as any) }));
 
                     return (
-                        <article key={post.id} className="bg-[#080808] border border-white/5 rounded-xl md:rounded-[2rem] overflow-hidden shadow-xl flex flex-col h-full">
+                        <article key={post.id} className="bg-[#080808] border border-white/5 rounded-xl md:rounded-[2rem] overflow-hidden shadow-xl flex flex-col h-full card-fix">
                             <div className="p-4 flex items-center justify-between bg-black/40">
                                 <div className="flex items-center gap-3 cursor-pointer group min-w-0" onClick={() => onOpenProfile?.(post.userId)}>
                                     <img src={post.userAvatar} className="w-8 h-8 rounded-full border border-white/10 object-cover flex-shrink-0" alt="" />
@@ -257,9 +256,9 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                     onClick={() => onOpenModal?.(posts, idx)}
                                 >
                                     {post.mediaType === 'video' ? (
-                                        <video src={post.mediaUrl} className="w-full h-full object-cover" title={post.title || "Marketplace Video"} />
+                                        <video src={post.mediaUrl} className="w-full h-full object-cover" title={post.title || "VFX Project"} />
                                     ) : (
-                                        <img src={post.mediaUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={post.title || post.caption || "Marketplace Artwork"} />
+                                        <img src={post.mediaUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={post.title || post.caption || "Design Asset"} />
                                     )}
                                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                         <EyeIcon className="w-8 h-8 text-white/80" />
@@ -289,20 +288,20 @@ export const ExploreFeed: React.FC<{ onOpenProfile?: (id: string) => void; onOpe
                                                 <div className="space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
                                                     {commentsList.map(c => (
                                                         <div key={c.id} className="flex gap-2 items-start font-sans">
-                                                            <img src={c.userAvatar} className="w-6 h-6 rounded-full flex-shrink-0 object-cover" alt="Commenter" />
+                                                            <img src={c.userAvatar} className="w-6 h-6 rounded-full flex-shrink-0 object-cover" alt="User" />
                                                             <div className="bg-white/5 p-2.5 rounded-xl flex-1 min-w-0">
                                                                 <div className="flex items-center">
                                                                     <p className="text-[10px] font-bold text-white uppercase mb-0.5 truncate">@{c.userName}</p>
                                                                     {getBadge(c.userName)}
                                                                 </div>
-                                                                <p className="text-[12px] text-zinc-400 leading-tight clamp-3 no-clip">{c.text}</p>
+                                                                <p className="text-[12px] text-zinc-400 leading-tight clamp-2 no-clip">{c.text}</p>
                                                             </div>
                                                         </div>
                                                     ))}
                                                 </div>
                                                 {isSignedIn && (
                                                     <div className="flex gap-2 items-center font-sans">
-                                                        <input value={newComment} onChange={e => setNewComment(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleComment(post.id)} placeholder="Write a response..." className="flex-1 bg-black border border-white/10 rounded-xl px-4 py-2 text-[12px] outline-none focus:border-red-600 text-white" />
+                                                        <input value={newComment} onChange={e => setNewComment(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleComment(post.id)} placeholder="Join the discussion..." className="flex-1 bg-black border border-white/10 rounded-xl px-4 py-2 text-[12px] outline-none focus:border-red-600 text-white" />
                                                         <button onClick={() => handleComment(post.id)} disabled={!newComment.trim()} className="p-2 bg-red-600 text-white rounded-xl active:scale-90 transition-all"><SendIcon className="w-4 h-4" /></button>
                                                     </div>
                                                 )}

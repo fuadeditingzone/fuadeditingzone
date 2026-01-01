@@ -81,8 +81,8 @@
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 0, 0.5) !important; border-radius: 10px !important; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent !important; }
       
-      /* Global Card Safety */
-      article, .card-fix {
+      /* Global Card Safety - Force text inside cards */
+      article, .card-fix, .profile-card, .service-card {
         overflow: hidden !important;
         word-wrap: break-word;
         overflow-wrap: break-word;
@@ -91,6 +91,14 @@
       .clamp-3 {
         display: -webkit-box;
         -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+      }
+
+      .clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         word-break: break-word;
@@ -112,7 +120,7 @@
         white-space: normal;
       }
 
-      /* Hero section specific fix */
+      /* Hero section background safety */
       #home {
         background-color: #000000 !important;
       }
@@ -120,6 +128,10 @@
       /* Ensure form fields and search bars don't clip text */
       input, textarea {
         padding-bottom: 2px;
+      }
+
+      .poppins-font {
+        font-family: 'Poppins', sans-serif !important;
       }
     </style>
 
